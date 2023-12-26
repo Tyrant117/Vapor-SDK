@@ -1,0 +1,18 @@
+{
+    "name": "CarbonFiberGames.VaporEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

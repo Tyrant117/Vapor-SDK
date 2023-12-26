@@ -1,0 +1,18 @@
+{
+    "name": "com.carbonfibergames.vaporkeys",
+    "version": "0.1.0",
+    "displayName": "Vapor SDK",
+    "description": "A collection of tools for developing applications in Unity.",
+    "unity": "2022.3",
+    "keywords": [
+      "SDK",
+      "Tools"
+    ],
+    "author": {
+      "name": "Carbon Fiber Games LLC"
+    },
+    "hideInEditor": false,
+    "dependencies": {
+      
+    }
+}
