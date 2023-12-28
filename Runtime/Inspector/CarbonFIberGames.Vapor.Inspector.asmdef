@@ -1,0 +1,18 @@
+{
+    "name": "CarbonFIberGames.Vapor.Inspector",
+    "rootNamespace": "VaporInspector",
+    "references": [
+        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "VAPOR_INSPECTOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
