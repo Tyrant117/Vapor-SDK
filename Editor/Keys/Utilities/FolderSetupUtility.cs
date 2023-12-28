@@ -19,6 +19,8 @@ namespace VaporKeysEditor
             FolderUtility.CreateFolderFromPath($"Assets/{FolderRelativePath}");
             FolderUtility.CreateFolderFromPath($"Assets/{KeysRelativePath}");
             FolderUtility.CreateFolderFromPath($"Assets/{ConfigRelativePath}");
+
+            FolderUtility.CreateAssemblyDefinition($"Assets/{FolderRelativePath}", "VaporKeyDefinitions", "VaporKeyDefinitions", new[] { "CarbonFiberGames.Vapor.Keys" }, false);
         }
     }
 }

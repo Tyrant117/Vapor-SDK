@@ -252,7 +252,7 @@ namespace VaporKeysEditor
 
             KeyGenerator.FormatKeyFiles(KeyPath, "VaporKeyDefinitions", definitionName, kvp);
 
-            var jsonDef = new JSONConfigDefinition()
+            var jsonDef = new JsonConfigDefinition()
             {
                 FolderPath = KeyPath,
                 NamespaceName = "VaporKeyDefinitions",
@@ -268,7 +268,7 @@ namespace VaporKeysEditor
                 jsonDef.EnumContent.Add(e.Value);
             }
 
-            JSONConfigDefinition.ToJson(jsonDef, $"{Application.dataPath}/Vapor/Keys/Config/{definitionName}.json");
+            JsonConfigDefinition.ToJson(jsonDef, $"{Application.dataPath}/Vapor/Keys/Config/{definitionName}.json");
 
             //var def = ScriptableObject.CreateInstance<ScriptableDefinition>();
             //def.folderPath = keyPath;
@@ -301,7 +301,7 @@ namespace VaporKeysEditor
                     var textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(AssetDatabase.GUIDToAssetPath(guid));
                     if (textAsset.name.Equals(targetName))
                     {
-                        var definition = JSONConfigDefinition.FromJson($"{Application.dataPath}/Vapor/Keys/Config", $"{targetName}.json");
+                        var definition = JsonConfigDefinition.FromJson($"{Application.dataPath}/Vapor/Keys/Config", $"{targetName}.json");
                         rootVisualElement.Q<TextField>("class-name-text").value = definition.DefinitionName;
                         rootVisualElement.Q<Toggle>("create-none-toggle").value = definition.CreateNone;
                         rootVisualElement.Q<Toggle>("custom-order-toggle").value = definition.CustomOrder;

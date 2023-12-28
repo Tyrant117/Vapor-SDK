@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace VaporKeys
 {
-    public static class IntExtensions
+    public static class StringExtensions
     {
         public static int GetKeyHashCode(this string text)
         {
