@@ -1,11 +1,7 @@
 {
-    "name": "CarbonFiberGames.Vapor.Netcode",
-    "rootNamespace": "VaporNetcode",
-    "references": [
-        "GUID:6806a62c384838046a3c66c44f06d75f",
-        "GUID:f48a004712f75554d9d0beb28767aee9",
-        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f"
-    ],
+    "name": "kcp2k",
+    "rootNamespace": "",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

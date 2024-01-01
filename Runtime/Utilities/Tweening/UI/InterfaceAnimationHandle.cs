@@ -30,7 +30,7 @@ namespace Vapor.Tweening
         }
 
         /// <summary>
-        /// Intialized the handle, this should be done after all animations have been added. It will also be done automatically the first time the handle is played.
+        /// Initialized the handle, this should be done after all animations have been added. It will also be done automatically the first time the handle is played.
         /// </summary>
         public void Init()
         {
