@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace VaporInspectorEditor
 {
@@ -17,26 +19,43 @@ namespace VaporInspectorEditor
         [MenuItem("Tools/Vapor/Inspector/Create Inspectors From Selection", false, 1)]
         private static void CreateInspectorsFromSelection()
         {
-            AssetDatabase.StartAssetEditing();
-            var items = Selection.objects;
-            foreach (var item in items)
+            try
             {
-                if (item is not MonoScript script) continue;
+                AssetDatabase.StartAssetEditing();
+                var items = Selection.objects;
+                foreach (var item in items)
+                {
+                    if (item is not MonoScript script) continue;
 
-                var type = script.GetClass();
-                if (type.IsSubclassOf(typeof(Object)))
-                {
-                    _CreateEditorClassFile(type.Name);
-                }
-                else
-                {
-                    _CreatePropertyDrawerClassFile(type.Name);
+                    var type = script.GetClass();
+                    if (type == null && script.text.Contains(script.name))
+                    {
+                        // Check for generics.
+                        int genericStart = script.text.IndexOf('<') + 1;
+                        int genericEnd = script.text.IndexOf('>');
+                        var span = script.text[genericStart..genericEnd];
+                        var paramCount = span.Split(',').Length;
+                        Debug.Log($"{span} - {paramCount}");
+                    }
+                    if(type == null) continue;
+                    Debug.Log($"Generating Inspector Script: {script.name} - {type}");
+                    if (type.IsSubclassOf(typeof(Object)))
+                    {
+                        _CreateEditorClassFile(type.Name);
+                    }
+                    else
+                    {
+                        _CreatePropertyDrawerClassFile(type.Name);
+                    }
                 }
             }
-
-            AssetDatabase.StopAssetEditing();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            
             return;
 
             static void _CreateEditorClassFile(string className)

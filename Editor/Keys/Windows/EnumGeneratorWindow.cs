@@ -4,6 +4,7 @@ using UnityEditor.Search;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Vapor;
 using VaporInspector;
 using VaporKeys;
 

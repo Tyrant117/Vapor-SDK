@@ -1,4 +1,5 @@
 using UnityEngine;
+using Vapor;
 using VaporInspector;
 
 namespace VaporKeys
@@ -16,11 +17,13 @@ namespace VaporKeys
         public bool IsDeprecated => _deprecated;
 
 
-        public virtual void GenerateKeys()
+        [FoldoutGroup("Key"), Button]
+        public void GenerateKeys()
         {
             var scriptName = GetType().Name;
             scriptName = scriptName.Replace("Scriptable", "");
             scriptName = scriptName.Replace("SO", "");
+            scriptName = scriptName.Replace("So", "");
             KeyGenerator.GenerateKeys(GetType(), $"{scriptName}Keys", true);
         }
     }

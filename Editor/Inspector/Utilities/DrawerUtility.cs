@@ -113,13 +113,17 @@ namespace VaporInspectorEditor
 
             if (dropdownAtr.Searchable)
             {
-                var field = new SearchableDropdown<object>(drawer.Property.displayName, drawer.Property.boxedValue)
+                var indexOfCurrent = values.IndexOf(drawer.Property.boxedValue);
+                var currentNameValue = indexOfCurrent >= 0 ? keys[indexOfCurrent] : "null";
+                var field = new SearchableDropdown<string>(drawer.Property.displayName, currentNameValue)
                 {
                     name = drawerName,
-                    userData = drawer,
+                    userData = (drawer, values),
                     tooltip = tooltip,
                 };
-                field.SetChoices(values);
+                field.AddToClassList("unity-base-field__aligned");
+                field.SetChoices(keys);
+                field.ValueChanged += OnSearchableDropdownChanged;
                 return field;
             }
             else
@@ -143,6 +147,11 @@ namespace VaporInspectorEditor
 
             static void _ConvertToTupleList(List<string> keys, List<object> values, IList convert)
             {
+                if (convert == null)
+                {
+                    return;
+                }
+                
                 foreach (var obj in convert)
                 {
                     var item1 = (string)obj.GetType().GetField("Item1", BindingFlags.Instance | BindingFlags.Public)
@@ -391,6 +400,18 @@ namespace VaporInspectorEditor
                 var newVal = values[dropdown.index];
                 drawer.Property.boxedValue = newVal;
                 drawer.Property.serializedObject.ApplyModifiedProperties();
+            }
+        }
+        
+        private static void OnSearchableDropdownChanged(VisualElement visualElement, string oldValue, string newValue)
+        {
+            if (visualElement is SearchableDropdown<string> dropdown)
+            {
+                var tuple = ((VaporDrawerInfo, List<object>))dropdown.userData;
+                var newVal = tuple.Item2[dropdown.Index];
+                Debug.Log("Applied " + newVal);
+                tuple.Item1.Property.boxedValue = newVal;
+                tuple.Item1.Property.serializedObject.ApplyModifiedProperties();
             }
         }
 

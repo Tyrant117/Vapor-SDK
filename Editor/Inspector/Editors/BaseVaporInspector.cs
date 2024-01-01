@@ -112,7 +112,8 @@ namespace VaporInspectorEditor
                     }
                     else
                     {
-                        node.AddContent(drawer);
+                        // node.AddContent(drawer);
+                        node.AddChild(drawer);
                     }
                 }
                 else
@@ -123,7 +124,8 @@ namespace VaporInspectorEditor
                     }
                     else
                     {
-                        unmanagedNode.AddContent(drawer);
+                        // unmanagedNode.AddContent(drawer);
+                        unmanagedNode.AddChild(drawer);
                     }
                 }
             }
@@ -291,19 +293,19 @@ namespace VaporInspectorEditor
         }
         protected void BuildNodeGraph()
         {
-            foreach (var childNode in RootNode.Children.OrderBy(n => n.GroupOrder))
+            foreach (var childNode in RootNode.Children.OrderBy(n => n.GroupOrder).ThenBy(n => n.AddOrder))
             {
                 if (!childNode.ShouldDraw) continue;
 
-                Debug.Log($"Node: {childNode.Container.name} - {childNode.GroupOrder}");
-                childNode.BuildContent();
+                // Debug.Log($"Node: {childNode.Container.name} - {childNode.GroupOrder}");
+                // childNode.BuildContent();
                 RootNode.Container.Add(childNode.Container);
                 _TraverseNodes(childNode);
             }
 
             static void _TraverseNodes(VaporGroupNode parentNode)
             {
-                foreach (var childNode in parentNode.Children.OrderBy(n => n.GroupOrder))
+                foreach (var childNode in parentNode.Children.OrderBy(n => n.GroupOrder).ThenBy(n => n.AddOrder))
                 {
                     if (!childNode.ShouldDraw) continue;
                     if (parentNode.GroupType == UIGroupType.Horizontal)
@@ -311,8 +313,8 @@ namespace VaporInspectorEditor
                         childNode.Container.style.flexGrow = 1;
                     }
                     
-                    Debug.Log($"<b>Node</b>: {childNode.Container.name} - {childNode.GroupOrder}");
-                    childNode.BuildContent();
+                    // Debug.Log($"<b>Node</b>: {childNode.Container.name} - {childNode.GroupOrder}");
+                    // childNode.BuildContent();
                     parentNode.Container.Add(childNode.Container);
                     _TraverseNodes(childNode);
                 }

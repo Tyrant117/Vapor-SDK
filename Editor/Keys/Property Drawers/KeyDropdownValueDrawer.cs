@@ -46,6 +46,7 @@ namespace VaporKeysEditor
                         flexGrow = 1
                     }
                 };
+                dropdown.AddToClassList("unity-base-field__aligned");
                 dropdown.SetChoices(keys);
                 dropdown.ValueChanged += OnSearchableDropdownChanged; 
                 foldout.SetHeaderProperty(dropdown);

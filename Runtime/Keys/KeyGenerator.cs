@@ -6,16 +6,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System;
+using Vapor;
 using Object = UnityEngine.Object;
 
 namespace VaporKeys
 {
     public static class KeyGenerator
     {
-        public const string AbsoluteConfigPath = "Assets/Vapor Keys/Config";
-        public const string RelativeConfigPath = "Vapor Keys/Config";
-        public const string AbsoluteKeyPath = "Assets/Vapor Keys/Keys";
-        public const string RelativeKeyPath = "Vapor Keys/Keys";
+        public const string AbsoluteConfigPath = "Assets/Vapor/Keys/Config";
+        public const string RelativeConfigPath = "Vapor/Keys/Config";
+        public const string AbsoluteKeyPath = "Assets/Vapor/Keys/Keys";
+        public const string RelativeKeyPath = "Vapor/Keys/Keys";
         public const string NamespaceName = "VaporKeyDefinitions";
 
         #region - Keys -

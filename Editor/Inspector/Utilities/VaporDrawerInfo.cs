@@ -49,7 +49,7 @@ namespace VaporInspectorEditor
         private readonly DrawWithVaporAttribute _drawWithVaporAttribute;
         private readonly UnManagedGroupAttribute _unmanagedGroupAttribute;
 
-        public VaporDrawerInfo(string path, FieldInfo fieldInfo, SerializedProperty property, object target, VaporDrawerInfo parentDrawer/*, Dictionary<string, VaporDrawerInfo> pathToDrawerMap*/)
+        public VaporDrawerInfo(string path, FieldInfo fieldInfo, SerializedProperty property, object target, VaporDrawerInfo parentDrawer)
         {
             Path = path;
             FieldInfo = fieldInfo;
@@ -107,7 +107,18 @@ namespace VaporInspectorEditor
             foreach (var field in fieldInfoList.Where(BaseVaporInspector.FieldSearchPredicate))
             {
                 var relativeProperty = Property.FindPropertyRelative(field.Name);
-                var relTarget = Property.boxedValue;// SerializedPropertyUtility.GetTargetObjectWithProperty(relativeProperty);
+                // Debug.Log($"{Property.displayName} - {Property.propertyType}");
+
+                object relTarget;
+                try
+                {
+                    relTarget = Property.boxedValue;
+                }
+                catch (InvalidOperationException ioe)
+                {
+                    relTarget= FieldInfo.GetValue(Target);
+                }
+
                 var info = new VaporDrawerInfo(relativeProperty.propertyPath, field, relativeProperty, relTarget, this);
                 if (info.IsUnmanagedGroup)
                 {
@@ -268,11 +279,12 @@ namespace VaporInspectorEditor
                     }
                     if (child.IsDrawnWithVapor)
                     {
-                        child.BuildGroups(/*inspector, */UpdatedGroupName, node, nodeBag);
+                        child.BuildGroups(UpdatedGroupName, node, nodeBag);
                     }
                     else
                     {
-                        node.AddContent(/*inspector, */child);
+                        // node.AddContent(child);
+                        node.AddChild(child);
                     }
                 }
                 else
@@ -280,11 +292,13 @@ namespace VaporInspectorEditor
                     child.UpdatedGroupName = UpdatedGroupName;
                     if (child.IsDrawnWithVapor)
                     {
-                        child.BuildGroups(/*inspector, */UpdatedGroupName, rootNode, nodeBag);
+                        child.BuildGroups(UpdatedGroupName, rootNode, nodeBag);
                     }
                     else
                     {
-                        unmanagedNode.AddContent(/*inspector, */child);
+                        // unmanagedNode.AddContent(child);
+                        unmanagedNode.AddChild(child);
+                        
                     }
                 }
             }

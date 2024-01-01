@@ -28,7 +28,7 @@ namespace VaporInspector
             var propertyInfo = typeof(BasePopupField<string, string>).GetField("createMenuCallback", BindingFlags.Instance | BindingFlags.NonPublic);
             propertyInfo?.SetValue(this, new Func<GenericDropdownMenu>(CreateMenu));
             // ReSharper disable once VirtualMemberCallInConstructor
-            value = currentValue.ToString();
+            value = currentValue == null ? "null" : currentValue.ToString();
             Value = currentValue;
         }
 
@@ -123,7 +123,7 @@ namespace VaporInspector
             {
                 foreach (var choice in _unfilteredChoices.Where(choice => FuzzySearch.FuzzyMatch(filterWord, choice.ToString())))
                 {
-                    Debug.Log(choice);
+                    // Debug.Log(choice);
                     _filteredChoices.Add(choice);
                 }
             }

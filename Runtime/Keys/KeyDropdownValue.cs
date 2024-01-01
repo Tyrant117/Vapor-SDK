@@ -4,13 +4,15 @@ using UnityEngine;
 
 namespace VaporKeys
 {
-    [System.Serializable]
+    [Serializable]
     public struct KeyDropdownValue : IEquatable<KeyDropdownValue>
     {
         public static implicit operator int(KeyDropdownValue kdv) => kdv.Key;
 
         public string Guid;
         public int Key;
+
+        public bool IsNone => Key == 0;
 
         public KeyDropdownValue(string guid, int key)
         {
