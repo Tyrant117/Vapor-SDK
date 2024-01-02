@@ -70,6 +70,29 @@ There are three exposed helper fields to help the user link events in the inspec
 ### Observable Values
 A wrapper on primitive types and some core Unity types that track when values are changed and optionally fires events when they are. 
 Also contains a system for tying these values to a larger Observable Class to allow for grouped tracking of data.
+They can also automatically be serialized to Json for easy save functionality.
+
+#### How To Use
+Usage is on a user desired basis. Where the user wants to have a tracked value replace the primitive value with its Observable.
+```csharp
+public class ExampleHealth : MonoBehaviour
+{
+    private const int HealthFieldID = 1;
+
+    private FloatObservable _currentHealth;
+
+    private void Awake()
+    {
+        _currentHealth = new FloatObservable(HealthFieldID, true, 100);
+        _currentHealth.ValueChanged += CurrentHealthOnValueChanged;
+    }
+
+    private void CurrentHealthOnValueChanged(FloatObservable value, float oldValue)
+    {
+        Debug.Log($"Old Value: {oldValue} | New Value {value.Value}");
+    }
+}
+```
 
 ### State Machine
 A simple state machine system that is code-first and can optionally handle layers for running multiple machines at once.

@@ -69,6 +69,7 @@ namespace VaporObservables
             {
                 return type switch
                 {
+                    ObservableFieldType.Boolean => new BoolObservable(fieldID, saveValue, false),
                     ObservableFieldType.Int8 => new ByteObservable(fieldID, saveValue, 0),
                     ObservableFieldType.Int16 => new ShortObservable(fieldID, saveValue, 0),
                     ObservableFieldType.UInt16 => new UShortObservable(fieldID, saveValue, 0),
