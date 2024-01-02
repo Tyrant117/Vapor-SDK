@@ -55,11 +55,17 @@ The ProviderKeySo is used to map unique keys to the ProviderBus. These can be cr
 A MonoBehaviour that can be used to expose a component to a ProviderKey value.
 - [ProvidesComponent](./Runtime/Events/Components/ProvidesComponent.cs)
 
+![image](https://github.com/Tyrant117/Vapor-SDK/assets/9998121/e232d6c0-4527-443d-b1dc-0488c75f67da)
+
+
 #### Helper Fields
 There are three exposed helper fields to help the user link events in the inspector.
 - [ChangedEventDataReceiver](./Runtime/Events/Fields/ChangedEventDataReceiver.cs): Receives data from a registered event key.
 - [ChangedEventDataSender](./Runtime/Events/Fields/ChangedEventDataSender.cs): Sends data to all events regiestered to an event key.
 - [RequestsProviderData](./Runtime/Events/Fields/RequestsProviderData.cs): Requests the result of a provider key.
+
+![image](https://github.com/Tyrant117/Vapor-SDK/assets/9998121/d4b3b739-1f70-4db3-a572-355c2c9d998b)
+
 
 ### Observable Values
 A wrapper on primitive types and some core Unity types that track when values are changed and optionally fires events when they are. 
