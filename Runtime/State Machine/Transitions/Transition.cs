@@ -1,36 +1,38 @@
 using System;
+using Vapor;
 
 namespace VaporStateMachine
 {
     public class Transition
     {
-        public int From;
-        public int To;
-        public int Desire;
+        public int From { get; }
+        public int To { get; }
+        public int Desire { get; }
 
-        public IStateMachine StateMachine;
+        public IStateMachine StateMachine { get; set; }
 
-        public Func<Transition, bool> Condition;
+        protected Func<Transition, bool> Condition;
         public Action Exited;
 
         private readonly bool _inverse;
 
         /// <summary>
-		/// Initialises a new instance of the TransitionBase class
-		/// </summary>
-		/// <param name="from">The name / identifier of the active state</param>
-		/// <param name="to">The name / identifier of the next state</param>
+        /// Initialises a new instance of the TransitionBase class
+        /// </summary>
+        /// <param name="from">The name / identifier of the active state</param>
+        /// <param name="to">The name / identifier of the next state</param>
+        /// <param name="desire">The desire value of this transition. Higher is more desirable</param>
         /// <param name="condition">A function that returns true if the state machine should transition to the <b>to</b> state</param>
-        public Transition(string from, string to, int desire, Func<Transition, bool> condition = null)
+        public Transition(string from, string to, int desire, Func<Transition, bool> condition)
         {
-            From = from.GetHashCode();
-            To = to.GetHashCode();
+            From = from.GetKeyHashCode();
+            To = to.GetKeyHashCode();
             Desire = desire;
             Condition = condition;
             _inverse = false;
         }
 
-        public Transition(State from, State to, int desire, Func<Transition, bool> condition = null)
+        public Transition(State from, State to, int desire, Func<Transition, bool> condition)
         {
             From = from.ID;
             To = to.ID;
@@ -38,8 +40,24 @@ namespace VaporStateMachine
             Condition = condition;
             _inverse = false;
         }
+        
+        protected Transition(string from, string to, int desire)
+        {
+            From = from.GetKeyHashCode();
+            To = to.GetKeyHashCode();
+            Desire = desire;
+            _inverse = false;
+        }
 
-        protected Transition(int from, int to, int desire, bool inverse, Func<Transition, bool> condition = null)
+        protected Transition(State from, State to, int desire)
+        {
+            From = from.ID;
+            To = to.ID;
+            Desire = desire;
+            _inverse = false;
+        }
+
+        protected Transition(int from, int to, int desire, bool inverse, Func<Transition, bool> condition)
         {
             From = from;
             To = to;
@@ -74,15 +92,15 @@ namespace VaporStateMachine
         }
 
         /// <summary>
-		/// Called to determin whether the state machine should transition to the <c>to</c> state
+		/// Called to determine whether the state machine should transition to the <c>To</c> state
 		/// </summary>
 		/// <returns>True if the state machine should change states / transition</returns>
 		public virtual bool ShouldTransition()
         {
-            return _inverse ? Condition == null || !Condition(this) : Condition == null || Condition(this);
+            return _inverse ? !Condition(this) : Condition(this);
         }
 
-        public Transition Reverse()
+        public virtual Transition Reverse()
         {
             return new Transition(To, From, Desire, true, Condition);
         }

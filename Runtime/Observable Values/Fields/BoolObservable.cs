@@ -3,18 +3,18 @@ using System;
 namespace VaporObservables
 {
     /// <summary>
-    /// The string implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="string"/>
+    /// The boolean implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="bool"/>
     /// </summary>
     [Serializable]
-    public class StringObservable : ObservableField
+    public class BoolObservable : ObservableField
     {
-        public static implicit operator string(StringObservable f) => f.Value;
+        public static implicit operator bool(BoolObservable f) => f.Value;
 
-        private string _value;
+        private bool _value;
         /// <summary>
-        /// The <see cref="string"/> value of the class.
+        /// The <see cref="bool"/> value of the class.
         /// </summary>
-        public string Value
+        public bool Value
         {
             get => _value;
             set
@@ -28,24 +28,24 @@ namespace VaporObservables
             }
         }
         /// <summary>
-        /// Returns the new and old values of the changed string. Value -> Old
+        /// The event that is fired when the <see cref="Value"/> changes. First new value and then the old value.
         /// </summary>
-        public event Action<StringObservable, string> ValueChanged;
+        public event Action<BoolObservable, bool> ValueChanged; // Value and Delta
 
-        public StringObservable(ObservableClass @class, int fieldID, bool saveValue, string value) : base(@class, fieldID, saveValue)
+        public BoolObservable(ObservableClass @class, int fieldID, bool saveValue, bool value) : base(@class, fieldID, saveValue)
         {
-            Type = ObservableFieldType.String;
+            Type = ObservableFieldType.Boolean;
             Value = value;
         }
 
-        public StringObservable(int fieldID, bool saveValue, string value) : base(fieldID, saveValue)
+        public BoolObservable(int fieldID, bool saveValue, bool value) : base(fieldID, saveValue)
         {
-            Type = ObservableFieldType.String;
+            Type = ObservableFieldType.Boolean;
             Value = value;
         }
 
         #region - Setters -
-        public void SetWithoutNotify(string value)
+        public void SetWithoutNotify(bool value)
         {
             _value = value;
         }
@@ -65,7 +65,7 @@ namespace VaporObservables
 
         public override ObservableField Clone()
         {
-            return new StringObservable(FieldID, SaveValue, Value);
+            return new BoolObservable(FieldID, SaveValue, Value);
         }
     }
 }

@@ -2,6 +2,7 @@ namespace VaporObservables
 {
     public enum ObservableFieldType
     {
+        Boolean,
         Int8,
         Int16,
         UInt16,

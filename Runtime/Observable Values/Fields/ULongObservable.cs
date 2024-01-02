@@ -2,13 +2,35 @@
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The ulong implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="ulong"/>
+    /// </summary>
     [Serializable]
     public class ULongObservable : ObservableField
     {
         public static implicit operator ulong(ULongObservable f) => f.Value;
 
-        public ulong Value { get; protected set; }
-        public event Action<ULongObservable> ValueChanged;
+        private ulong _value;
+        /// <summary>
+        /// The <see cref="ulong"/> value of the class.
+        /// </summary>
+        public ulong Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
+        /// <summary>
+        /// Invoked on value change. Parameters are the new and old values. New -> Old
+        /// </summary>
+        public event Action<ULongObservable, ulong> ValueChanged;
 
         public ULongObservable(ObservableClass @class, int fieldID, bool saveValue, ulong value) : base(@class, fieldID, saveValue)
         {
@@ -23,31 +45,9 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(ulong value)
-        {
-            if (Value != value)
-            {
-                Value = value;
-                ValueChanged?.Invoke(this);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public void SetWithoutNotify(ulong value)
         {
-            Value = value;
-        }
-
-        public void Set(ulong value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 

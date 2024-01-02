@@ -1,13 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace VaporStateMachine
 {
     /// <summary>
     /// A bundle of a state together with the outgoing transitions and trigger transitions.
-    /// It's useful, as you only need to do one Dictionary lookup for these three items.
-    /// => Much better performance
     /// </summary>
     internal class StateBundle
     {
@@ -27,7 +23,7 @@ namespace VaporStateMachine
         {
             TriggerToTransitions ??= new Dictionary<int, List<Transition>>();
 
-            if (!TriggerToTransitions.TryGetValue(trigger, out List<Transition> transitionsOfTrigger))
+            if (!TriggerToTransitions.TryGetValue(trigger, out var transitionsOfTrigger))
             {
                 transitionsOfTrigger = new List<Transition>();
                 TriggerToTransitions.Add(trigger, transitionsOfTrigger);

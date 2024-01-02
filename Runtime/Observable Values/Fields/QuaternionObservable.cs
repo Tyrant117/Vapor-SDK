@@ -3,12 +3,32 @@ using UnityEngine;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The Quaternion implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="Quaternion"/>
+    /// </summary>
+    [Serializable]
     public class QuaternionObservable : ObservableField
     {
         public static implicit operator Quaternion(QuaternionObservable f) => f.Value;
 
-        public Quaternion Value { get; protected set; }
-        public event Action<QuaternionObservable, float> ValueChanged;
+        private Quaternion _value;
+        /// <summary>
+        /// The <see cref="Quaternion"/> value of the class.
+        /// </summary>
+        public Quaternion Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
+        public event Action<QuaternionObservable, Quaternion> ValueChanged;
 
         public QuaternionObservable(ObservableClass @class, int fieldID, bool saveValue, Quaternion value) : base(@class, fieldID, saveValue)
         {
@@ -23,32 +43,9 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(Quaternion value)
-        {
-            if (Value != value)
-            {
-                var oldValue = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Quaternion.Angle(oldValue, Value));
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public void SetWithoutNotify(Quaternion value)
         {
-            Value = value;
-        }
-
-        public void Set(Quaternion value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 

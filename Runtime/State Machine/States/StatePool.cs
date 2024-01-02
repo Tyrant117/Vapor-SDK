@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Pool;
 
 namespace VaporStateMachine
@@ -23,7 +20,7 @@ namespace VaporStateMachine
             _canExitInstantly = canExitInstantly;
             _isStateMachine = true;
 
-            _pool = new(OnCreateState, OnGetState, OnReleaseState, OnDestroyState);
+            _pool = new ObjectPool<T>(OnCreateState, OnGetState, OnReleaseState, OnDestroyState);
         }
 
         public StatePool(string name, bool canExitInstantly, Action<State> entered = null, Action<State> updated = null, Action<State> exited = null)
@@ -34,7 +31,7 @@ namespace VaporStateMachine
             Updated = updated;
             Exited = exited;
 
-            _pool = new(OnCreateState, OnGetState, OnReleaseState, OnDestroyState);
+            _pool = new ObjectPool<T>(OnCreateState, OnGetState, OnReleaseState, OnDestroyState);
         }
 
         public T Get() => _pool.Get();

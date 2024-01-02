@@ -1,17 +1,18 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks.Sources;
 using Unity.Profiling;
 using UnityEngine;
 
 namespace VaporStateMachine
 {
+    /// <summary>
+    /// Standard implementation of the <see cref="IStateMachine"/>
+    /// </summary>
     public class StateMachine : State, IStateMachine
     {
-        static readonly ProfilerMarker s_EnterMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Enter");
-        static readonly ProfilerMarker s_UpdateMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Update");
-        static readonly ProfilerMarker s_ExitMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Exit");
-        static readonly ProfilerMarker s_ChangeStateMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.ChangeState");        
+        private static readonly ProfilerMarker EnterMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Enter");
+        private static readonly ProfilerMarker UpdateMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Update");
+        private static readonly ProfilerMarker ExitMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.Exit");
+        private static readonly ProfilerMarker ChangeStateMarker = new(ProfilerCategory.Scripts, "Vapor.StateMachine.ChangeState");        
 
         protected State _activeState = null;
         public State ActiveState
@@ -26,8 +27,8 @@ namespace VaporStateMachine
         public string ActiveStateName => ActiveState.Name;
         public bool IsRoot => StateMachine == null;
 
-        protected (int state, bool hasState) _startState = (EMPTY_STATE, false);
-        protected (int state, bool isPending) _pendingState = (EMPTY_STATE, false);
+        protected (int state, bool hasState) _startState = (EmptyState, false);
+        protected (int state, bool isPending) _pendingState = (EmptyState, false);
 
         // A cached empty list of transitions (For improved readability, less GC)
         protected static readonly List<Transition> s_noTransitions = new(0);
@@ -108,7 +109,7 @@ namespace VaporStateMachine
 		/// </summary>
 		public override void OnEnter()
         {
-            s_EnterMarker.Begin();
+            EnterMarker.Begin();
             if (!_startState.hasState)
             {
                 Debug.LogError(StateMachineExceptions.NoDefaultStateFound);
@@ -129,7 +130,7 @@ namespace VaporStateMachine
                     t.OnEnter();
                 }
             }
-            s_EnterMarker.End();
+            EnterMarker.End();
         }
 
         /// <summary>
@@ -139,7 +140,7 @@ namespace VaporStateMachine
 		/// </summary>
 		public override void OnUpdate()
         {
-            s_UpdateMarker.Begin();
+            UpdateMarker.Begin();
             EnsureIsInitializedFor();
             base.OnUpdate();
             if (!TryAllGlobalTransitions())
@@ -148,12 +149,12 @@ namespace VaporStateMachine
             }
 
             _activeState.OnUpdate();
-            s_UpdateMarker.End();
+            UpdateMarker.End();
         }
 
         public override void OnExit(Transition transition)
         {
-            s_ExitMarker.Begin();
+            ExitMarker.Begin();
             base.OnExit(transition);
             if (_activeState != null)
             {
@@ -162,7 +163,7 @@ namespace VaporStateMachine
                 // a second time when the state machine enters again (and changes to the start state)
                 _activeState = null;
             }
-            s_ExitMarker.End();
+            ExitMarker.End();
         }
 
         /// <summary>
@@ -178,7 +179,7 @@ namespace VaporStateMachine
                 // to try all outgoing transitions, which may overwrite the pendingState.
                 // That's why it is first cleared, and not afterwards, as that would overwrite
                 // a new, valid pending state.
-                _pendingState = (EMPTY_STATE, false);
+                _pendingState = (EmptyState, false);
                 ChangeState(state, transition);
             }
 
@@ -196,7 +197,7 @@ namespace VaporStateMachine
 		/// <param name="name">The name / identifier of the active state</param>
 		private void ChangeState(int id, Transition transition = null)
         {
-            s_ChangeStateMarker.Begin();
+            ChangeStateMarker.Begin();
 
             if (_activeState != null)
             {
@@ -244,7 +245,7 @@ namespace VaporStateMachine
                 }
             }
 
-            s_ChangeStateMarker.End();
+            ChangeStateMarker.End();
         }
 
         /// <summary>
@@ -683,8 +684,8 @@ namespace VaporStateMachine
         {
             base.OnReturnedToPool();
             _activeState = null;
-            _startState = (EMPTY_STATE, false);
-            _pendingState = (EMPTY_STATE, false);
+            _startState = (EmptyState, false);
+            _pendingState = (EmptyState, false);
             activeTransitions = s_noTransitions;
             activeTriggerTransitions = s_noTriggerTransitions;
 

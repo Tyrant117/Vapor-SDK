@@ -2,12 +2,31 @@
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The short implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="short"/>
+    /// </summary>
     [Serializable]
     public class ShortObservable : ObservableField
     {
         public static implicit operator short(ShortObservable f) => f.Value;
 
-        public short Value { get; protected set; }
+        private short _value;
+        /// <summary>
+        /// The <see cref="short"/> value of the class.
+        /// </summary>
+        public short Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
         public event Action<ShortObservable, int> ValueChanged;
 
         public ShortObservable(ObservableClass @class, int fieldID, bool saveValue, short value) : base(@class, fieldID, saveValue)
@@ -23,52 +42,9 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(short value)
-        {
-            if (Value != value)
-            {
-                var oldValue = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Value - oldValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal bool InternalModify(short value, ObservableModifyType type)
-        {
-            return type switch
-            {
-                ObservableModifyType.Set => InternalSet(value),
-                ObservableModifyType.Add => InternalSet((short)(Value + value)),
-                ObservableModifyType.Multiplier => InternalSet((short)(Value * value)),
-                ObservableModifyType.PercentAdd => InternalSet((short)(Value + Value * value)),
-                _ => false,
-            };
-        }
-
         public void SetWithoutNotify(short value)
         {
-            Value = value;
-        }
-
-        public void Set(short value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
-        }
-
-        public void Modify(short value, ObservableModifyType type)
-        {
-            if (InternalModify(value, type))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 

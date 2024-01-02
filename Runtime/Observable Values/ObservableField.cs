@@ -3,14 +3,17 @@ using UnityEngine;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// Container for saved field values.
+    /// </summary>
     [Serializable]
     public struct SavedObservableField
     {
         public int ID;
         public ObservableFieldType Type;
-        public string Value;
+        public object Value;
 
-        public SavedObservableField(int id, ObservableFieldType type, string value)
+        public SavedObservableField(int id, ObservableFieldType type, object value)
         {
             ID = id;
             Type = type;
@@ -18,11 +21,26 @@ namespace VaporObservables
         }
     }
 
+    /// <summary>
+    /// The base class for observable data.
+    /// </summary>
     public abstract class ObservableField
     {
+        /// <summary>
+        /// The class this field is part of.
+        /// </summary>
         public ObservableClass Class { get; }
+        /// <summary>
+        /// The Id of the field.
+        /// </summary>
         public int FieldID { get; }
+        /// <summary>
+        /// If true, the this value will be saved.
+        /// </summary>
         public bool SaveValue { get; }
+        /// <summary>
+        /// The type of value this field is.
+        /// </summary>
         public ObservableFieldType Type { get; protected set; }
 
         protected ObservableField(ObservableClass @class, int fieldID, bool saveValue)
@@ -44,7 +62,7 @@ namespace VaporObservables
         public static ObservableField Load(SavedObservableField save)
         {
             var field = _AddFieldByType(save.ID, save.Type, true);
-            _SetFromString(field, save.Value);
+            _SetFromObject(field, save.Value);
             return field;
 
             static ObservableField _AddFieldByType(int fieldID, ObservableFieldType type, bool saveValue)
@@ -71,66 +89,65 @@ namespace VaporObservables
                 };
             }
 
-            static void _SetFromString(ObservableField field, string value)
+            static void _SetFromObject(ObservableField field, object value)
             {
-                if (value is null or "") { return; }
+                if (value == null) { return; }
 
                 switch (field.Type)
                 {
+                    case ObservableFieldType.Boolean:
+                        ((BoolObservable)field).Value = (bool)value;
+                        break;
                     case ObservableFieldType.Int8:
-                        ((ByteObservable)field).Set(byte.Parse(value));
+                        ((ByteObservable)field).Value = (byte)value;
                         break;
                     case ObservableFieldType.Int16:
-                        ((ShortObservable)field).Set(short.Parse(value));
+                        ((ShortObservable)field).Value = (short)value;
                         break;
                     case ObservableFieldType.UInt16:
-                        ((IntObservable)field).Set(ushort.Parse(value));
+                        ((IntObservable)field).Value = (int)value;
                         break;
                     case ObservableFieldType.Int32:
-                        ((IntObservable)field).Set(int.Parse(value));
+                        ((IntObservable)field).Value = (int)value;
                         break;
                     case ObservableFieldType.UInt32:
-                        ((UIntObservable)field).Set(uint.Parse(value));
+                        ((UIntObservable)field).Value = (uint)value;
                         break;
                     case ObservableFieldType.Single:
-                        ((FloatObservable)field).Set(float.Parse(value));
+                        ((FloatObservable)field).Value = (float)value;
                         break;
                     case ObservableFieldType.Int64:
-                        ((LongObservable)field).Set(long.Parse(value));
+                        ((LongObservable)field).Value = (long)value;
                         break;
                     case ObservableFieldType.UInt64:
-                        ((ULongObservable)field).Set(ulong.Parse(value));
+                        ((ULongObservable)field).Value = (ulong)value;
                         break;
                     case ObservableFieldType.Double:
-                        ((DoubleObservable)field).Set(double.Parse(value));
+                        ((DoubleObservable)field).Value = (double)value;
                         break;
                     case ObservableFieldType.Vector2:
-                        string[] split2 = value.Split(new char[] { ',' });
-                        ((Vector2Observable)field).Set(new Vector2(float.Parse(split2[0]), float.Parse(split2[1])));
+                        ((Vector2Observable)field).Value = (Vector2)value;
                         break;
                     case ObservableFieldType.Vector2Int:
-                        string[] split2i = value.Split(new char[] { ',' });
-                        ((Vector2IntObservable)field).Set(new Vector2Int(int.Parse(split2i[0]), int.Parse(split2i[1])));
+                        ((Vector2IntObservable)field).Value = (Vector2Int)value;
                         break;
                     case ObservableFieldType.Vector3:
-                        string[] split3 = value.Split(new char[] { ',' });
-                        ((Vector3Observable)field).Set(new Vector3(float.Parse(split3[0]), float.Parse(split3[1]), float.Parse(split3[2])));
+                        ((Vector3Observable)field).Value = (Vector3)value;
                         break;
                     case ObservableFieldType.Vector3Int:
-                        string[] split3i = value.Split(new char[] { ',' });
-                        ((Vector3IntObservable)field).Set(new Vector3Int(int.Parse(split3i[0]), int.Parse(split3i[1]), int.Parse(split3i[2])));
+                        ((Vector3IntObservable)field).Value = (Vector3Int)value;
                         break;
                     case ObservableFieldType.Color:
-                        string[] color = value.Split(new char[] { ',' });
-                        ((ColorObservable)field).Set(new Color(float.Parse(color[0]), float.Parse(color[1]), float.Parse(color[2]), float.Parse(color[3])));
+                        ((ColorObservable)field).Value = (Color)value;
                         break;
                     case ObservableFieldType.Quaternion:
-                        string[] quat = value.Split(new char[] { ',' });
-                        ((QuaternionObservable)field).Set(new Quaternion(float.Parse(quat[0]), float.Parse(quat[1]), float.Parse(quat[2]), float.Parse(quat[3])));
+                        ((QuaternionObservable)field).Value = (Quaternion)value;
                         break;
                     case ObservableFieldType.String:
-                        ((StringObservable)field).Set(value);
+                        ((StringObservable)field).Value = (string)value;
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }        

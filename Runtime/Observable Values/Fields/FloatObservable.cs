@@ -1,13 +1,33 @@
 using System;
+using System.Globalization;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The float implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="float"/>
+    /// </summary>
     [Serializable]
     public class FloatObservable : ObservableField
     {
         public static implicit operator float(FloatObservable f) => f.Value;
 
-        public float Value { get; protected set; }
+        private float _value;
+        /// <summary>
+        /// The <see cref="float"/> value of the class.
+        /// </summary>
+        public float Value
+        {
+            get => _value;
+            set
+            {
+                if (_value.Equals(value)) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
         public event Action<FloatObservable, float> ValueChanged;
 
         public FloatObservable(ObservableClass @class, int fieldID, bool saveValue, float value) : base(@class, fieldID, saveValue)
@@ -23,56 +43,16 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(float value)
-        {
-            if (Value != value)
-            {
-                float oldValue = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Value - oldValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal bool InternalModify(float value, ObservableModifyType type) => type switch
-        {
-            ObservableModifyType.Set => InternalSet(value),
-            ObservableModifyType.Add => InternalSet(Value + value),
-            ObservableModifyType.Multiplier => InternalSet(Value * value),
-            ObservableModifyType.PercentAdd => InternalSet(Value + Value * value),
-            _ => false,
-        };
-
         public void SetWithoutNotify(float value)
         {
-            Value = value;
-        }
-
-        public void Set(float value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
-        }
-
-        public void Modify(float value, ObservableModifyType type)
-        {
-            if (InternalModify(value, type))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 
         #region - Saving -
         public override SavedObservableField Save()
         {
-            return new SavedObservableField(FieldID, Type, Value.ToString());
+            return new SavedObservableField(FieldID, Type, Value.ToString(CultureInfo.InvariantCulture));
         }
         #endregion
 

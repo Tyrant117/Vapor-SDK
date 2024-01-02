@@ -7,8 +7,8 @@ namespace VaporStateMachine
 {
     public class State
     {
-        protected static int? _emptyState;
-        public static int EMPTY_STATE
+        private static int? _emptyState;
+        public static int EmptyState
         {
             get
             {
@@ -17,15 +17,31 @@ namespace VaporStateMachine
             }
         }
 
-        public const int RESET_ACTION = 1;
+        /// <summary>
+        /// The name of the state
+        /// </summary>
+        public string Name { get; }
+        /// <summary>
+        /// The ID of the state
+        /// </summary>
+        public int ID { get; }
+        /// <summary>
+        /// True if the state can exit immediately when it is transitioned to.
+        /// </summary>
+        public bool CanExitInstantly { get; }
 
-        public readonly string Name;
-        public readonly int ID;
-        public bool CanExitInstantly;
+        /// <summary>
+        /// The state machine this state belongs to.
+        /// </summary>
+        public IStateMachine StateMachine { get; set; }
+        /// <summary>
+        /// The internal timer that tracks the since last entry to the state
+        /// </summary>
+        public Timer Timer { get; }
 
-        public IStateMachine StateMachine;
-        public readonly Timer Timer;
-
+        /// <summary>
+        /// True if the state is playing.
+        /// </summary>
         public bool IsPlaying { get; protected set; }
 
         protected Action<State> Entered;
@@ -33,15 +49,11 @@ namespace VaporStateMachine
         protected Action<State, Transition> Exited;
         protected Dictionary<int, Delegate> ActionsByEventMap = new();
 
-        public State(string name, bool canExitInstantly, Action<State> entered = null, Action<State> updated = null, Action<State, Transition> exited = null)
+        public State(string name, bool canExitInstantly)
         {
             Name = name;
-            ID = name.GetHashCode();
+            ID = name.GetKeyHashCode();
             CanExitInstantly = canExitInstantly;
-
-            Entered = entered;
-            Updated = updated;
-            Exited = exited;
 
             Timer = new Timer();
         }
@@ -83,39 +95,38 @@ namespace VaporStateMachine
         }
 
         #region - Actions -
+
         protected void AddGenericAction(int actionID, Delegate action)
         {
-            ActionsByEventMap ??= new();
+            ActionsByEventMap ??= new Dictionary<int, Delegate>();
             ActionsByEventMap[actionID] = action;
         }
 
         /// <summary>
-		/// Adds an action that can be called with OnAction(). Actions are like the builtin events
-		/// OnEnter / OnLogic / ... but are defined by the user.
-		/// </summary>
-		/// <param name="actionID">Name of the action</param>
-		/// <param name="action">Function that should be called when the action is run</param>
-		/// <returns>Itself</returns>
-		public State AddAction(int actionID, Action action)
+        /// Adds an action that can be called with OnAction(). Actions are like the builtin events
+        /// OnEnter / OnLogic / ... but are defined by the user.
+        /// </summary>
+        /// <param name="actionID">ID of the action</param>
+        /// <param name="action">Function that should be called when the action is run</param>
+        /// <returns>Itself</returns>
+        public State AddAction(int actionID, Action action)
         {
             AddGenericAction(actionID, action);
-            // Fluent interface
             return this;
         }
 
         /// <summary>
-		/// Adds an action that can be called with OnAction<T>(). This overload allows you to
-		/// run a function that takes one data parameter.
-		/// Actions are like the builtin events OnEnter / OnLogic / ... but are defined by the user.
-		/// </summary>
-		/// <param name="trigger">Name of the action</param>
-		/// <param name="action">Function that should be called when the action is run</param>
-		/// <typeparam name="TData">Data type of the parameter of the function</typeparam>
-		/// <returns>Itself</returns>
-		public State AddAction<TData>(int actionID, Action<TData> action)
+        /// Adds an action that can be called with OnAction{T}(). This overload allows you to
+        /// run a function that takes one data parameter.
+        /// Actions are like the builtin events OnEnter / OnLogic / ... but are defined by the user.
+        /// </summary>
+        /// <param name="actionID">ID of the action</param>
+        /// <param name="action">Function that should be called when the action is run</param>
+        /// <typeparam name="TData">Data type of the parameter of the function</typeparam>
+        /// <returns>Itself</returns>
+        public State AddAction<TData>(int actionID, Action<TData> action)
         {
             AddGenericAction(actionID, action);
-            // Fluent interface
             return this;
         }
 
@@ -130,31 +141,31 @@ namespace VaporStateMachine
             {
                 return target;
             }
-            else
-            {
-                Debug.LogError(StateMachineExceptions.ActionTypeMismatch(typeof(TTarget), action));
-                return null;
-            }
+
+            Debug.LogError(StateMachineExceptions.ActionTypeMismatch(typeof(TTarget), action));
+            return null;
         }
 
         /// <summary>
-		/// Runs an action with the given name.
-		/// If the action is not defined / hasn't been added, nothing will happen.
-		/// </summary>
-		/// <param name="trigger">Name of the action</param>
-		public void OnAction(int actionID) => TryGetAndCastAction<Action>(actionID)?.Invoke();
+        /// Runs an action with the given name.
+        /// If the action is not defined / hasn't been added, nothing will happen.
+        /// </summary>
+        /// <param name="actionID">Name of the action</param>
+        public void OnAction(int actionID) => TryGetAndCastAction<Action>(actionID)?.Invoke();
 
         /// <summary>
         /// Runs an action with a given name and lets you pass in one parameter to the action function.
         /// If the action is not defined / hasn't been added, nothing will happen.
         /// </summary>
-        /// <param name="trigger">Name of the action</param>
+        /// <param name="actionID">Name of the action</param>
         /// <param name="data">Data to pass as the first parameter to the action</param>
         /// <typeparam name="TData">Type of the data parameter</typeparam>
         public void OnAction<TData>(int actionID, TData data) => TryGetAndCastAction<Action<TData>>(actionID)?.Invoke(data);
+
         #endregion
 
         #region - Pooling -
+
         public virtual void RemoveFromPool()
         {
 
@@ -171,6 +182,7 @@ namespace VaporStateMachine
             // Clear Actions
             ActionsByEventMap.Clear();
         }
+
         #endregion
     }
 }

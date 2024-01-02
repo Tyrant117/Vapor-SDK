@@ -621,13 +621,13 @@ namespace VaporNetcode
                 {
                     if (_observedFields.ContainsKey(of.ID))
                     {
-                        SetObservableFromString(of.ID, of.Value);
+                        SetObservableFromObject(of.ID, of.Value);
                     }
                     else
                     {
                         if (!createMissingFields) { continue; }
                         AddObservableField(of.ID, of.Type, true);
-                        SetObservableFromString(of.ID, of.Value);
+                        SetObservableFromObject(of.ID, of.Value);
                     }
                 }
             }
@@ -711,67 +711,66 @@ namespace VaporNetcode
             }
         }
 
-        protected void SetObservableFromString(int fieldID, string value)
+        protected void SetObservableFromObject(int fieldID, object value)
         {
             if (value is null or "") { return; }
             if (!_observedFields.ContainsKey(fieldID)) { return; }
 
             switch (_observedFields[fieldID].Type)
             {
+                case ObservableFieldType.Boolean:
+                    GetObservableField<BoolObservable>(fieldID).Value = (bool)value;
+                    break;
                 case ObservableFieldType.Int8:
-                    GetObservableField<ByteObservable>(fieldID).Set(byte.Parse(value));
+                    GetObservableField<ByteObservable>(fieldID).Value = (byte)value;
                     break;
                 case ObservableFieldType.Int16:
-                    GetObservableField<ShortObservable>(fieldID).Set(short.Parse(value));
+                    GetObservableField<ShortObservable>(fieldID).Value = (short)value;
                     break;
                 case ObservableFieldType.UInt16:
-                    GetObservableField<UShortObservable>(fieldID).Set(ushort.Parse(value));
+                    GetObservableField<UShortObservable>(fieldID).Value = (ushort)value;
                     break;
                 case ObservableFieldType.Int32:
-                    GetObservableField<IntObservable>(fieldID).Set(int.Parse(value));
+                    GetObservableField<IntObservable>(fieldID).Value = (int)value;
                     break;
                 case ObservableFieldType.UInt32:
-                    GetObservableField<UIntObservable>(fieldID).Set(uint.Parse(value));
+                    GetObservableField<UIntObservable>(fieldID).Value = (uint)value;
                     break;
                 case ObservableFieldType.Single:
-                    GetObservableField<FloatObservable>(fieldID).Set(float.Parse(value));
+                    GetObservableField<FloatObservable>(fieldID).Value = (float)value;
                     break;
                 case ObservableFieldType.Int64:
-                    GetObservableField<LongObservable>(fieldID).Set(long.Parse(value));
+                    GetObservableField<LongObservable>(fieldID).Value = (long)value;
                     break;
                 case ObservableFieldType.UInt64:
-                    GetObservableField<ULongObservable>(fieldID).Set(ulong.Parse(value));
+                    GetObservableField<ULongObservable>(fieldID).Value = (ulong)value;
                     break;
                 case ObservableFieldType.Double:
-                    GetObservableField<DoubleObservable>(fieldID).Set(double.Parse(value));
+                    GetObservableField<DoubleObservable>(fieldID).Value = (double)value;
                     break;
                 case ObservableFieldType.Vector2:
-                    string[] split2 = value.Split(new char[] { ',' });
-                    GetObservableField<Vector2Observable>(fieldID).Set(new Vector2(float.Parse(split2[0]), float.Parse(split2[1])));
+                    GetObservableField<Vector2Observable>(fieldID).Value = (Vector2)value;
                     break;
                 case ObservableFieldType.Vector2Int:
-                    string[] split2i = value.Split(new char[] { ',' });
-                    GetObservableField<Vector2IntObservable>(fieldID).Set(new Vector2Int(int.Parse(split2i[0]), int.Parse(split2i[1])));
+                    GetObservableField<Vector2IntObservable>(fieldID).Value = (Vector2Int)value;
                     break;
                 case ObservableFieldType.Vector3:
-                    string[] split3 = value.Split(new char[] { ',' });
-                    GetObservableField<Vector3Observable>(fieldID).Set(new Vector3(float.Parse(split3[0]), float.Parse(split3[1]), float.Parse(split3[2])));
+                    GetObservableField<Vector3Observable>(fieldID).Value = (Vector3)value;
                     break;
                 case ObservableFieldType.Vector3Int:
-                    string[] split3i = value.Split(new char[] { ',' });
-                    GetObservableField<Vector3IntObservable>(fieldID).Set(new Vector3Int(int.Parse(split3i[0]), int.Parse(split3i[1]), int.Parse(split3i[2])));
+                    GetObservableField<Vector3IntObservable>(fieldID).Value = (Vector3Int)value;
                     break;
                 case ObservableFieldType.Color:
-                    string[] color = value.Split(new char[] { ',' });
-                    GetObservableField<ColorObservable>(fieldID).Set(new Color(float.Parse(color[0]), float.Parse(color[1]), float.Parse(color[2]), float.Parse(color[3])));
+                    GetObservableField<ColorObservable>(fieldID).Value = (Color)value;
                     break;
                 case ObservableFieldType.Quaternion:
-                    string[] quat = value.Split(new char[] { ',' });
-                    GetObservableField<QuaternionObservable>(fieldID).Set(new Quaternion(float.Parse(quat[0]), float.Parse(quat[1]), float.Parse(quat[2]), float.Parse(quat[3])));
+                    GetObservableField<QuaternionObservable>(fieldID).Value = (Quaternion)value;
                     break;
                 case ObservableFieldType.String:
-                    GetObservableField<StringObservable>(fieldID).Set(value);
+                    GetObservableField<StringObservable>(fieldID).Value = (string)value;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
         #endregion

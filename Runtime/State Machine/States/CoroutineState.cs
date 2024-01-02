@@ -7,49 +7,49 @@ namespace VaporStateMachine
 {
     public class CoroutineState : State
     {
-        protected Func<CoroutineState, IEnumerator> OnCoroutineUpdated;
-        protected MonoBehaviour _runner;
-        protected Coroutine _routine;
-        protected bool _exitAfterCoroutine;
-        protected int _iterations;
+        protected readonly Func<CoroutineState, IEnumerator> OnCoroutineUpdated;
+        protected readonly MonoBehaviour Runner;
+        protected Coroutine Routine;
+        protected readonly bool ExitAfterCoroutine;
+        protected readonly int Iterations;
 
         public bool CoroutineIsComplete { get; private set; }
-        protected int _iterationCount;
+        protected int IterationCount;
 
-        public CoroutineState(MonoBehaviour runner, string name, bool canExitInstantly, Action<State> entered = null, Func<CoroutineState, IEnumerator> updated = null, Action<State, Transition> exited = null) : base(name, canExitInstantly, entered, null, exited)
+        public CoroutineState(MonoBehaviour runner, string name, bool canExitInstantly, Func<CoroutineState, IEnumerator> updated = null) : base(name, canExitInstantly)
         {
-            _runner = runner;
+            Runner = runner;
             OnCoroutineUpdated = updated;
         }
-        public CoroutineState(MonoBehaviour runner, string name, bool canExitInstantly, bool exitAfterCoroutine, int interations, Action<State> entered = null, Func<CoroutineState, IEnumerator> updated = null, Action<State, Transition> exited = null) 
-            : base(name, canExitInstantly, entered, null, exited)
+        public CoroutineState(MonoBehaviour runner, string name, bool canExitInstantly, bool exitAfterCoroutine, int iterations, Func<CoroutineState, IEnumerator> updated = null) 
+            : base(name, canExitInstantly)
         {
-            _runner = runner;
-            _exitAfterCoroutine = exitAfterCoroutine;
-            _iterations = interations;
+            Runner = runner;
+            ExitAfterCoroutine = exitAfterCoroutine;
+            Iterations = iterations;
             OnCoroutineUpdated = updated;
         }
 
         public override void OnEnter()
         {
             base.OnEnter();
-            _routine = null;
+            Routine = null;
             CoroutineIsComplete = false;
-            _iterationCount = 0;
+            IterationCount = 0;
         }
 
         public override void OnUpdate()
         {
-            if (_routine == null && OnCoroutineUpdated != null)
+            if (Routine == null && OnCoroutineUpdated != null)
             {
-                _routine = _exitAfterCoroutine ? _runner.StartCoroutine(RunCoroutine()) : _runner.StartCoroutine(LoopCoroutine());
+                Routine = ExitAfterCoroutine ? Runner.StartCoroutine(RunCoroutine()) : Runner.StartCoroutine(LoopCoroutine());
             }
         }
 
         private IEnumerator RunCoroutine()
         {
-            IEnumerator routine = OnCoroutineUpdated(this);
-            for (int i = 0; i < _iterations; i++)
+            var routine = OnCoroutineUpdated(this);
+            for (int i = 0; i < Iterations; i++)
             {
                 // This checks if the routine needs at least one frame to execute.
                 // If not, LoopCoroutine will wait 1 frame to avoid an infinite
@@ -61,8 +61,8 @@ namespace VaporStateMachine
                 {
                     yield return routine.Current;
                 }
-                _iterationCount++;                
-                if (_iterationCount < _iterations)
+                IterationCount++;                
+                if (IterationCount < Iterations)
                 {
                     // Restart the onLogic coroutine
                     routine = OnCoroutineUpdated(this);
@@ -74,7 +74,7 @@ namespace VaporStateMachine
 
         private IEnumerator LoopCoroutine()
         {
-            IEnumerator routine = OnCoroutineUpdated(this);
+            var routine = OnCoroutineUpdated(this);
             while (true)
             {
 
@@ -92,17 +92,18 @@ namespace VaporStateMachine
                 // Restart the onLogic coroutine
                 routine = OnCoroutineUpdated(this);
             }
+            // ReSharper disable once IteratorNeverReturns
         }
 
         public override void OnExit(Transition transition)
         {
-            if (_routine != null)
+            if (Routine != null)
             {
-                _runner.StopCoroutine(_routine);
-                _routine = null;
+                Runner.StopCoroutine(Routine);
+                Routine = null;
             }
             CoroutineIsComplete = false;
-            _iterationCount = 0;
+            IterationCount = 0;
             base.OnExit(transition);
         }
     }

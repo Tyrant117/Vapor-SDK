@@ -3,12 +3,34 @@ using UnityEngine;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The Vector2 implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="Vector2"/>
+    /// </summary>
     [Serializable]
     public class Vector2Observable : ObservableField
     {
         public static implicit operator Vector2(Vector2Observable f) => f.Value;
 
-        public Vector2 Value { get; protected set; }
+        private Vector2 _value;
+        /// <summary>
+        /// The <see cref="Vector2"/> value of the class.
+        /// </summary>
+        public Vector2 Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
+        /// <summary>
+        /// Invoked on value change. Parameters are the new and old values. New -> Old
+        /// </summary>
         public event Action<Vector2Observable, Vector2> ValueChanged;
 
         public Vector2Observable(ObservableClass @class, int fieldID, bool saveValue, Vector2 value) : base(@class, fieldID, saveValue)
@@ -24,57 +46,9 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(Vector2 value)
-        {
-            if (Value != value)
-            {
-                var old = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Value - old);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal bool InternalModify(Vector2 value, ObservableModifyType type) => type switch
-        {
-            ObservableModifyType.Set => InternalSet(value),
-            ObservableModifyType.Add => InternalSet(Value + value),
-            ObservableModifyType.Multiplier => InternalSet(Value * value),
-            ObservableModifyType.PercentAdd => InternalSet(Value + Value * value),
-            _ => false,
-        };
-
         public void SetWithoutNotify(Vector2 value)
         {
-            Value = value;
-        }
-
-        public void Set(Vector2 value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
-        }
-
-        public void Modify(float multiplier)
-        {
-            if (InternalSet(Value * multiplier))
-            {
-                Class?.MarkDirty(this);
-            }
-        }
-
-        public void Modify(Vector2 value, ObservableModifyType type)
-        {
-            if (InternalModify(value, type))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 

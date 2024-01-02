@@ -8,6 +8,9 @@ using UnityEditor;
 
 namespace Vapor
 {
+    /// <summary>
+    /// A static class to access the AssetDatabase functionality. Should be used carefully as it will only function in the editor not build.
+    /// </summary>
     public static class RuntimeAssetDatabaseUtility
     {
         public static List<T> FindAssetsByType<T>() where T : Object

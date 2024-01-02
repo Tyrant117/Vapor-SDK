@@ -1,16 +1,18 @@
 using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace VaporStateMachine
 {
+    /// <summary>
+    /// A state machine that can be active on multiple layers at once.
+    /// </summary>
     public class LayeredStateMachine : State, IStateMachine
     {
-        static readonly ProfilerMarker s_EnterMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Enter");
-        static readonly ProfilerMarker s_UpdateMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Update");
-        static readonly ProfilerMarker s_ExitMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Exit");
-        static readonly ProfilerMarker s_ChangeStateMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.ChangeState");
+        private static readonly ProfilerMarker EnterMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Enter");
+        private static readonly ProfilerMarker UpdateMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Update");
+        private static readonly ProfilerMarker ExitMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.Exit");
+        private static readonly ProfilerMarker ChangeStateMarker = new(ProfilerCategory.Scripts, "Vapor.LayeredStateMachine.ChangeState");
 
         private readonly Dictionary<int, State> _activeStates = new();
         public Dictionary<int, State> ActiveStates
@@ -126,7 +128,7 @@ namespace VaporStateMachine
 		/// </summary>
 		public override void OnEnter()
         {
-            s_EnterMarker.Begin();
+            EnterMarker.Begin();
             foreach (var (_, _, hasState) in _startStates.Values)
             {
                 if (!hasState)
@@ -159,7 +161,7 @@ namespace VaporStateMachine
                     }
                 }
             }
-            s_EnterMarker.End();
+            EnterMarker.End();
         }
 
         /// <summary>
@@ -169,7 +171,7 @@ namespace VaporStateMachine
 		/// </summary>
 		public override void OnUpdate()
         {
-            s_UpdateMarker.Begin();
+            UpdateMarker.Begin();
             EnsureIsInitializedFor();
             base.OnUpdate();
             for (int i = 0; i < _layerCount; i++)
@@ -181,12 +183,12 @@ namespace VaporStateMachine
 
                 _activeStates[i]?.OnUpdate();
             }
-            s_UpdateMarker.End();
+            UpdateMarker.End();
         }
 
         public override void OnExit(Transition transition)
         {
-            s_ExitMarker.Begin();
+            ExitMarker.Begin();
             base.OnExit(transition);
             if (_activeStates != null && _activeStates.Count > 0)
             {
@@ -199,7 +201,7 @@ namespace VaporStateMachine
                 // By setting the activeState to null, the state's onExit method won't be called
                 // a second time when the state machine enters again (and changes to the start state)
             }
-            s_ExitMarker.End();
+            ExitMarker.End();
         }
 
         /// <summary>
@@ -219,7 +221,7 @@ namespace VaporStateMachine
                     // to try all outgoing transitions, which may overwrite the pendingState.
                     // That's why it is first cleared, and not afterwards, as that would overwrite
                     // a new, valid pending state.
-                    _pendingStates[layer] = (layer, EMPTY_STATE, false);
+                    _pendingStates[layer] = (layer, EmptyState, false);
                     ChangeState(layer, state);
                 }
             }
@@ -238,7 +240,7 @@ namespace VaporStateMachine
 		/// <param name="name">The name / identifier of the active state</param>
 		private void ChangeState(int layer, int name, Transition transition = null)
         {
-            s_ChangeStateMarker.Begin();
+            ChangeStateMarker.Begin();
             if (_activeStates[layer] != null)
             {
                 _layerLog?.LogExit(_activeStates[layer].Name);
@@ -282,7 +284,7 @@ namespace VaporStateMachine
             {
                 TryAllDirectTransitions(layer);
             }
-            s_ChangeStateMarker.End();
+            ChangeStateMarker.End();
         }
 
         /// <summary>
@@ -630,7 +632,7 @@ namespace VaporStateMachine
         private bool DetermineTransition(List<Transition> transitions, bool canTransitionOnSelf, int layer, out int ToState)
         {
             int desire = 0;
-            ToState = EMPTY_STATE;
+            ToState = EmptyState;
             foreach (Transition transition in transitions)
             {
                 // Don't transition to the "to" state, if that state is already the active state
@@ -645,7 +647,7 @@ namespace VaporStateMachine
                     ToState = transition.To;
                 }
             }
-            return ToState != EMPTY_STATE;
+            return ToState != EmptyState;
         }
         #endregion
 
@@ -743,13 +745,13 @@ namespace VaporStateMachine
             for (int i = 0; i < _layerCount; i++)
             {
                 int layer = i;
-                _startStates[i] = (layer, EMPTY_STATE, false);
+                _startStates[i] = (layer, EmptyState, false);
             }
 
             for (int i = 0; i < _layerCount; i++)
             {
                 int layer = i;
-                _pendingStates[i] = (layer, EMPTY_STATE, false);
+                _pendingStates[i] = (layer, EmptyState, false);
             }
 
             for (int i = 0; i < _layerCount; i++)

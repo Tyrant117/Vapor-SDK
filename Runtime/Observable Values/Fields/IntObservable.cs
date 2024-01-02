@@ -2,14 +2,38 @@ using System;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The int implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="int"/>
+    /// </summary>
     [Serializable]
     public class IntObservable : ObservableField
     {
         public static implicit operator int(IntObservable f) => f.Value;
 
-        public int Value { get; protected set; }
+        private int _value;
+        /// <summary>
+        /// The <see cref="int"/> value of the class.
+        /// </summary>
+        public int Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
+        /// <summary>
+        /// If this integer is being treated as a <see cref="FlagsAttribute"/>, check if a flag has been set.
+        /// </summary>
+        /// <param name="flagToCheck">The flag to check</param>
+        /// <returns>True if the integer has the flag</returns>
         public bool HasFlag(int flagToCheck) => (Value & flagToCheck) != 0;
-        public event Action<IntObservable, int> ValueChanged; // Value and Delta
+        public event Action<IntObservable, int> ValueChanged; // Value and Old Value
 
         public IntObservable(ObservableClass @class, int fieldID, bool saveValue, int value) : base(@class, fieldID, saveValue)
         {
@@ -24,49 +48,9 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(int value)
-        {
-            if (Value != value)
-            {
-                int oldValue = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Value - oldValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal bool InternalModify(int value, ObservableModifyType type) => type switch
-        {
-            ObservableModifyType.Set => InternalSet(value),
-            ObservableModifyType.Add => InternalSet(Value + value),
-            ObservableModifyType.Multiplier => InternalSet(Value * value),
-            ObservableModifyType.PercentAdd => InternalSet(Value + Value * value),
-            _ => false,
-        };
-
         public void SetWithoutNotify(int value)
         {
-            Value = value;
-        }
-
-        public void Set(int value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-            }
-        }
-
-        public void Modify(int value, ObservableModifyType type)
-        {
-            if (InternalModify(value, type))
-            {
-                Class?.MarkDirty(this);
-            }
+            _value = value;
         }
         #endregion
 

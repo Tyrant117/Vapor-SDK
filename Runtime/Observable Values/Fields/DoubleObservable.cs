@@ -1,13 +1,33 @@
 using System;
+using System.Globalization;
 
 namespace VaporObservables
 {
+    /// <summary>
+    /// The double implementation of an <see cref="ObservableField"/>. Can be implicitly cast to a <see cref="double"/>
+    /// </summary>
     [Serializable]
     public class DoubleObservable : ObservableField
     {
         public static implicit operator double(DoubleObservable f) => f.Value;
 
-        public double Value { get; protected set; }
+        private double _value;
+        /// <summary>
+        /// The <see cref="double"/> value of the class.
+        /// </summary>
+        public double Value
+        {
+            get => _value;
+            set
+            {
+                if (_value.Equals(value)) return;
+                
+                var oldValue = _value;
+                _value = value;
+                ValueChanged?.Invoke(this, oldValue);
+                Class?.MarkDirty(this);
+            }
+        }
         public event Action<DoubleObservable, double> ValueChanged;
 
         public DoubleObservable(ObservableClass @class, int fieldID, bool saveValue, double value) : base(@class, fieldID, saveValue)
@@ -23,60 +43,16 @@ namespace VaporObservables
         }
 
         #region - Setters -
-        internal bool InternalSet(double value)
-        {
-            if (Value != value)
-            {
-                double oldValue = Value;
-                Value = value;
-                ValueChanged?.Invoke(this, Value - oldValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal bool InternalModify(double value, ObservableModifyType type) => type switch
-        {
-            ObservableModifyType.Set => InternalSet(value),
-            ObservableModifyType.Add => InternalSet(Value + value),
-            ObservableModifyType.Multiplier => InternalSet(Value * value),
-            ObservableModifyType.PercentAdd => InternalSet(Value + Value * value),
-            _ => false,
-        };
-
         public void SetWithoutNotify(double value)
         {
-            Value = value;
-        }
-
-        public bool Set(double value)
-        {
-            if (InternalSet(value))
-            {
-                Class?.MarkDirty(this);
-                return true;
-            }
-            return false;
-        }
-
-        public bool Modify(double value, ObservableModifyType type)
-        {
-            if (InternalModify(value, type))
-            {
-                Class?.MarkDirty(this);
-                return true;
-            }
-            return false;
+            _value = value;
         }
         #endregion
 
         #region - Saving -
         public override SavedObservableField Save()
         {
-            return new SavedObservableField(FieldID, Type, Value.ToString());
+            return new SavedObservableField(FieldID, Type, Value.ToString(CultureInfo.InvariantCulture));
         }
         #endregion
 
