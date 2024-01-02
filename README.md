@@ -29,6 +29,8 @@ The backbone of many of the systems. A set of classes to create simple, stable, 
 Most of the functionality is done by implementing the IKey interface on your own scriptable objects.
 Optionally, you can inherit from KeySo or NamedKeySo.
 Then manually generating the keys using the "Generate Keys" button in the inspector of those scriptable objects.
+![image](https://github.com/Tyrant117/Vapor-SDK/assets/9998121/c0511af1-9856-408e-abb6-d8067b75c57a)
+
 If custom implementing the IKey interface the user will need to call the formatter directly. See KeyGenerator.cs
 
 - [KeySo](./Runtime/Keys/KeySo.cs): The base scriptable object implemention of the IKey interface.
