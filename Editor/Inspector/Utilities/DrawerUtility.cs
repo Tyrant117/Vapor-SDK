@@ -29,7 +29,7 @@ namespace VaporInspectorEditor
             switch (drawer.InfoType)
             {
                 case DrawerInfoType.Field:
-                    if (HasCustomPropertyDrawer(drawer.FieldInfo.FieldType))
+                    if (HasCustomPropertyDrawer(drawer.FieldInfo.FieldType) && !drawer.HasAttribute<IgnoreCustomDrawerAttribute>())
                     {
                         var field = new PropertyField(drawer.Property)
                         {

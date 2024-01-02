@@ -4,9 +4,12 @@ using VaporInspector;
 
 namespace VaporKeys
 {
+    /// <summary>
+    /// A scriptable object implementation of the IKey interface.
+    /// </summary>
     public abstract class KeySo : ScriptableObject, IKey
     {
-        [FoldoutGroup("Key", "Key Data"), SerializeField, ReadOnly]
+        [FoldoutGroup("Key", "Key Data"), SerializeField, ReadOnly, RichTextTooltip("The unique for this object.")]
         private int _key;
         [SerializeField]
         [FoldoutGroup("Key"), RichTextTooltip("If <lw>TRUE</lw>, this key will be ignored by KeyGenerator.GenerateKeys().")]
@@ -17,7 +20,7 @@ namespace VaporKeys
         public bool IsDeprecated => _deprecated;
 
 
-        [FoldoutGroup("Key"), Button]
+        [FoldoutGroup("Key"), Button, RichTextTooltip("Forces Generation of the keys for this Type")]
         public void GenerateKeys()
         {
             var scriptName = GetType().Name;

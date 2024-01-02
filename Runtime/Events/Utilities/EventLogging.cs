@@ -5,10 +5,17 @@ using Debug = UnityEngine.Debug;
 
 namespace VaporEvents
 {
+    /// <summary>
+    /// A static class for conditionally logging messages from events.
+    /// </summary>
     public static class EventLogging
     {
+        /// <summary>
+        /// Logs a message to the Unity Console when "VAPOR_EVENT_LOGGING is defined in the project.
+        /// </summary>
+        /// <param name="message">String or object to be converted to string representation for display.</param>
         [Conditional("VAPOR_EVENT_LOGGING")]
-        public static void Log(string message)
+        public static void Log(object message)
         {
             Debug.Log(message);
         }

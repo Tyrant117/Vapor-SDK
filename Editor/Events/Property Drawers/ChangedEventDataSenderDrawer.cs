@@ -15,7 +15,7 @@ namespace VaporEventsEditor
         {
             List<string> keys = new();
             List<KeyDropdownValue> values = new();
-            var key = property.FindPropertyRelative("key");
+            var key = property.FindPropertyRelative("_key");
             _ConvertToTupleList(keys, values, KeyUtility.GetAllEventKeyValues());
 
             var indexOfCurrent = values.IndexOf((KeyDropdownValue)key.boxedValue);
@@ -64,6 +64,12 @@ namespace VaporEventsEditor
             tuple.Item1.boxedValue = newVal;
             tuple.Item1.serializedObject.ApplyModifiedProperties();
         }
+    }
+    
+    [CustomPropertyDrawer(typeof(ChangedEventDataSender))]
+    public class ChangedEventDataSenderDrawer : BaseChangedEventDataSenderDrawer
+    {
+        
     }
     
     [CustomPropertyDrawer(typeof(ChangedEventDataSender<>))]

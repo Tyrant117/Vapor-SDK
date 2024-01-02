@@ -1,47 +1,43 @@
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Vapor;
 using VaporInspector;
+using VaporKeys;
 
 namespace VaporEvents
 {
+    /// <summary>
+    /// A <see cref="MonoBehaviour"/> that provides the linked <see cref="_component"/> to anything requesting it with provided <see cref="_key"/><br />
+    /// Values should be defined in the inspector.
+    /// </summary>
     public class ProvidesComponent : MonoBehaviour
     {
-        [SerializeField, ValueDropdown("@GetAllProviderKeys", searchable: true)]
-        private ProviderKeySo key;
+        [SerializeField, ValueDropdown("@GetAllProviderKeyValues", searchable: true), IgnoreCustomDrawer]
+        private KeyDropdownValue _key;
         [SerializeField]
-        private Component component;
+        private Component _component;
 
         private void OnEnable()
         {
-            if (key != null)
-            {
-                var t = component.GetType();
-                ProviderBus.Get<ProviderData<Component>>(key).Subscribe(OnComponentRequested);
-            }
+            if (_key.IsNone) return;
+            
+            ProviderBus.Get<ProviderData<Component>>(_key).Subscribe(OnComponentRequested);
         }
 
         private void OnDisable()
         {
-            if (key != null)
-            {
-                ProviderBus.Get<ProviderData<Component>>(key).Unsubscribe(OnComponentRequested);
-            }
+            if (_key.IsNone) return;
+            
+            ProviderBus.Get<ProviderData<Component>>(_key).Unsubscribe(OnComponentRequested);
         }
 
         private Component OnComponentRequested()
         {
-            return component;
+            return _component;
         }
 
-        public static List<(string, ProviderKeySo)> GetAllProviderKeys()
+        public static List<(string, KeyDropdownValue)> GetAllProviderKeyValues()
         {
-            var allProviderKeys = RuntimeAssetDatabaseUtility.FindAssetsByType<ProviderKeySo>();
-            return allProviderKeys.Select(so => (so.DisplayName, so)).ToList();
+            return KeyUtility.GetAllProviderKeyValues();
         }
     }
 }

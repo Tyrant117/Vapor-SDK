@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace VaporEvents
 {
+    /// <summary>
+    /// A static class that can be used to create singletons. 
+    /// </summary>
     public static class SingletonBus
     {
         public static readonly Dictionary<Type, MonoBehaviour> SingletonMap = new();
@@ -16,13 +19,11 @@ namespace VaporEvents
         }
 
         /// <summary>
-        /// Gets or creates an instance of the event at the supplied id. This id should typically be a auto-generated guid, but any integer will work. <br />
-        /// The event should always be cached or only used in loading and unloading. <br />
-        /// <b>String/Int collisions will not be detected!</b>
+        /// Creates a singleton of the supplied <see cref="MonoBehaviour"/>. <br />
+        /// Does not set the returned singleton as <see cref="GameObject.DontDestroyOnLoad"/>. That should be done in the Awake implementation.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="eventID"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The <see cref="MonoBehaviour"/> to create as a singleton</typeparam>
+        /// <returns>The instantiated singleton of type T</returns>
         public static T Get<T>() where T : MonoBehaviour
         {
             if (SingletonMap.TryGetValue(typeof(T), out var handler) && handler != null)

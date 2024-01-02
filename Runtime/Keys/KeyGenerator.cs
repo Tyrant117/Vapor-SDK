@@ -6,11 +6,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System;
+using System.Linq;
+using System.Reflection;
 using Vapor;
 using Object = UnityEngine.Object;
 
 namespace VaporKeys
 {
+    /// <summary>
+    /// A static class for generating custom enum classes from IKey or string values.
+    /// </summary>
     public static class KeyGenerator
     {
         public const string AbsoluteConfigPath = "Assets/Vapor/Keys/Config";
@@ -20,76 +25,61 @@ namespace VaporKeys
         public const string NamespaceName = "VaporKeyDefinitions";
 
         #region - Keys -
-        public struct KeyValuePair
+        /// <summary>
+        /// A helper struct linking all the data of a key together
+        /// </summary>
+        public readonly struct KeyValuePair
         {
-            public string displayName;
-            public string variableName;
-            public string guid;
-            public int key;
+            public readonly string DisplayName;
+            public readonly string VariableName;
+            public readonly string Guid;
+            public readonly int Key;
 
             public KeyValuePair(string name, int key, string guid)
             {
-                this.displayName = name;
-                this.variableName = Regex.Replace(name, " ", "");
-                this.guid = guid;
-                this.key = key;
+                DisplayName = name;
+                VariableName = Regex.Replace(name, " ", "");
+                Guid = guid;
+                Key = key;
             }
 
             public KeyValuePair(IKey key)
             {
-                this.displayName = key.DisplayName;
-                this.variableName = Regex.Replace(key.DisplayName, " ", "");
+                DisplayName = key.DisplayName;
+                VariableName = Regex.Replace(key.DisplayName, " ", "");
                 key.ForceRefreshKey();
-                guid = string.Empty;
+                Guid = string.Empty;
 #if UNITY_EDITOR
                 if(key is Object so)
                 {
-                    guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(so));
+                    Guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(so));
                     EditorUtility.SetDirty(so);
                 }
 #endif
-                this.key = key.Key;
+                Key = key.Key;
             }
 
             public string GetFormat(int placeholderIndex)
             {
-                string vName = variableName.Length > 0 ? variableName : "Placeholder_" + placeholderIndex;
-                return $"public const int {vName} = {key};";
-            }
-
-            private static string InsertSpaceBeforeUpperCase(string str)
-            {
-                var sb = new StringBuilder();
-
-                char previousChar = char.MinValue; // Unicode '\0'
-
-                foreach (char c in str)
-                {
-                    if (char.IsUpper(c))
-                    {
-                        // If not the first character and previous character is not a space, insert a space before uppercase
-
-                        if (sb.Length != 0 && previousChar != ' ')
-                        {
-                            sb.Append(' ');
-                        }
-                    }
-
-                    sb.Append(c);
-
-                    previousChar = c;
-                }
-
-                return sb.ToString();
+                var vName = VariableName.Length > 0 ? VariableName : "Placeholder_" + placeholderIndex;
+                return $"public const int {vName} = {Key};";
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="KeyValuePair"/> from any string.
+        /// </summary>
+        /// <param name="key">The string to use</param>
+        /// <returns>The KeyValuePair generated from the string.</returns>
         public static KeyValuePair StringToKeyValuePair(string key)
         {
             return new KeyValuePair(key, key.GetKeyHashCode(), string.Empty);
         }
+        #endregion
 
 #if UNITY_EDITOR
+
+        #region  Modify Keys
         public static void GenerateKeys(Type typeFilter, string scriptName, bool includeNone)
         {
             var guids = AssetDatabase.FindAssets($"t:{typeFilter.Name}");
@@ -102,7 +92,7 @@ namespace VaporKeys
                 formattedKeys.Add(new KeyValuePair("None", 0, string.Empty));
             }
 
-            foreach (var item in GetAllAssets<Object>(guids))
+            foreach (var item in GetAllAssetsFromGUIDs<Object>(guids))
             {
                 if (item == null) { continue; }
                 if (item is not IKey key) { continue; }
@@ -140,30 +130,29 @@ namespace VaporKeys
 
             List<string> guids = new();
             guids.AddRange(AssetDatabase.FindAssets(searchFilter));
-            for (int i = 0; i < guids.Count; i++)
+            foreach (var guid in guids)
             {
-                var refVal = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guids[i]));
+                var refVal = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guid));
                 if (refVal == null) { continue; }
-                if (refVal is IKey rfk && rfk.IsDeprecated) { continue; }
+                if (refVal is IKey { IsDeprecated: true }) { continue; }
 
                 var key = refVal.name.GetKeyHashCode();
-                if (takenKeys.Contains(key))
+                if (!takenKeys.Add(key))
                 {
                     Debug.LogError($"Key Collision: {refVal.name}. Objects cannot share a name.");
                 }
                 else
                 {
-                    takenKeys.Add(key);
-                    if (refVal is Object so)
+                    if (refVal != null)
                     {
-                        var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(so));
-                        formattedKeys.Add(new KeyValuePair(refVal.name, key, guid));
+                        var soGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(refVal));
+                        formattedKeys.Add(new KeyValuePair(refVal.name, key, soGuid));
                     }
                     else
                     {
                         formattedKeys.Add(new KeyValuePair(refVal.name, key, string.Empty));
                     }
-                }                
+                }
             }
 
             FormatKeyFiles(RelativeKeyPath, NamespaceName, scriptName, formattedKeys);
@@ -173,12 +162,12 @@ namespace VaporKeys
 
         public static void GenerateKeys<T>(string scriptName, bool includeNone) where T : ScriptableObject, IKey
         {
-            string typeFilter = typeof(T).Name;
+            var typeFilter = typeof(T).Name;
             Debug.Log($"Generating Keys of Type: {typeFilter}");
             GenerateKeys<T>(AssetDatabase.FindAssets($"t:{typeFilter}"), scriptName, includeNone);
         }
 
-        public static void GenerateKeys<T>(string[] guids, string scriptName, bool includeNone) where T : ScriptableObject, IKey
+        public static void GenerateKeys<T>(IEnumerable<string> guids, string scriptName, bool includeNone) where T : ScriptableObject, IKey
         {
             HashSet<int> takenKeys = new();
             List<KeyValuePair> formattedKeys = new();
@@ -189,7 +178,7 @@ namespace VaporKeys
                formattedKeys.Add(new KeyValuePair("None", 0, string.Empty));     
             }
 
-            foreach (var item in GetAllAssets<T>(guids))
+            foreach (var item in GetAllAssetsFromGUIDs<T>(guids))
             {
                 if (item == null) { continue; }
                 if (item.IsDeprecated) { continue; }
@@ -213,193 +202,203 @@ namespace VaporKeys
             AssetDatabase.Refresh();
         }
 
-        public static void AddKey(Type type, string relativePath, List<(string, int)> values, IKey keyToAdd)
+        /// <summary>
+        /// Directly adds a key to a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keyToAdd">The key to add to the class</param>
+        public static void AddKey(Type type, IKey keyToAdd)
         {
-            List<KeyValuePair> kvps = new();
-            KeyValuePair newKvp = new(keyToAdd);
+            var newKvp = new KeyValuePair(keyToAdd);
+            InternalAddKey(type, newKvp);
+        }
+        
+        /// <summary>
+        /// Directly adds a key to a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keyToAdd">The key to add to the class</param>
+        public static void AddKey(Type type, string keyToAdd)
+        {
+            var newKvp = StringToKeyValuePair(keyToAdd);
+            InternalAddKey(type, newKvp);
+        }
+
+        private static void InternalAddKey(Type type, KeyValuePair newKvp)
+        {
+            var relativePath = (string)type.GetField("RELATIVE_PATH", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            var values = (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if(values == null) return;
+            
+            List<KeyValuePair> keyValuePairs = new();
             foreach (var value in values)
             {
-                if (value.Item2 == newKvp.key)
+                if (value.Item2.Key == newKvp.Key)
                 {
                     Debug.LogError($"Key Collision: {value.Item1}. Objects cannot share a name.");
                     return;
                 }
-                if (keyToAdd is Object so)
-                {
-                    var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(so));
-                    kvps.Add(new(value.Item1, value.Item2, guid));
-                }
-                else
-                {
-                    kvps.Add(new(value.Item1, value.Item2, string.Empty));
-                }
-            }
-            kvps.Add(newKvp);
 
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+                keyValuePairs.Add(new KeyValuePair(value.Item1, value.Item2.Key, string.Empty));
+            }
+
+            keyValuePairs.Add(newKvp);
+
+            FormatKeyFiles(relativePath, type.Namespace, type.Name, keyValuePairs);
         }
 
-        public static void AddKey(Type type, string relativePath, List<(string, KeyDropdownValue)> values, string keyToAdd)
+        /// <summary>
+        /// Directly add a group of keys to a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keysToAdd">The keys to add to the class</param>
+        public static void AddKeys(Type type, IEnumerable<IKey> keysToAdd)
         {
-            List<KeyValuePair> kvps = new();
-            KeyValuePair newKvp = StringToKeyValuePair(keyToAdd);
-            foreach (var value in values)
-            {
-                if (value.Item2.Key == newKvp.key)
-                {
-                    Debug.LogError($"Key Collision: {value.Item1}. Objects cannot share a name.");
-                    return;
-                }
-                kvps.Add(new(value.Item1, value.Item2.Key, string.Empty));
-            }
-            kvps.Add(newKvp);
-
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
-        }
-
-        public static void AddKeys(Type type, string relativePath, List<(string, KeyDropdownValue)> values, IKey[] keysToAdd)
-        {
-            List<KeyValuePair> kvps = new();
             List<KeyValuePair> newKvps = new();
             foreach (var keyToAdd in keysToAdd)
             {
-                newKvps.Add(new(keyToAdd));
+                newKvps.Add(new KeyValuePair(keyToAdd));
             }
-            foreach (var value in values)
-            {
-                bool match(KeyValuePair x) => x.key == value.Item2.Key;
-                if (newKvps.Exists(match))
-                {
-                    Debug.LogError($"Key Collision: {value.Item1}. Objects cannot share a name.");
-                    return;
-                }
-                kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
-            }
-            foreach (var newKvp in newKvps)
-            {
-                kvps.Add(newKvp);
-            }
-
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+            InternalAddKeys(type, newKvps);
         }
 
-        public static void AddKeys(Type type, string relativePath, List<(string, KeyDropdownValue)> values, string[] keysToAdd)
+        /// <summary>
+        /// Directly add a group of keys to a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keysToAdd">The keys to add to the class</param>
+        public static void AddKeys(Type type, IEnumerable<string> keysToAdd)
         {
-            List<KeyValuePair> kvps = new();
             List<KeyValuePair> newKvps = new();
             foreach (var keyToAdd in keysToAdd)
             {
                 newKvps.Add(StringToKeyValuePair(keyToAdd));
             }
+
+            InternalAddKeys(type, newKvps);
+        }
+
+        private static void InternalAddKeys(Type type, List<KeyValuePair> newKeyValuePairs)
+        {
+            var relativePath = (string)type.GetField("RELATIVE_PATH", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            var values = (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if(values == null) return;
+            
+            List<KeyValuePair> keyValuePairs = new();
             foreach (var value in values)
             {
-                bool match(KeyValuePair x) => x.key == value.Item2.Key;
-                if (newKvps.Exists(match))
+                if (newKeyValuePairs.Exists(_Match))
                 {
                     Debug.LogError($"Key Collision: {value.Item1}. Objects cannot share a name.");
                     return;
                 }
-                kvps.Add(new(value.Item1, value.Item2.Key, string.Empty));
+                keyValuePairs.Add(new(value.Item1, value.Item2.Key, string.Empty));
+                continue;
+                
+                bool _Match(KeyValuePair x) => x.Key == value.Item2.Key;
             }
-            foreach (var newKvp in newKvps)
+            foreach (var newKvp in newKeyValuePairs)
             {
-                kvps.Add(newKvp);
+                keyValuePairs.Add(newKvp);
             }
 
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+            FormatKeyFiles(relativePath, type.Namespace, type.Name, keyValuePairs);
+        }
+        
+        /// <summary>
+        /// Directly removes a key from a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keyToRemove">The key to remove from the class</param>
+        public static void RemoveKey(Type type, IKey keyToRemove)
+        {
+            var removeKvp = new KeyValuePair(keyToRemove);
+            InternalRemoveKey(type, removeKvp);
         }
 
-        public static void RemoveKey(Type type, string relativePath, List<(string, KeyDropdownValue)> values, IKey keyToRemove)
+        /// <summary>
+        /// Directly removes a key from a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keyToRemove">The key to remove from the class</param>
+        public static void RemoveKey(Type type, string keyToRemove)
         {
+            var removeKvp = StringToKeyValuePair(keyToRemove);
+            InternalRemoveKey(type, removeKvp);
+        }
+
+        private static void InternalRemoveKey(Type type, KeyValuePair keyToRemove)
+        {
+            var relativePath = (string)type.GetField("RELATIVE_PATH", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            var values = (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if(values == null) return;
+            
             List<KeyValuePair> kvps = new();
-            KeyValuePair removeKvp = new(keyToRemove);
             foreach (var value in values)
             {
-                if (value.Item2.Key != removeKvp.key)
+                if (value.Item2.Key != keyToRemove.Key)
                 {
-                    kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
+                    kvps.Add(new KeyValuePair(value.Item1, value.Item2.Key, value.Item2.Guid));
                 }
             }
 
             FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
         }
-
-        public static void RemoveKey(Type type, string relativePath, List<(string, KeyDropdownValue)> values, string keyToRemove)
+        
+        /// <summary>
+        /// Directly removes a group of keys from a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keysToRemove">The keys to remove from the class</param>
+        public static void RemoveKeys(Type type, IEnumerable<IKey> keysToRemove)
         {
-            List<KeyValuePair> kvps = new();
-            KeyValuePair removeKvp = StringToKeyValuePair(keyToRemove);
-            foreach (var value in values)
-            {
-                if (value.Item2.Key != removeKvp.key)
-                {
-                    kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
-                }
-            }
-
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
-        }
-
-        public static void RemoveKeys(Type type, string relativePath, List<(string, KeyDropdownValue)> values, IKey[] keysToRemove)
-        {
-            List<KeyValuePair> kvps = new();
             List<KeyValuePair> removeKvps = new();
             foreach (var keyToAdd in keysToRemove)
             {
                 removeKvps.Add(new(keyToAdd));
             }
-            foreach (var value in values)
-            {
-                if (!removeKvps.Exists(x => x.key == value.Item2.Key))
-                {
-                    kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
-                }
-            }
-
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+            InternalRemoveKeys(type, removeKvps);
         }
 
-        public static void RemoveKeys(Type type, string relativePath, List<(string, KeyDropdownValue)> values, string[] keysToRemove)
+        /// <summary>
+        /// Directly removes a group of keys from a Type.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keysToRemove">The keys to remove from the class</param>
+        public static void RemoveKeys(Type type, IEnumerable<string> keysToRemove)
         {
-            List<KeyValuePair> kvps = new();
             List<KeyValuePair> removeKvps = new();
             foreach (var keyToAdd in keysToRemove)
             {
                 removeKvps.Add(StringToKeyValuePair(keyToAdd));
             }
-            foreach (var value in values)
-            {
-                if (!removeKvps.Exists(x => x.key == value.Item2.Key))
-                {
-                    kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
-                }
-            }
-
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+            InternalRemoveKeys(type, removeKvps);
         }
 
-        public static void RemoveDeprecated(Type type, string relativePath, List<(string, KeyDropdownValue)> values, IKey[] keysToRemove)
+        private static void InternalRemoveKeys(Type type, List<KeyValuePair> keyValuePairsToRemove)
         {
-            List<KeyValuePair> kvps = new();
-            List<KeyValuePair> removeKvps = new();
-            foreach (var keyToRemove in keysToRemove)
-            {
-                if (keyToRemove.IsDeprecated)
-                {
-                    removeKvps.Add(new(keyToRemove));
-                }
-            }
-            foreach (var value in values)
-            {
-                if (!removeKvps.Exists(x => x.key == value.Item2.Key))
-                {
-                    kvps.Add(new(value.Item1, value.Item2.Key, value.Item2.Guid));
-                }
-            }
+            var relativePath = (string)type.GetField("RELATIVE_PATH", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            var values = (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if(values == null) return;
+            
+            var keyValuePairs = (from value in values where !keyValuePairsToRemove.Exists(x => x.Key == value.Item2.Key) select new KeyValuePair(value.Item1, value.Item2.Key, value.Item2.Guid)).ToList();
 
-            FormatKeyFiles(relativePath, type.Namespace, type.Name, kvps);
+            FormatKeyFiles(relativePath, type.Namespace, type.Name, keyValuePairs);
         }
 
-        private static IEnumerable<T> GetAllAssets<T>(string[] guids) where T : Object
+        /// <summary>
+        /// Directly removes a group of keys from a Type. Checking if they are deprecated first.
+        /// </summary>
+        /// <param name="type">The type to add this key to. This type must be an auto-generated enum class</param>
+        /// <param name="keysToRemove">The keys to remove from the class</param>
+        public static void RemoveDeprecated(Type type, IEnumerable<IKey> keysToRemove)
+        {
+            var removeKeyValuePairs = (from keyToRemove in keysToRemove where keyToRemove.IsDeprecated select new KeyValuePair(keyToRemove)).ToList();
+            InternalRemoveKeys(type, removeKeyValuePairs);
+        }
+        #endregion
+
+        private static IEnumerable<T> GetAllAssetsFromGUIDs<T>(IEnumerable<string> guids) where T : Object
         {
             foreach (var guid in guids)
             {
@@ -408,16 +407,22 @@ namespace VaporKeys
         }
 #endif
 
+        #region Format Keys
+        /// <summary>
+        /// Formats a list of <see cref="KeyValuePair"/> into a custom enum class.
+        /// </summary>
+        /// <param name="gameDataFilepath">The relative path to the save folder excluding the Assets folder.</param>
+        /// <param name="namespaceName">The namespace that the resulting class should be in</param>
+        /// <param name="scriptName">The name of resulting class</param>
+        /// <param name="keys">The keys to be used</param>
         public static void FormatKeyFiles(string gameDataFilepath, string namespaceName, string scriptName, List<KeyValuePair> keys)
         {
-            string gameDataProjectFilePath = $"/{gameDataFilepath}/{scriptName}.cs";
-            string filepath = Application.dataPath + gameDataProjectFilePath;
+            var gameDataProjectFilePath = $"/{gameDataFilepath}/{scriptName}.cs";
+            var filepath = Application.dataPath + gameDataProjectFilePath;
 
             StringBuilder sb = new();
 
-
             sb.Append("//\t* THIS SCRIPT IS AUTO-GENERATED *\n");
-            //sb.Append("#if ODIN_INSPECTOR\n using Sirenix.OdinInspector;\n #endif\n");
             sb.Append("using System;\n");
             sb.Append("using VaporKeys;\n");
             sb.Append("using System.Collections.Generic;\n\n");
@@ -429,12 +434,11 @@ namespace VaporKeys
 
 
             FormatFilePath(sb, $"{gameDataFilepath}");
-            //FormatAttributeName(sb, $"@{scriptName}.DropdownValues");
             FormatAttributeName(sb, namespaceName,$"{scriptName}");
 
             FormatEnum(sb, keys);
 
-            FormatOdinDropDown(sb, keys);
+            FormatDropDown(sb, keys);
 
             for (int i = 0; i < keys.Count; i++)
             {
@@ -471,7 +475,7 @@ namespace VaporKeys
             sb.Append("\t\t{\n");
             for (int i = 0; i < keys.Count; i++)
             {
-                sb.Append($"\t\t\t{keys[i].variableName} = {keys[i].key},\n");
+                sb.Append($"\t\t\t{keys[i].VariableName} = {keys[i].Key},\n");
             }
             sb.Append("\t\t}\n\n");
 
@@ -484,10 +488,10 @@ namespace VaporKeys
                 int skipNone = 0;
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if(keys[i].displayName == "None") { skipNone = 1; continue; }
+                    if(keys[i].DisplayName == "None") { skipNone = 1; continue; }
 
                     int flagID = i - skipNone;
-                    sb.Append($"\t\t\t{keys[i].variableName} = 1 << {flagID},\n");
+                    sb.Append($"\t\t\t{keys[i].VariableName} = 1 << {flagID},\n");
                 }
                 sb.Append($"\t\t\tEverything = ~0,\n");
                 sb.Append("\t\t}\n\n");
@@ -497,36 +501,24 @@ namespace VaporKeys
                 skipNone = 0;
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if(keys[i].displayName == "None") { skipNone = 1; continue; }
+                    if(keys[i].DisplayName == "None") { skipNone = 1; continue; }
 
                     int flag = 1 << (i - skipNone);
-                    sb.Append($"\t\t\t{{ {flag}, {keys[i].key} }},\n");
+                    sb.Append($"\t\t\t{{ {flag}, {keys[i].Key} }},\n");
                 }
                 sb.Append("\t\t};\n\n");
             }
         }
 
-        private static void FormatOdinDropDown(StringBuilder sb, List<KeyValuePair> keys)
+        private static void FormatDropDown(StringBuilder sb, List<KeyValuePair> keys)
         {
-            //sb.Append("#if ODIN_INSPECTOR\n");
-            //sb.Append($"\t\tpublic static ValueDropdownList<KeyDropdownValue> DropdownValues = new()\n");
-            //sb.Append("\t\t{\n");
-            //for (int i = 0; i < keys.Count; i++)
-            //{
-            //    sb.Append($"\t\t\t{{ \"{keys[i].displayName}\", new (\"{keys[i].guid}\", {keys[i].variableName}) }},\n");
-            //}
-            //sb.Append("\t\t};\n");
-            //sb.Append("#endif\n\n");
-
-            //sb.Append("#if !ODIN_INSPECTOR\n");
             sb.Append($"\t\tpublic static List<(string, KeyDropdownValue)> DropdownValues = new()\n");
             sb.Append("\t\t{\n");
             for (int i = 0; i < keys.Count; i++)
             {
-                sb.Append($"\t\t\tnew (\"{keys[i].displayName}\", new (\"{keys[i].guid}\", {keys[i].variableName})),\n");
+                sb.Append($"\t\t\tnew (\"{keys[i].DisplayName}\", new (\"{keys[i].Guid}\", {keys[i].VariableName})),\n");
             }
             sb.Append("\t\t};\n");
-            //sb.Append("#endif\n\n");
         }
 
         private static void FormatList(StringBuilder sb, List<KeyValuePair> keys)
@@ -536,74 +528,29 @@ namespace VaporKeys
             sb.Append("\t\t{\n");
             for (int i = 0; i < keys.Count; i++)
             {
-                sb.Append($"\t\t\t{{ {keys[i].variableName} }},\n");
+                sb.Append($"\t\t\t{{ {keys[i].VariableName} }},\n");
             }
             sb.Append("\t\t};\n");
         }
 
-        private static void FormatEnumeration(StringBuilder sb, string scriptName)
-        {
-            sb.Append($"\t\tpublic static IEnumerable<int> EnumerateValues()\n");
-            sb.Append("\t\t{\n");
-
-            sb.Append($"\t\t\tvar refVals = (typeof({scriptName})).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(fi => fi.IsLiteral && !fi.IsInitOnly && fi.FieldType == typeof(int));\n");
-            sb.Append("\n");
-            sb.Append($"\t\t\tforeach (var fi in refVals)\n");
-            sb.Append("\t\t\t{\n");
-            sb.Append($"\t\t\t\tyield return (int)fi.GetRawConstantValue();\n");
-            sb.Append("\t\t\t}\n");
-
-            sb.Append("\t\t}\n");
-        }
-
         private static void FormatLookup(StringBuilder sb)
         {
-            //sb.Append("#if ODIN_INSPECTOR\n");
-
-            //sb.Append($"\t\tpublic static string Lookup(int id)\n");
-            //sb.Append("\t\t{\n");
-
-            //sb.Append($"\t\t\treturn DropdownValues.Find((x) => x.Value.Key == id).Text;\n");
-
-            //sb.Append("\t\t}\n");
-
-            //sb.Append("#endif\n");
-
-            //sb.Append("#if !ODIN_INSPECTOR\n");
-
             sb.Append($"\t\tpublic static string Lookup(int id)\n");
             sb.Append("\t\t{\n");
 
             sb.Append($"\t\t\treturn DropdownValues.Find((x) => x.Item2.Key == id).Item1;\n");
 
             sb.Append("\t\t}\n");
-
-            //sb.Append("#endif\n");
         }
 
         private static void FormatGet(StringBuilder sb)
         {
-            //sb.Append("#if ODIN_INSPECTOR\n");
-
-            //sb.Append($"\t\tpublic static KeyDropdownValue Get(int id)\n");
-            //sb.Append("\t\t{\n");
-
-            //sb.Append($"\t\t\treturn DropdownValues.Find((x) => x.Value.Key == id).Value;\n");
-
-            //sb.Append("\t\t}\n");
-
-            //sb.Append("#endif\n");
-
-            //sb.Append("#if !ODIN_INSPECTOR\n");
-
             sb.Append($"\t\tpublic static KeyDropdownValue Get(int id)\n");
             sb.Append("\t\t{\n");
 
             sb.Append($"\t\t\treturn DropdownValues.Find((x) => x.Item2.Key == id).Item2;\n");
 
             sb.Append("\t\t}\n");
-
-            //sb.Append("#endif\n");
         }
         #endregion
     }

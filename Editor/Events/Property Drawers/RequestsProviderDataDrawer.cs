@@ -15,7 +15,7 @@ namespace VaporEventsEditor
         {
             List<string> keys = new();
             List<KeyDropdownValue> values = new();
-            var key = property.FindPropertyRelative("key");
+            var key = property.FindPropertyRelative("_key");
 
             _ConvertToTupleList(keys, values, KeyUtility.GetAllProviderKeyValues());
 
