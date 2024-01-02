@@ -1,2 +1,2 @@
-# v1.0.0
-* Base
+# v0.1.0
+* Initial Collection Group
