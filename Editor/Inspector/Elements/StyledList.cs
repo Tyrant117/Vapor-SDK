@@ -14,7 +14,7 @@ namespace VaporInspectorEditor
     public class StyledList : Box
     {
         public VaporDrawerInfo Drawer { get; }
-        public SerializedProperty ArrayProperty { get; }
+        public SerializedProperty ArraySizeProperty { get; private set; }
         public TypeInfo ElementType { get; }
         public Foldout Foldout { get; private set; }
         public Label Label { get; private set; }
@@ -26,7 +26,7 @@ namespace VaporInspectorEditor
         public StyledList(VaporDrawerInfo drawer)
         {
             Drawer = drawer;
-            ArrayProperty = drawer.Property.FindPropertyRelative("Array.size");
+            ArraySizeProperty = drawer.Property.FindPropertyRelative("Array.size");
             StyleBox();
             StyleFoldout();
             hierarchy.Add(ListView);
@@ -36,9 +36,17 @@ namespace VaporInspectorEditor
                 : ti.GetElementType().GetTypeInfo();
         }
 
+        public void Rebind()
+        {
+            ArraySizeProperty = Drawer.Property.FindPropertyRelative("Array.size");
+            ListView.itemsSource = null;
+            ListView.BindProperty(Drawer.Property);
+            ListView.RefreshItems();
+        }
+
         protected void StyleBox()
         {
-            name = "styled-list";
+            name = $"{Drawer.Property.propertyPath}_styled-list";
             style.borderBottomColor = ContainerStyles.BorderColor;
             style.borderTopColor = ContainerStyles.BorderColor;
             style.borderRightColor = ContainerStyles.BorderColor;
@@ -51,14 +59,13 @@ namespace VaporInspectorEditor
             style.marginBottom = 3;
             style.marginLeft = 0;
             style.marginRight = 0;
-            // style.backgroundColor = ContainerStyles.BackgroundColor;
         }
 
         protected void StyleFoldout()
         {
             ListView = new ListView
             {
-                name = "styled-list-view",
+                name = $"{Drawer.Property.propertyPath}_styled-list-view",
                 style =
                 {
                     maxHeight = 251,
@@ -73,14 +80,15 @@ namespace VaporInspectorEditor
                 makeItem = OnCustomMake,
                 bindItem = OnCustomBind,
                 reorderable = true,
-                reorderMode = ListViewReorderMode.Animated
+                reorderMode = ListViewReorderMode.Animated,
+                selectionType = SelectionType.None,
+                itemsSource = null
             };
             ListView.BindProperty(Drawer.Property);
-            // ListView.RegisterCallback<WheelEvent>(evt => { ListView.RefreshItems(); });
 
             Foldout = ListView.Q<Foldout>();
             Foldout.text = Drawer.Property.displayName;
-            Foldout.name = "styled-list-foldout";
+            Foldout.name = $"{Drawer.Property.propertyPath}_styled-list-foldout";
             Foldout.viewDataKey = $"styled-list-foldout__vdk_{Drawer.Property.displayName}";
 
             var tog = Foldout.Q<Toggle>();
@@ -125,18 +133,17 @@ namespace VaporInspectorEditor
                 },
                 isDelayed = true,
             };
-            sizeVal.BindProperty(ArrayProperty);
+            sizeVal.BindProperty(ArraySizeProperty);
             sizeVal.ValidateInput += newVal => newVal >= 0;
             sizeVal.RegisterValueChangedCallback(evt =>
             {
                 var target = evt.target as IntegerField;
                 if (evt.newValue >= 0) return;
-                target.value = 0;
+                if (target != null) target.value = 0;
             });
             var valText = sizeVal[0][0];
             valText.style.marginLeft = 0;
             valText.style.paddingLeft = 2;
-            // sizeVal.SetValueWithoutNotify(Drawer.Property.arraySize);
             tog.Add(sizeVal);
             var minus = new Button(OnRemoveFromList)
             {
@@ -190,6 +197,7 @@ namespace VaporInspectorEditor
 
         private void OnCustomBind(VisualElement toBind, int index)
         {
+            // Debug.Log($"Custom Bind {Drawer.Property.displayName} Index: {index}");
             var prop = GetPropertyAtIndex(index);
             if (prop == null)
             {
@@ -208,7 +216,6 @@ namespace VaporInspectorEditor
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (var drawer in drawers)
                 {
-                    // Debug.Log($"Rebinding {drawer.Path} to {prop.propertyPath}");
                     drawer.Rebind(prop);
                 }
 
@@ -227,6 +234,7 @@ namespace VaporInspectorEditor
                     var lastIndex = bindable.name.LastIndexOf('.') + 1;
                     var lastElement = bindable.name[lastIndex..];
                     var propToBind = prop.FindPropertyRelative(lastElement);
+                    Debug.Log($"Binding Property: {propToBind.propertyPath}");
                     field.BindProperty(propToBind);
                     DrawerUtility.OnPropertyBuilt(field);
                 }
@@ -235,11 +243,17 @@ namespace VaporInspectorEditor
                 {
                     DrawerUtility.OnMethodBuilt(b);
                 }
+
+                foreach (var list in rootElement.Query<StyledList>().ToList())
+                {
+                    list.Rebind();
+                }
             }
             else
             {
                 var field = toBind.Q<PropertyField>();
                 field.BindProperty(prop);
+                DrawerUtility.OnListPropertyBuilt(field, prop, Drawer);
             }
 
             var button = toBind.Q<Button>("styled-list-element-button__delete");
@@ -248,6 +262,7 @@ namespace VaporInspectorEditor
 
         protected VisualElement OnCustomMake()
         {
+            // Debug.Log($"Custom Make {Drawer.Property.displayName}");
             var be = new BindableElement
             {
                 style =
@@ -255,7 +270,7 @@ namespace VaporInspectorEditor
                     flexDirection = FlexDirection.Row
                 }
             };
-            var nextProp = GetPropertyAtIndex(ArrayProperty.intValue - 1);
+            var nextProp = GetPropertyAtIndex(ArraySizeProperty.intValue - 1);
             var root = new VaporListElementRoot(ElementType, nextProp);
             if (root.IsDrawnWithVapor)
             {
@@ -275,11 +290,13 @@ namespace VaporInspectorEditor
                 };
                 pf.AddManipulator(new ContextualMenuManipulator(evt =>
                 {
-                    // Debug.Log(drawer.Path);
                     evt.menu.AppendAction("Set To Null", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -293,7 +310,10 @@ namespace VaporInspectorEditor
                     evt.menu.AppendAction("Reset", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -309,7 +329,10 @@ namespace VaporInspectorEditor
                     evt.menu.AppendAction("Copy", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -322,7 +345,10 @@ namespace VaporInspectorEditor
                     evt.menu.AppendAction("Paste", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -334,7 +360,10 @@ namespace VaporInspectorEditor
                     }, actionStatus =>
                     {
                         var data = actionStatus.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return DropdownMenuAction.Status.Hidden;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return DropdownMenuAction.Status.Hidden;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -349,7 +378,10 @@ namespace VaporInspectorEditor
                     evt.menu.AppendAction("Copy Binding Path", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -363,7 +395,10 @@ namespace VaporInspectorEditor
                     evt.menu.AppendAction("Duplicate Array Element", action =>
                     {
                         var data = action.userData as PropertyField;
-                        if (data.userData is not SerializedObject so) return;
+                        if (data.userData is not SerializedObject so)
+                        {
+                            return;
+                        }
 
                         var prop = so.FindProperty(data.bindingPath);
                         if (prop == null)
@@ -371,8 +406,8 @@ namespace VaporInspectorEditor
                             return;
                         }
 
-                        int matchIndex = -1;
-                        for (int i = 0; i < ArrayProperty.intValue; i++)
+                        var matchIndex = -1;
+                        for (var i = 0; i < ArraySizeProperty.intValue; i++)
                         {
                             var path = GetPropertyAtIndex(i).propertyPath;
                             // Debug.Log(path);
@@ -414,27 +449,31 @@ namespace VaporInspectorEditor
 
         private void OnAddToList()
         {
-            Drawer.Property.arraySize++;
-            Drawer.Property.serializedObject.ApplyModifiedProperties();
-            ListView.schedule.Execute(() => { ListView.RefreshItems(); }).ExecuteLater(100L);
+            // Debug.Log($"Added: {Drawer.Property.displayName}");
+            ListView.viewController.AddItems(1);
+            // Drawer.Property.arraySize++;
+            // Drawer.Property.serializedObject.ApplyModifiedProperties();
+            // ListView.schedule.Execute(() => { ListView.RefreshItems(); }).ExecuteLater(100L);
         }
 
         private void OnRemoveFromList()
         {
-            if (Drawer.Property.arraySize <= 0)
+            if (ArraySizeProperty.intValue <= 0)
             {
                 return;
             }
+            ListView.viewController.RemoveItem(ArraySizeProperty.intValue - 1);
 
-            Drawer.Property.arraySize--;
-            Drawer.Property.serializedObject.ApplyModifiedProperties();
-            ListView.schedule.Execute(() => { ListView.RefreshItems(); }).ExecuteLater(100L);
+            // Drawer.Property.arraySize--;
+            // Drawer.Property.serializedObject.ApplyModifiedProperties();
+            // ListView.schedule.Execute(() => { ListView.RefreshItems(); }).ExecuteLater(100L);
         }
 
         private void RemoveIndexFromList(int index)
         {
             Drawer.Property.DeleteArrayElementAtIndex(index);
             Drawer.Property.serializedObject.ApplyModifiedProperties();
+            ListView.RefreshItems();
             ListView.schedule.Execute(() => { ListView.RefreshItems(); }).ExecuteLater(100L);
         }
 

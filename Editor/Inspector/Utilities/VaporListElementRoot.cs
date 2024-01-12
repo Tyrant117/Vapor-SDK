@@ -10,6 +10,7 @@ using VaporInspector;
 
 namespace VaporInspectorEditor
 {
+    [System.Obsolete]
     public class VaporListElementRoot
     {
         public TypeInfo ElementType { get; }
@@ -82,7 +83,7 @@ namespace VaporInspectorEditor
                 methodInfo.AddRange(type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly));
             }
 
-            foreach (var field in fieldInfo.Where(BaseVaporInspector.FieldSearchPredicate))
+            foreach (var field in fieldInfo.Where(BaseVaporInspectorOld.FieldSearchPredicate))
             {
                 var property = Property.FindPropertyRelative(field.Name);
                 if (property == null)
@@ -93,13 +94,13 @@ namespace VaporInspectorEditor
                 SerializedDrawerInfo.Add(info);
             }
 
-            foreach (var property in propertyInfo.Where(BaseVaporInspector.PropertySearchPredicate))
+            foreach (var property in propertyInfo.Where(BaseVaporInspectorOld.PropertySearchPredicate))
             {
                 var info = new VaporDrawerInfo($"{ElementType.Name}_p_{property.Name}", property, target, null);
                 SerializedDrawerInfo.Add(info);
             }
 
-            foreach (var method in methodInfo.Where(BaseVaporInspector.MethodSearchPredicate))
+            foreach (var method in methodInfo.Where(BaseVaporInspectorOld.MethodSearchPredicate))
             {
                 var info = new VaporDrawerInfo($"{ElementType.Name}_m_{method.Name}", method, target, null);
                 SerializedDrawerInfo.Add(info);
@@ -192,7 +193,7 @@ namespace VaporInspectorEditor
                 if (!NodeBag.TryGetValue(UnmanagedGroupName, out var node))
                 {
                     var atr = ElementType.GetCustomAttribute<UnManagedGroupAttribute>() ?? new UnManagedGroupAttribute();
-                    VisualElement ve = atr.UnmanagedGroupType switch
+                    VisualElement ve = atr.Type switch
                     {
                         UIGroupType.Horizontal => new StyledHorizontalGroup()
                         {
@@ -202,11 +203,11 @@ namespace VaporInspectorEditor
                         {
                             name = UnmanagedGroupName
                         },
-                        UIGroupType.Foldout => new StyledFoldout(atr.UnmanagedGroupHeader)
+                        UIGroupType.Foldout => new StyledFoldout(atr.Header)
                         {
                             name = UnmanagedGroupName
                         },
-                        UIGroupType.Box => new StyledHeaderBox(atr.UnmanagedGroupHeader)
+                        UIGroupType.Box => new StyledHeaderBox(atr.Header)
                         {
                             name = UnmanagedGroupName
                         },
@@ -214,7 +215,7 @@ namespace VaporInspectorEditor
                         {
                             name = UnmanagedGroupName
                         },
-                        UIGroupType.Title => new StyledTitleGroup(new TitleGroupAttribute(UnmanagedGroupName, atr.UnmanagedGroupHeader))
+                        UIGroupType.Title => new StyledTitleGroup(new TitleGroupAttribute(UnmanagedGroupName, atr.Header))
                         {
                             name = UnmanagedGroupName
                         },
@@ -223,7 +224,7 @@ namespace VaporInspectorEditor
                             name = UnmanagedGroupName
                         },
                     };
-                    parentNode.AddChild(atr.UnmanagedGroupType, UnmanagedGroupName, atr.UnmanagedGroupOrder, ve);
+                    parentNode.AddChild(atr.Type, UnmanagedGroupName, atr.Order, ve);
                     var added = parentNode.Children[^1];
                     NodeBag.Add(UnmanagedGroupName, added);
                     return added;

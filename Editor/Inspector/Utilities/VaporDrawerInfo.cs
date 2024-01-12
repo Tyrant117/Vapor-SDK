@@ -18,6 +18,7 @@ namespace VaporInspectorEditor
         Method
     }
 
+    [Obsolete]
     public class VaporDrawerInfo
     {
         private static Func<VaporGroupAttribute, int> ShortestToLongestName => group => group.GroupName.Length;
@@ -104,7 +105,7 @@ namespace VaporInspectorEditor
                 methodInfoList.AddRange(type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly));
             }
 
-            foreach (var field in fieldInfoList.Where(BaseVaporInspector.FieldSearchPredicate))
+            foreach (var field in fieldInfoList.Where(BaseVaporInspectorOld.FieldSearchPredicate))
             {
                 var relativeProperty = Property.FindPropertyRelative(field.Name);
                 // Debug.Log($"{Property.displayName} - {Property.propertyType}");
@@ -127,7 +128,7 @@ namespace VaporInspectorEditor
                 Children.Add(info);
             }
                 
-            foreach (var childProperty in propertyInfoList.Where(BaseVaporInspector.PropertySearchPredicate))
+            foreach (var childProperty in propertyInfoList.Where(BaseVaporInspectorOld.PropertySearchPredicate))
             {
                 var info = new VaporDrawerInfo($"{Property.propertyPath}_p_{childProperty.Name}", childProperty, subTarget, this);
                 if (info.IsUnmanagedGroup)
@@ -136,7 +137,7 @@ namespace VaporInspectorEditor
                 }
                 Children.Add(info);
             }
-            foreach (var method in methodInfoList.Where(BaseVaporInspector.MethodSearchPredicate))
+            foreach (var method in methodInfoList.Where(BaseVaporInspectorOld.MethodSearchPredicate))
             {                    
                 var info = new VaporDrawerInfo($"{Property.propertyPath}_m_{method.Name}", method, subTarget, this);
                 if (info.IsUnmanagedGroup)
@@ -307,8 +308,8 @@ namespace VaporInspectorEditor
             {
                 if (!nodeBag.TryGetValue(groupName, out var foundNode))
                 {
-                    var order = _unmanagedGroupAttribute.UnmanagedGroupOrder;
-                    VisualElement ve = _unmanagedGroupAttribute.UnmanagedGroupType switch
+                    var order = _unmanagedGroupAttribute.Order;
+                    VisualElement ve = _unmanagedGroupAttribute.Type switch
                     {
                         UIGroupType.Horizontal => new StyledHorizontalGroup()
                         {
@@ -318,11 +319,11 @@ namespace VaporInspectorEditor
                         {
                             name = groupName
                         },
-                        UIGroupType.Foldout => new StyledFoldout(_unmanagedGroupAttribute.UnmanagedGroupHeader)
+                        UIGroupType.Foldout => new StyledFoldout(_unmanagedGroupAttribute.Header)
                         {
                             name = groupName
                         },
-                        UIGroupType.Box => new StyledHeaderBox(_unmanagedGroupAttribute.UnmanagedGroupHeader)
+                        UIGroupType.Box => new StyledHeaderBox(_unmanagedGroupAttribute.Header)
                         {
                             name = groupName
                         },
@@ -330,7 +331,7 @@ namespace VaporInspectorEditor
                         {
                             name = groupName
                         },
-                        UIGroupType.Title => new StyledTitleGroup(new TitleGroupAttribute(groupName, _unmanagedGroupAttribute.UnmanagedGroupHeader))
+                        UIGroupType.Title => new StyledTitleGroup(new TitleGroupAttribute(groupName, _unmanagedGroupAttribute.Header))
                         {
                             name = groupName
                         },
@@ -344,7 +345,7 @@ namespace VaporInspectorEditor
                     //{
                     //    name = groupName
                     //};
-                    parentNode.AddChild(_unmanagedGroupAttribute.UnmanagedGroupType, groupName, order, ve);
+                    parentNode.AddChild(_unmanagedGroupAttribute.Type, groupName, order, ve);
                     var added = parentNode.Children[^1];
                     nodeBag.Add(groupName, added);
                     return added;

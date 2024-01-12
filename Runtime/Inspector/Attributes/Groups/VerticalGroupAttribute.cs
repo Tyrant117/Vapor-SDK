@@ -12,9 +12,9 @@ namespace VaporInspector
 
         public VerticalGroupAttribute(string groupName, int order = 0)
         {
-            GroupName = groupName;
+            GroupName = groupName.Replace(" ", "");
             Order = order;
-            Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
+            // Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
 
             int last = GroupName.LastIndexOf('/');
             ParentName = last != -1 ? GroupName[..last] : "";

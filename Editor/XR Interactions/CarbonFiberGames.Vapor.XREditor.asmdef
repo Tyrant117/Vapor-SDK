@@ -3,7 +3,9 @@
     "rootNamespace": "VaporXREditor",
     "references": [
         "GUID:03c45fc83efe5214dacae0b5f3542329",
-        "GUID:1a5f1842a1f25b24bbad9a4fccc45b90"
+        "GUID:1a5f1842a1f25b24bbad9a4fccc45b90",
+        "GUID:d2a41dbe356235645a4f8b658e23dbb5",
+        "GUID:6f1965c989c67cc40a02406c75e35d2d"
     ],
     "includePlatforms": [
         "Editor"
@@ -16,6 +18,12 @@
     "defineConstraints": [
         "VAPOR_XR"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.hands",
+            "expression": "1.3.0",
+            "define": "XR_HANDS_1_3_OR_NEWER"
+        }
+    ],
     "noEngineReferences": false
 }

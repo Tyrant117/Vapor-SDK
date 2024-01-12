@@ -10,6 +10,7 @@ using Vapor.Utilities;
 using VaporInspector;
 using VaporInspectorEditor;
 using VaporKeys;
+using ReflectionUtility = VaporInspectorEditor.ReflectionUtility;
 
 namespace VaporKeysEditor
 {

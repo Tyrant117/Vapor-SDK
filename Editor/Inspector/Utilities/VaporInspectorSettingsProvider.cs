@@ -15,6 +15,7 @@ namespace VaporInspectorEditor
         }
 
         private const string EnableVaporInspectors = "enableVaporInspectors";
+        private const string VaporInspectorsResolverUpdate = "vaporInspectorsResolverUpdate";
         // private const string EnableExplicitImplementation = "enableExplicitImplementation";
 
         [SettingsProvider]
@@ -27,6 +28,12 @@ namespace VaporInspectorEditor
         {
             get => EditorPrefs.GetBool(EnableVaporInspectors, true);
             set => EditorPrefs.SetBool(EnableVaporInspectors, value);
+        }
+
+        public static int VaporInspectorResolverUpdateRate
+        {
+            get => EditorPrefs.GetInt(VaporInspectorsResolverUpdate, 1000);
+            set => EditorPrefs.SetInt(VaporInspectorsResolverUpdate, value);
         }
 
         public VaporInspectorsSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
@@ -55,9 +62,20 @@ namespace VaporInspectorEditor
                 VaporInspectorsEnabled = x.newValue;
                 DefineVaporEnabled();
             });
+            
+            var updateRateSlider = new SliderInt("Resolver Update Rate", 60, 1000)
+            {
+                showInputField = true,
+            };
+            updateRateSlider.SetValueWithoutNotify(VaporInspectorResolverUpdateRate);
+            updateRateSlider.RegisterValueChangedCallback(x =>
+            {
+                VaporInspectorResolverUpdateRate = x.newValue;
+            });
 
             DefineVaporEnabled();
             header.Add(enableTog);
+            header.Add(updateRateSlider);
             rootElement.Add(header);
             base.OnActivate(searchContext, rootElement);
         }

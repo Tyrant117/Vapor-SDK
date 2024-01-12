@@ -3,7 +3,8 @@
     "rootNamespace": "VaporInspectorEditor",
     "references": [
         "GUID:1a5f1842a1f25b24bbad9a4fccc45b90",
-        "GUID:b609f4d6b0021554baeca5f5ca57f3b6"
+        "GUID:b609f4d6b0021554baeca5f5ca57f3b6",
+        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f"
     ],
     "includePlatforms": [
         "Editor"

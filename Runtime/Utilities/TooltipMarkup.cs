@@ -19,25 +19,32 @@ namespace Vapor.Utilities
         public const string MethodStart = "<b><color=white>";
         public const string MethodEnd = "</color></b>";
 
-        private static readonly StringBuilder Sb = new();
+        public const string StructStart = "<b><color=#85C490FF>";
+        public const string StructEnd = "</color></b>";
+
+        private static readonly StringBuilder s_Sb = new();
 
         public static string LangWordMarkup(string langWord) => $"{LangWordStart}{langWord}{LangWordEnd}";
         public static string InterfaceMarkup(string interfaceName) => $"{InterfaceStart}{interfaceName}{InterfaceEnd}";
         public static string ClassMarkup(string className) => $"{ClassStart}{className}{ClassEnd}";
         public static string MethodMarkup(string methodName) => $"{MethodStart}{methodName}{MethodEnd}";
+        public static string StructMarkup(string structName) => $"{StructStart}{structName}{StructEnd}";
 
         public static string FormatMarkupString(string tooltip)
         {
-            Sb.Clear();
-            Sb.Replace("<lw>", LangWordStart);
-            Sb.Replace("</lw>", LangWordEnd);
-            Sb.Replace("<itf>", InterfaceStart);
-            Sb.Replace("</itf>", InterfaceEnd);
-            Sb.Replace("<cls>", ClassStart);
-            Sb.Replace("</cls>", ClassEnd);
-            Sb.Replace("<mth>", MethodStart);
-            Sb.Replace("</mth>", MethodEnd);
-            return Sb.ToString();
+            s_Sb.Clear();
+            s_Sb.Append(tooltip);
+            s_Sb.Replace("<lw>", LangWordStart);
+            s_Sb.Replace("</lw>", LangWordEnd);
+            s_Sb.Replace("<itf>", InterfaceStart);
+            s_Sb.Replace("</itf>", InterfaceEnd);
+            s_Sb.Replace("<cls>", ClassStart);
+            s_Sb.Replace("</cls>", ClassEnd);
+            s_Sb.Replace("<str>", StructStart);
+            s_Sb.Replace("</str>", StructEnd);
+            s_Sb.Replace("<mth>", MethodStart);
+            s_Sb.Replace("</mth>", MethodEnd);
+            return s_Sb.ToString();
         }
     }
 }

@@ -16,6 +16,11 @@ namespace VaporInspectorEditor
             // Debug.Log($"Write: {CopyBuffer.GetType()} - {CopyBuffer}");
         }
 
+        public static void WriteToBuffer(VaporInspectorNode node)
+        {
+            CopyBuffer = node.Property.boxedValue;
+        }
+
         public static void WriteToBuffer(object copyTarget)
         {
             CopyBuffer = copyTarget;
@@ -25,6 +30,11 @@ namespace VaporInspectorEditor
         public static bool CanReadFromBuffer(VaporDrawerInfo drawerInfo)
         {
             return CopyBuffer != null && (CopyBuffer.GetType() == drawerInfo.FieldInfo.FieldType || CopyBuffer.GetType().IsSubclassOf(drawerInfo.FieldInfo.FieldType));
+        }
+        
+        public static bool CanReadFromBuffer(VaporInspectorNode node)
+        {
+            return CopyBuffer != null && (CopyBuffer.GetType() == node.FieldInfo.FieldType || CopyBuffer.GetType().IsSubclassOf(node.FieldInfo.FieldType));
         }
         
         public static bool CanReadFromBuffer(Type type)
@@ -42,6 +52,18 @@ namespace VaporInspectorEditor
             }
             drawerInfo.Property.boxedValue = CopyBuffer;
             drawerInfo.Property.serializedObject.ApplyModifiedProperties();
+        }
+        
+        public static void ReadFromBuffer(VaporInspectorNode node)
+        {
+            // Debug.Log($"Read: {CopyBuffer.GetType()} - {drawerInfo.FieldInfo.FieldType}");
+            var isSubclassOrType = (CopyBuffer.GetType() == node.FieldInfo.FieldType || CopyBuffer.GetType().IsSubclassOf(node.FieldInfo.FieldType));
+            if (!isSubclassOrType)
+            {
+                return;
+            }
+            node.Property.boxedValue = CopyBuffer;
+            node.Property.serializedObject.ApplyModifiedProperties();
         }
         
         public static void ReadFromBuffer(SerializedProperty property, Type type)

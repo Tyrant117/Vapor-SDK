@@ -8,10 +8,10 @@ namespace VaporInspector
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
     public class PaddingAttribute : PropertyAttribute
     {
-        public float Left { get; }
-        public float Right { get; }
-        public float Top { get; }
-        public float Bottom { get; }
+        public int? Left { get; }
+        public int? Right { get; }
+        public int? Top { get; }
+        public int? Bottom { get; }
 
         /// <summary>
         /// Use this attribute to change the padding of a property.
@@ -21,12 +21,12 @@ namespace VaporInspector
         /// <param name="right"></param>
         /// <param name="top"></param>
         /// <param name="bottom"></param>
-        public PaddingAttribute(float left = float.MinValue, float right = float.MinValue, float top = float.MinValue, float bottom = float.MinValue)
+        public PaddingAttribute(int left = int.MinValue, int right = int.MinValue, int top = int.MinValue, int bottom = int.MinValue)
         {
-            Left = left;
-            Right = right;
-            Top = top;
-            Bottom = bottom;
+            Left = left == int.MinValue ? null : left;
+            Right = right == int.MinValue ? null : right;
+            Top = top == int.MinValue ? null : top;
+            Bottom = bottom == int.MinValue ? null : bottom;
         }
     }
 }

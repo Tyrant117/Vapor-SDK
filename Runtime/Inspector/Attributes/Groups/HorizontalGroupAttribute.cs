@@ -14,7 +14,7 @@ namespace VaporInspector
         {
             GroupName = groupName;
             Order = order;
-            Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
+            // Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
 
             int last = GroupName.LastIndexOf('/');
             ParentName = last != -1 ? GroupName[..last] : "";

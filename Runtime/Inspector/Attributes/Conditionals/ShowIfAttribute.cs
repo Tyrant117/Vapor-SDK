@@ -5,7 +5,7 @@ using UnityEngine;
 namespace VaporInspector
 {
     [Conditional("VAPOR_INSPECTOR")]
-    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public class ShowIfAttribute : PropertyAttribute
     {
         public ResolverType ResolverType { get; }

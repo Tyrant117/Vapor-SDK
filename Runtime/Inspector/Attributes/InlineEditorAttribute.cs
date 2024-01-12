@@ -5,7 +5,7 @@ using UnityEngine;
 namespace VaporInspector
 {
     [Conditional("VAPOR_INSPECTOR")]
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field)]
     public class InlineEditorAttribute : PropertyAttribute
     {
 

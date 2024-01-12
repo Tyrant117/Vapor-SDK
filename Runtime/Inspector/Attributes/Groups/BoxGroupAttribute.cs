@@ -13,12 +13,12 @@ namespace VaporInspector
 
         public BoxGroupAttribute(string groupName, string header = "", int order = 0)
         {
-            GroupName = groupName;
-            Header = header;
+            GroupName = groupName.Replace(" ", "");
+            Header = string.Empty == header ? groupName : header;
             Order = order;
-            Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
+            // Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
 
-            int last = GroupName.LastIndexOf('/');
+            var last = GroupName.LastIndexOf('/');
             ParentName = last != -1 ? GroupName[..last] : "";
         }
     }
