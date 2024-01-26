@@ -13,7 +13,7 @@ namespace VaporXR.Locomotion
         /// <summary>
         /// Performs the transformation on the given body.
         /// </summary>
-        /// <param name="body">The body whose <see cref="XRMovableBody.originTransform"/> to transform.</param>
+        /// <param name="body">The body whose <see cref="XRMovableBody.OriginTransform"/> to transform.</param>
         void Apply(XRMovableBody body);
     }
 }

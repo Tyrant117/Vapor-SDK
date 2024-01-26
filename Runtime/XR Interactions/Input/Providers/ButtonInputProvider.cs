@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using VaporInspector;
 
 namespace VaporXR
 {
-    [Serializable]
+    [Serializable, DrawWithVapor]
     public class ButtonInputProvider
     {
         /// <summary>
@@ -41,9 +42,9 @@ namespace VaporXR
         }
 
         /// <summary>
-        /// Sets which state this <see cref="SectorInteraction"/> is in.
+        /// Sets which state this sector button is in.
         /// </summary>
-        /// <seealso cref="m_State"/>
+        /// <seealso cref="_state"/>
         public enum State
         {
             /// <summary>
@@ -114,24 +115,29 @@ namespace VaporXR
         
         public enum ButtonReadType
         {
+            None,
             DirectButton,
             AxisButton,
             SectorButton
         }
 
-        protected const float k_MinimumThreshold = 0.1f;
+        protected const float MinimumThreshold = 0.1f;
 
-        [SerializeField]
+        [SerializeField] private ButtonReadType _buttonType;
+        
+        [SerializeField, ShowIf("$IsDirectButton")]
         private XRInputDeviceBoolValueReader _buttonDirectReader;
         
-        [SerializeField]
+        [SerializeField, ShowIf("$IsAxisButton")]
         private XRInputDeviceFloatValueReader _buttonAxis1DReader;
         
-        [SerializeField] 
+        [SerializeField, ShowIf("$IsSectorButton")] 
         private XRInputDeviceVector2ValueReader _buttonAxis2DReader;
-        [SerializeField]
+        [SerializeField, ShowIf("$IsSectorButton")]
+        private XRInputDeviceBoolValueReader _buttonAxis2DButton;
+        [SerializeField, ShowIf("$IsSectorButton")]
         private Directions _directionalButton;
-        [SerializeField] 
+        [SerializeField, ShowIf("$IsSectorButton")] 
         private bool _includeCompositeDirections;
         
         
@@ -139,25 +145,42 @@ namespace VaporXR
         private bool _doubleClick;
         [SerializeField, Range(0.1f, 1f)]
         private float _threshold = 0.1f;
-        [SerializeField, Range(0.1f, 1f)]
-        private float _releaseThreshold = 0.1f;
-        [SerializeField]
-        private ThresholdBehavior _thresholdBehavior = ThresholdBehavior.AllowReentry;
-        [SerializeField]
-        private bool _monitorAxisValues;
         
-        public InputInteractionState CurrentState { get; private set; }
+        [SerializeField, Range(0.1f, 1f), ShowIf("$IsAxisButton")]
+        private float _releaseThreshold = 0.1f;
+        [SerializeField, HideIf("$IsDirectButton")]
+        private ThresholdBehavior _thresholdBehavior = ThresholdBehavior.AllowReentry;
+        [SerializeField, ShowIf("$IsAxisButton")]
+        private bool _monitorAxisValues;
+
+        public InputInteractionState CurrentState { get; private set; } = new();
         public bool IsHeld => CurrentState.Active;
+        public float CurrentValue => _currentValue;
+        public Vector2 CurrentDirectionVector { get; private set; }
+        public Directions CurrentDirection { get; private set; }
+        public float Threshold { get => _threshold; set => _threshold = value; }
+
+#if UNITY_EDITOR
+        // ReSharper disable once UnusedMember.Local
+        private bool IsNone => _buttonType == ButtonReadType.None;
+        // ReSharper disable once UnusedMember.Local
+        private bool IsDirectButton => _buttonType == ButtonReadType.DirectButton;
+        // ReSharper disable once UnusedMember.Local
+        private bool IsAxisButton => _buttonType == ButtonReadType.AxisButton;
+        // ReSharper disable once UnusedMember.Local
+        private bool IsSectorButton => _buttonType == ButtonReadType.SectorButton;        
+#endif
         
         private IInputDeviceUpdateProvider _updateProvider;
         private State _state;
-        private ButtonReadType _buttonType;
         private bool _isAxisSetup;
         private bool _wasValidDirection;
         private float _lastValue;
         private float _currentValue;
         private bool _wasPressed; 
         private bool _wasReleased;
+        private bool _wasFullyReleased = true;
+        private bool _waitingForFullRelease;
         
         public event Action Activated;
         public event Action Deactivated;
@@ -173,26 +196,13 @@ namespace VaporXR
                 return;
             }
 
-            // Setup checks if its either a direct button or a sector button.
-            if (_buttonDirectReader != null)
+            if (_buttonType == ButtonReadType.None)
             {
-                if (_buttonAxis2DReader != null)
-                {
-                    _buttonType = ButtonReadType.SectorButton;
-                }
-
-                _buttonType = ButtonReadType.DirectButton;
-                _isAxisSetup = true;
                 return;
             }
 
-            // If not checks if its an axis button.
-            if (_buttonAxis1DReader != null)
-            {
-                _buttonType = ButtonReadType.AxisButton;
-                _isAxisSetup = true;
-            }
-                
+            _isAxisSetup = true;
+
             // If not a button exit binding setup. This case is for when you might not want a button bound, but its part of another class.
             // Like a Motion Provide or part of a composite that always returns its default value.
         }
@@ -211,6 +221,15 @@ namespace VaporXR
 
         public void UnbindUpdateEvent()
         {
+            if (!_isAxisSetup)
+            {
+                return;
+            }
+            
+            if (_updateProvider == null)
+            {
+                return;
+            }
             _updateProvider.UnRegisterForInputUpdate(UpdateInput);
             _updateProvider = null;
         }
@@ -227,6 +246,10 @@ namespace VaporXR
             _wasPressed = IsPressed();
             CurrentState.SetFrameState(_wasPressed, _currentValue);
             _wasReleased = CurrentState.DeactivatedThisFrame;
+            if (_waitingForFullRelease)
+            {
+                _waitingForFullRelease = WaitingForFullRelease();
+            }
 
             FireEvents();
         }
@@ -252,41 +275,24 @@ namespace VaporXR
                 switch (_thresholdBehavior)
                 {
                     case ThresholdBehavior.Locked:
-                        return CurrentState.Active ? _currentValue >= k_MinimumThreshold : _currentValue >= _threshold;
+                        return CurrentState.Active ? _currentValue >= MinimumThreshold : _currentValue >= _threshold;
                     case ThresholdBehavior.AllowReentry:
-                        if (CurrentState.Active)
-                        {
-                            return _currentValue >= _releaseThreshold;
-                        }
-                        if (_wasReleased)
-                        {
-                            var hasReleasedFully = _currentValue < Mathf.Min(_threshold, _releaseThreshold);
-                            if (hasReleasedFully)
-                            {
-                                _wasReleased = false;
-                                return _currentValue >= _threshold;
-                            }
-
-                            return false;
-                        }
-                        return _currentValue >= _threshold;
+                        return CurrentState.Active ? _currentValue >= _releaseThreshold : _currentValue >= _threshold;
                     case ThresholdBehavior.DisallowReentry:
                         if (CurrentState.Active)
                         {
-                            return _currentValue >= _releaseThreshold;
+                            var held = _currentValue >= _releaseThreshold;
+                            _waitingForFullRelease = !held;
+                            return held;
                         }
-                        if (_wasReleased)
+                        if (_waitingForFullRelease)
                         {
-                            bool hasReleasedFully = _currentValue < k_MinimumThreshold;
-                            if (hasReleasedFully)
-                            {
-                                _wasReleased = false;
-                                return _currentValue >= _threshold;
-                            }
-
                             return false;
                         }
-                        return _currentValue >= _threshold;
+                        else
+                        {
+                            return _currentValue >= _threshold;
+                        }
                     case ThresholdBehavior.HistoryIndependent:
                     default:
                         return _currentValue >= _threshold;
@@ -295,10 +301,14 @@ namespace VaporXR
 
             bool _IsAxis2DPressed()
             {
-                var isActuated = _buttonDirectReader.ReadValue();
-                if (!isActuated)
+                var isActuated = _buttonAxis2DButton != null ? _buttonAxis2DButton.ReadValue() : true;
+                CurrentDirectionVector = isActuated ? _buttonAxis2DReader.ReadValue() : Vector2.zero;
+                _currentValue = isActuated ? CurrentDirectionVector.magnitude : 0;
+                if (!isActuated || CurrentValue < Threshold)
                 {
-                    _wasReleased = false;
+                    //_wasReleased = false;
+                    _waitingForFullRelease = false;
+                    CurrentDirection = Directions.None;
                     _state = State.Centered;
                     return false;
                 }
@@ -310,7 +320,7 @@ namespace VaporXR
                     _wasValidDirection = isValidDirection;
                     return isValidDirection;
                 }
-                var isStillPressed = true;
+                bool isStillPressed;
                 switch (_thresholdBehavior)
                 {
                     case ThresholdBehavior.Locked:
@@ -335,13 +345,17 @@ namespace VaporXR
 
                         break;
                     case ThresholdBehavior.DisallowReentry:
-                        if (_wasReleased)
+                        if (_waitingForFullRelease)
                         {
                             isStillPressed = false;
                         }
                         else
                         {
                             isStillPressed = _wasValidDirection && isValidDirection && _state == State.StartedValidDirection;
+                            if (!isStillPressed)
+                            {
+                                _waitingForFullRelease = true;
+                            }
                         }
 
                         break;
@@ -351,10 +365,28 @@ namespace VaporXR
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
+                
                 _wasValidDirection = isValidDirection;
                 return isStillPressed;
             }
+        }
+
+        protected bool WaitingForFullRelease()
+        {
+            return _buttonType switch
+            {
+                ButtonReadType.AxisButton => _thresholdBehavior switch
+                {
+                    ThresholdBehavior.DisallowReentry => _currentValue >= MinimumThreshold,
+                    _ => false,
+                },
+                ButtonReadType.SectorButton => _thresholdBehavior switch
+                {
+                    ThresholdBehavior.DisallowReentry => _currentValue >= Threshold,
+                    _ => false,
+                },
+                _ => false,
+            };
         }
 
         public void FireEvents()
@@ -388,9 +420,9 @@ namespace VaporXR
 
         private bool IsValidDirection()
         {
-            var cardinal = CardinalUtility.GetNearestCardinal(_buttonAxis2DReader.ReadValue(), _includeCompositeDirections);
-            var nearestDirection = GetNearestDirection(cardinal);
-            return (nearestDirection & _directionalButton) != 0;
+            var cardinal = CardinalUtility.GetNearestCardinal(CurrentDirectionVector, _includeCompositeDirections);
+            CurrentDirection = GetNearestDirection(cardinal);
+            return (CurrentDirection & _directionalButton) != 0;
         }
 
         private static Directions GetNearestDirection(Cardinal value)
@@ -408,6 +440,14 @@ namespace VaporXR
                 _ => Directions.None,
             };
         }
-        
+
+        public override string ToString()
+        {
+            var s1 = _buttonDirectReader ? _buttonDirectReader.name : "";
+            var s2 = _buttonAxis1DReader ? _buttonAxis1DReader.name : "";
+            var s3 = _buttonAxis2DReader ? _buttonAxis2DReader.name : "";
+            return $"Button Reader: {s1} {s2} {s3}";
+        }
+
     }
 }

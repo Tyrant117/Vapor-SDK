@@ -12,16 +12,36 @@ namespace VaporXR
     /// Configuration class for interaction layers.
     /// Stores all interaction layers.
     /// </summary>
-    [ScriptableSettingsPath("Assets/Vapor/XR")]
-    public class InteractionLayerSettings : ScriptableSettings<InteractionLayerSettings>, ISerializationCallbackReceiver
+    public class InteractionLayerSettings : ScriptableObject, ISerializationCallbackReceiver
     {
-        const string k_DefaultLayerName = "Default";
+        private const string DefaultLayerName = "Default";
 
-        public const int layerSize = 32;
-        public const int builtInLayerSize = 1;
+        public const int LayerSize = 32;
+        public const int BuiltInLayerSize = 1;
+
+        [InitializeOnLoadMethod]
+        private static void ResetInstance()
+        {
+            s_Instance = null;
+        }
+        
+
+        private static InteractionLayerSettings s_Instance;
+        public static InteractionLayerSettings Instance
+        {
+            get
+            {
+                if (s_Instance == null)
+                {
+                    s_Instance = Resources.Load<InteractionLayerSettings>("InteractionLayerSettings");
+                }
+
+                return s_Instance;
+            }
+        }
 
         [SerializeField]
-        string[] m_LayerNames;
+        private string[] _layerNames;
 
         /// <summary>
         /// Check if the interaction layer name at the supplied index is empty.
@@ -30,7 +50,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the target interaction layer is empty.</returns>
         public bool IsLayerEmpty(int index)
         {
-            return string.IsNullOrEmpty(m_LayerNames[index]);
+            return string.IsNullOrEmpty(_layerNames[index]);
         }
 
         /// <summary>
@@ -43,7 +63,7 @@ namespace VaporXR
 #if UNITY_EDITOR
             Undo.RecordObject(this, "Interaction Layer");
 #endif
-            m_LayerNames[index] = layerName;
+            _layerNames[index] = layerName;
 #if UNITY_EDITOR
             EditorUtility.SetDirty(this);
 #endif
@@ -56,7 +76,7 @@ namespace VaporXR
         /// <returns>Returns the target interaction layer name.</returns>
         public string GetLayerNameAt(int index)
         {
-            return m_LayerNames[index];
+            return _layerNames[index];
         }
 
         /// <summary>
@@ -66,9 +86,9 @@ namespace VaporXR
         /// <returns>Returns the interaction layer value.</returns>
         public int GetLayer(string layerName)
         {
-            for (var i = 0; i < m_LayerNames.Length; i++)
+            for (var i = 0; i < _layerNames.Length; i++)
             {
-                if (string.Equals(layerName, m_LayerNames[i]))
+                if (string.Equals(layerName, _layerNames[i]))
                     return i;
             }
 
@@ -82,9 +102,14 @@ namespace VaporXR
         /// <param name="values">The list to fill in with interaction layer values.</param>
         public void GetLayerNamesAndValues(List<string> names, List<int> values)
         {
-            for (var i = 0; i < m_LayerNames.Length; i++)
+            if (_layerNames == null)
             {
-                var layerName = m_LayerNames[i];
+                return;
+            }
+            
+            for (var i = 0; i < _layerNames.Length; i++)
+            {
+                var layerName = _layerNames[i];
                 if (string.IsNullOrEmpty(layerName))
                     continue;
 
@@ -96,14 +121,13 @@ namespace VaporXR
         /// <inheritdoc />
         public void OnBeforeSerialize()
         {
-            if (m_LayerNames == null)
-                m_LayerNames = new string[layerSize];
+            _layerNames ??= new string[LayerSize];
 
-            if (m_LayerNames.Length != layerSize)
-                Array.Resize(ref m_LayerNames, layerSize);
+            if (_layerNames.Length != LayerSize)
+                Array.Resize(ref _layerNames, LayerSize);
 
-            if (!string.Equals(m_LayerNames[0], k_DefaultLayerName))
-                m_LayerNames[0] = k_DefaultLayerName;
+            if (!string.Equals(_layerNames[0], DefaultLayerName))
+                _layerNames[0] = DefaultLayerName;
         }
 
         /// <inheritdoc />

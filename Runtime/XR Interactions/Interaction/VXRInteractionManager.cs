@@ -317,7 +317,7 @@ namespace VaporXR
                     " You can use the <b>Window</b> > <b>Analysis</b> > <b>XR Interaction Debugger</b> window to verify the interactors and interactables registered with each.";
 #if UNITY_EDITOR
                     message += " The default manager that interactors and interactables automatically register with when None is: " +
-                               GetHierarchyPath(SingletonBus.Get<VXRInteractionManager>().gameObject);
+                               GetHierarchyPath(ComponentLocatorUtility<VXRInteractionManager>.FindOrCreateComponent().gameObject);
 #endif
 
                 Debug.LogWarning(message, this);
@@ -1841,13 +1841,17 @@ namespace VaporXR
             var foundHighestPriorityTarget = false;
             foreach (var target in validTargets)
             {
-                if (!(target is IXRSelectInteractable interactable))
+                if (target is not IXRSelectInteractable interactable)
+                {
                     continue;
+                }
 
                 if (targetPriorityMode == TargetPriorityMode.None || targetPriorityMode == TargetPriorityMode.HighestPriorityOnly && foundHighestPriorityTarget)
                 {
                     if (CanSelect(interactor, interactable))
+                    {
                         SelectEnter(interactor, interactable);
+                    }
                 }
                 else if (IsSelectPossible(interactor, interactable))
                 {
@@ -1867,7 +1871,9 @@ namespace VaporXR
                     targetPriorityInteractor.TargetsForSelection?.Add(interactable);
 
                     if (interactor.IsSelectActive)
+                    {
                         SelectEnter(interactor, interactable);
+                    }
                 }
             }
         }

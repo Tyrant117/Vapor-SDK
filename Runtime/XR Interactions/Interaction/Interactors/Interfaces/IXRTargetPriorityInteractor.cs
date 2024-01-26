@@ -40,7 +40,7 @@ namespace VaporXR
     /// <seealso cref="VXRInteractionManager.InteractorSelectValidTargets(IXRSelectInteractor, List{IXRInteractable})"/>
     /// <seealso cref="VXRInteractionManager.IsHighestPriorityTarget"/>
     /// <seealso cref="IXRInteractor.GetValidTargets"/>
-    public interface IXRTargetPriorityInteractor : IXRInteractor
+    public interface IXRTargetPriorityInteractor
     {
         /// <summary>
         /// Specifies how many Interactables should be monitored in the <see cref="TargetsForSelection"/>

@@ -93,7 +93,7 @@ namespace VaporXR.Locomotion
         protected override Vector3 ComputeDesiredMove(out bool attemptingMove)
         {
             attemptingMove = false;
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             var wasMoving = m_IsMoving;
             m_IsMoving = canMove && IsGrabbing() && xrOrigin != null;
             if (!m_IsMoving)

@@ -278,30 +278,30 @@ namespace VaporXR
         [RichTextTooltip("Whether Unity considers only the closest Interactable as a valid target for interaction.")]
         private bool _hitClosestOnly;
         
-        [SerializeField, FoldoutGroup("Raycast Input")] 
+        [SerializeField, FoldoutGroup("Input/Raycast", header: "Raycast")] 
         [RichTextTooltip("Input to use for pressing UI elements.\nFunctions like a mouse button when pointing over UI.")]
-        private XRInputDeviceButtonReader _uiPressInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private ButtonInputProvider _uiPressInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("Input to use for scrolling UI elements.\nFunctions like a mouse scroll wheel when pointing over UI.")]
-        private XRInputDeviceVector2ValueReader _uiScrollInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private Axis2DInputProvider _uiScrollInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("Input to use for translating the attach point closer or further away from the interactor.\nThis effectively moves the selected grab interactable along the ray.")]
-        private XRInputDeviceVector2ValueReader _translateManipulationInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private Axis2DInputProvider _translateManipulationInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("Input to use for rotating the attach point over time.\nThis effectively rotates the selected grab interactable while the input is pushed in either direction.")]
-        private XRInputDeviceVector2ValueReader _rotateManipulationInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private Axis2DInputProvider _rotateManipulationInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("Input to use for rotating the attach point to match the direction of the input.\nThis effectively rotates the selected grab interactable or teleport target to match the direction of the input.")]
-        private XRInputDeviceVector2ValueReader _directionalManipulationInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private Axis2DInputProvider _directionalManipulationInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("The input to use for toggling between Attach Transform manipulation modes to either scale or translate/rotate.")]
-        private XRInputDeviceButtonReader _scaleToggleInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private ButtonInputProvider _scaleToggleInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("The input to use for providing a scale value to grab transformers for scaling over time.\nThis effectively scales the selected grab interactable while the input is pushed in either direction.")]
-        private XRInputDeviceVector2ValueReader _scaleOverTimeInput;
-        [SerializeField, FoldoutGroup("Raycast Input")]
+        private Axis2DInputProvider _scaleOverTimeInput;
+        [SerializeField, FoldoutGroup("Input/Raycast")]
         [RichTextTooltip("The input to use for providing a scale value to grab transformers for scaling based on a distance delta from last frame.\nThis input is typically used for scaling with a pinch gesture on mobile AR.")]
-        private XRInputDeviceFloatValueReader _scaleDistanceDeltaInput;
+        private Axis1DInputProvider _scaleDistanceDeltaInput;
         
         [SerializeField, FoldoutGroup("UI")]
         [RichTextTooltip("Enable to affect Unity UI GameObjects in a way that is similar to a mouse pointer.\nRequires the XR UI Input Module on the Event System.")]
@@ -811,7 +811,7 @@ namespace VaporXR
         /// Input to use for pressing UI elements.
         /// Functions like a mouse button when pointing over UI.
         /// </summary>
-        public XRInputDeviceButtonReader UIPressInput
+        public ButtonInputProvider UIPressInput
         {
             get => _uiPressInput;
             set => _uiPressInput = value;
@@ -821,7 +821,7 @@ namespace VaporXR
         /// Input to use for scrolling UI elements.
         /// Functions like a mouse scroll wheel when pointing over UI.
         /// </summary>
-        public XRInputDeviceVector2ValueReader UIScrollInput
+        public Axis2DInputProvider UIScrollInput
         {
             get => _uiScrollInput;
             set => _uiScrollInput = value;
@@ -834,7 +834,7 @@ namespace VaporXR
         /// <remarks>
         /// Uses the y-axis as the translation input.
         /// </remarks>
-        public XRInputDeviceVector2ValueReader TranslateManipulationInput
+        public Axis2DInputProvider TranslateManipulationInput
         {
             get => _translateManipulationInput;
             set => _translateManipulationInput = value;
@@ -848,7 +848,7 @@ namespace VaporXR
         /// Uses the x-axis as the rotation input.
         /// </remarks>
         /// <seealso cref="RotateModeType.RotateOverTime"/>
-        public XRInputDeviceVector2ValueReader RotateManipulationInput
+        public Axis2DInputProvider RotateManipulationInput
         {
             get => _rotateManipulationInput;
             set => _rotateManipulationInput = value;
@@ -862,7 +862,7 @@ namespace VaporXR
         /// The direction angle should be computed as the arctangent function of x/y.
         /// </remarks>
         /// <seealso cref="RotateModeType.MatchDirection"/>
-        public XRInputDeviceVector2ValueReader DirectionalManipulationInput
+        public Axis2DInputProvider DirectionalManipulationInput
         {
             get => _directionalManipulationInput;
             set => _rotateManipulationInput = value;
@@ -871,7 +871,7 @@ namespace VaporXR
         /// <summary>
         /// The input to use for toggling between Attach Transform manipulation modes to either scale or translate/rotate.
         /// </summary>
-        public XRInputDeviceButtonReader ScaleToggleInput
+        public ButtonInputProvider ScaleToggleInput
         {
             get => _scaleToggleInput;
             set => _scaleToggleInput = value;
@@ -886,7 +886,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="ScaleMode.ScaleOverTime"/>
         /// <seealso cref="XRGeneralGrabTransformer.allowOneHandedScaling"/>
-        public XRInputDeviceVector2ValueReader ScaleOverTimeInput
+        public Axis2DInputProvider ScaleOverTimeInput
         {
             get => _scaleOverTimeInput;
             set => _scaleOverTimeInput = value;
@@ -897,7 +897,7 @@ namespace VaporXR
         /// This input is typically used for scaling with a pinch gesture on mobile AR.
         /// </summary>
         /// <seealso cref="ScaleMode.DistanceDelta"/>
-        public XRInputDeviceFloatValueReader ScaleDistanceDeltaInput
+        public Axis1DInputProvider ScaleDistanceDeltaInput
         {
             get => _scaleDistanceDeltaInput;
             set => _scaleDistanceDeltaInput = value;
@@ -1010,14 +1010,14 @@ namespace VaporXR
 
         #region Events
         /// <inheritdoc />
-        public UIHoverEnterEvent uiHoverEntered
+        public UIHoverEnterEvent UiHoverEntered
         {
             get => _uiHoverEntered;
             set => _uiHoverEntered = value;
         }
 
         /// <inheritdoc />
-        public UIHoverExitEvent uiHoverExited
+        public UIHoverExitEvent UiHoverExited
         {
             get => _uiHoverExited;
             set => _uiHoverExited = value;
@@ -1086,14 +1086,14 @@ namespace VaporXR
         {
             base.Awake();
 
-            ButtonReaders.Add(_uiPressInput);
-            ValueReaders.Add(_uiScrollInput);
-            ValueReaders.Add(_translateManipulationInput);
-            ValueReaders.Add(_rotateManipulationInput);
-            ValueReaders.Add(_directionalManipulationInput);
-            ButtonReaders.Add(_scaleToggleInput);
-            ValueReaders.Add(_scaleOverTimeInput);
-            ValueReaders.Add(_scaleDistanceDeltaInput);
+            // ButtonReaders.Add(_uiPressInput);
+            // ValueReaders.Add(_uiScrollInput);
+            // ValueReaders.Add(_translateManipulationInput);
+            // ValueReaders.Add(_rotateManipulationInput);
+            // ValueReaders.Add(_directionalManipulationInput);
+            // ButtonReaders.Add(_scaleToggleInput);
+            // ValueReaders.Add(_scaleOverTimeInput);
+            // ValueReaders.Add(_scaleDistanceDeltaInput);
 
             _localPhysicsScene = gameObject.scene.GetPhysicsScene();
             _registeredUIInteractorCache = new RegisteredUIInteractorCache(this);
@@ -1111,7 +1111,14 @@ namespace VaporXR
         protected override void OnEnable()
         {
             base.OnEnable();
-
+            _uiPressInput.BindToUpdateEvent(UpdateProvider);
+            _scaleToggleInput.BindToUpdateEvent(UpdateProvider);
+            _uiScrollInput.BindToUpdateEvent(UpdateProvider);
+            _translateManipulationInput.BindToUpdateEvent(UpdateProvider);
+            _rotateManipulationInput.BindToUpdateEvent(UpdateProvider);
+            _directionalManipulationInput.BindToUpdateEvent(UpdateProvider);
+            _scaleOverTimeInput.BindToUpdateEvent(UpdateProvider);
+            _scaleDistanceDeltaInput.BindToUpdateEvent(UpdateProvider);
             if (_enableUIInteraction)
                 _registeredUIInteractorCache?.RegisterWithXRUIInputModule();
         }
@@ -1119,6 +1126,14 @@ namespace VaporXR
         protected override void OnDisable()
         {
             base.OnDisable();
+            _uiPressInput.UnbindUpdateEvent();
+            _scaleToggleInput.UnbindUpdateEvent();
+            _uiScrollInput.UnbindUpdateEvent();
+            _translateManipulationInput.UnbindUpdateEvent();
+            _rotateManipulationInput.UnbindUpdateEvent();
+            _directionalManipulationInput.UnbindUpdateEvent();
+            _scaleOverTimeInput.UnbindUpdateEvent();
+            _scaleDistanceDeltaInput.UnbindUpdateEvent();
 
             // Clear lines
             _samplePoints?.Clear();
@@ -1270,7 +1285,7 @@ namespace VaporXR
             if (_hasReferenceFrame)
                 return;
 
-            if (ComponentLocatorUtility<XROrigin>.TryFindComponent(out var xrOrigin))
+            if (ComponentLocatorUtility<VXROrigin>.TryFindComponent(out var xrOrigin))
             {
                 var origin = xrOrigin.Origin;
                 if (origin != null)
@@ -1576,13 +1591,12 @@ namespace VaporXR
             var originTransform = EffectiveRayOrigin;
 
             bool select;
-                if (_hoverToSelect && _hoverUISelectActive)
-                    select = AllowSelect;
-                else
-                    select = _uiPressInput.ReadIsPerformed();
+            if (_hoverToSelect && _hoverUISelectActive)
+                select = AllowSelect;
+            else
+                select = _uiPressInput.IsHeld;
 
-            Vector2 scrollDelta;
-                scrollDelta = _uiScrollInput.ReadValue();
+            var scrollDelta = _uiScrollInput.CurrentValue;
 
             model.position = originTransform.position;
             model.orientation = originTransform.rotation;
@@ -2046,7 +2060,7 @@ namespace VaporXR
             void _ProcessManipulationInput()
             {
                 // Check if the scaling toggle was performed this frame.
-                if (_scaleToggleInput.ReadWasPerformedThisFrame())
+                if (_scaleToggleInput.CurrentState.ActivatedThisFrame)
                     _scaleInputActive = !_scaleInputActive;
 
                 // If not scaling, we can translate and rotate
@@ -2055,34 +2069,28 @@ namespace VaporXR
                     switch (_rotateMode)
                     {
                         case RotateModeType.RotateOverTime:
-                            if (_rotateManipulationInput.TryReadValue(out var rotateAmt))
-                                RotateAttachTransform(AttachTransform, rotateAmt.x);
+                            RotateAttachTransform(AttachTransform, _rotateManipulationInput.CurrentValue.x);
                             break;
                         case RotateModeType.MatchDirection:
-                            if (_directionalManipulationInput.TryReadValue(out var directionAmt))
-                            {
-                                var referenceRotation = _rotateReferenceFrame != null ? _rotateReferenceFrame.rotation : EffectiveRayOrigin.rotation;
-                                RotateAttachTransform(AttachTransform, directionAmt, referenceRotation);
-                            }
+                            var referenceRotation = _rotateReferenceFrame != null ? _rotateReferenceFrame.rotation : EffectiveRayOrigin.rotation;
+                            RotateAttachTransform(AttachTransform, _directionalManipulationInput.CurrentValue, referenceRotation);
+
                             break;
                         default:
                             Assert.IsTrue(false, $"Unhandled {nameof(RotateModeType)}={_rotateMode}.");
                             break;
                     }
 
-                    if (_translateManipulationInput.TryReadValue(out var translateAmt))
-                    {
-                        TranslateAttachTransform(EffectiveRayOrigin, AttachTransform, translateAmt.y);
-                    }
+                    TranslateAttachTransform(EffectiveRayOrigin, AttachTransform, _translateManipulationInput.CurrentValue.y);
                 }
-                else if (_scaleMode == ScaleMode.ScaleOverTime && _scaleOverTimeInput.TryReadValue(out var scaleAmt))
+                else if (_scaleMode == ScaleMode.ScaleOverTime)
                 {
-                    ScaleValue = scaleAmt.y;
+                    ScaleValue = _scaleOverTimeInput.CurrentValue.y;
                 }
 
-                if (_scaleMode == ScaleMode.DistanceDelta && _scaleDistanceDeltaInput.TryReadValue(out var scaleDistanceDelta))
+                if (_scaleMode == ScaleMode.DistanceDelta)
                 {
-                    ScaleValue = scaleDistanceDelta;
+                    ScaleValue = _scaleDistanceDeltaInput.CurrentValue;
                 }
             }
         }

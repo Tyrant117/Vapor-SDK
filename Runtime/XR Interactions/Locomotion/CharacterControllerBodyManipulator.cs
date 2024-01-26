@@ -21,7 +21,7 @@ namespace VaporXR.Locomotion
         public override bool isGrounded => characterController == null || characterController.isGrounded;
 
         /// <summary>
-        /// The character controller attached to the <see cref="XRMovableBody.originTransform"/> of the
+        /// The character controller attached to the <see cref="XRMovableBody.OriginTransform"/> of the
         /// <see cref="IConstrainedXRBodyManipulator.linkedBody"/>. This is <see langword="null"/> if
         /// <see cref="IConstrainedXRBodyManipulator.linkedBody"/> is <see langword="null"/>.
         /// </summary>
@@ -32,7 +32,7 @@ namespace VaporXR.Locomotion
         {
             base.OnLinkedToBody(body);
 
-            var xrOrigin = body.xrOrigin;
+            var xrOrigin = body.XROrigin;
             var origin = xrOrigin.Origin;
 
             // Try on the Origin GameObject first, and then fallback to the XR Origin GameObject (if different)
@@ -62,7 +62,7 @@ namespace VaporXR.Locomotion
             if (linkedBody == null || characterController == null)
                 return CollisionFlags.None;
 
-            var xrOrigin = linkedBody.xrOrigin;
+            var xrOrigin = linkedBody.XROrigin;
             var bodyGroundPosition = linkedBody.GetBodyGroundLocalPosition();
             var capsuleHeight = xrOrigin.CameraInOriginSpaceHeight - bodyGroundPosition.y;
             characterController.height = capsuleHeight;

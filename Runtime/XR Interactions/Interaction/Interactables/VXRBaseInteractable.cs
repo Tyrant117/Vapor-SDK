@@ -1094,7 +1094,7 @@ namespace VaporXR
                     // For interactors that use motion controller input, this is typically the analog trigger or grip press amount.
                     // Fall back to the default values for selected and hovered interactors in the case when the interactor
                     // is misconfigured and is missing the input wrapper or component reference.
-                    var interactionStrength = interactor.SelectInput != null ? interactor.SelectInput.ReadValue() : IsSelected(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
+                    var interactionStrength = interactor.SelectInput != null ? interactor.SelectInput.CurrentValue : IsSelected(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
 
                     interactionStrength = ProcessInteractionStrengthFilters(interactor, interactionStrength);
                     _interactionStrengths[interactor] = interactionStrength;

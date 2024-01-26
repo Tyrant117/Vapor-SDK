@@ -8,6 +8,7 @@ using Unity.Burst;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporXR.Utilities.Tweenables;
+using VaporInspector;
 
 namespace VaporXR
 {
@@ -24,46 +25,78 @@ namespace VaporXR
         private const int NumberOfSegmentsForBendableLine = 20;
 
         #region Inspector
-        [SerializeField, Range(MinLineWidth, MaxLineWidth)]
+        [FoldoutGroup("Settings"), SerializeField, Range(MinLineWidth, MaxLineWidth)]
         private float _lineWidth = 0.005f;
-        [SerializeField] private bool _overrideInteractorLineLength = true;
-        [SerializeField] private float _lineLength = 10f;
-        [SerializeField] private bool _autoAdjustLineLength;
-        [SerializeField] private float _minLineLength = 0.5f;
-        [SerializeField] private bool _useDistanceToHitAsMaxLineLength = true;
-        [SerializeField] private float _lineRetractionDelay = 0.5f;
-        [SerializeField] private float _lineLengthChangeSpeed = 12f;
-        [SerializeField] private AnimationCurve _widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
-        [SerializeField] private bool _lineColorGradient = true;
-        [SerializeField] private Gradient _validColorGradient = new Gradient
+        [FoldoutGroup("Settings"), SerializeField] 
+        private AnimationCurve _widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _overrideInteractorLineOrigin = true;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_overrideInteractorLineOrigin")] 
+        private Transform _lineOriginTransform;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_overrideInteractorLineOrigin")] 
+        private float _lineOriginOffset;
+
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _overrideInteractorLineLength = true;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_overrideInteractorLineLength")] 
+        private float _lineLength = 10f;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_overrideInteractorLineLength")] 
+        private bool _autoAdjustLineLength;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_autoAdjustLineLength")] 
+        private float _minLineLength = 0.5f;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_autoAdjustLineLength")] 
+        private bool _useDistanceToHitAsMaxLineLength = true;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_autoAdjustLineLength")] 
+        private float _lineRetractionDelay = 0.5f;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_autoAdjustLineLength")] 
+        private float _lineLengthChangeSpeed = 12f;        
+
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _stopLineAtFirstRaycastHit = true;
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _stopLineAtSelection;
+
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _smoothMovement;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_smoothMovement")] 
+        private float _followTightness = 10f;
+        [FoldoutGroup("Settings"), SerializeField, ShowIf("%_smoothMovement")] 
+        private float _snapThresholdDistance = 10f;
+
+        [FoldoutGroup("Settings"), SerializeField] 
+        private bool _snapEndpointIfAvailable = true;
+        [FoldoutGroup("Settings"), SerializeField]
+        [Range(MinLineBendRatio, MaxLineBendRatio)]
+        private float _lineBendRatio = 0.5f;
+
+        [FoldoutGroup("Visuals"), SerializeField] 
+        private bool _setLineColorGradient = true;
+        [FoldoutGroup("Visuals"), SerializeField] 
+        private Gradient _validColorGradient = new()
         {
             colorKeys = new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
             alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) },
         };
-        [SerializeField] private Gradient _invalidColorGradient = new Gradient
+        [FoldoutGroup("Visuals"), SerializeField]
+        private Gradient _invalidColorGradient = new()
         {
             colorKeys = new[] { new GradientColorKey(Color.red, 0f), new GradientColorKey(Color.red, 1f) },
             alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) },
         };
-        [SerializeField] private Gradient _blockedColorGradient = new Gradient
+        [FoldoutGroup("Visuals"), SerializeField] 
+        private Gradient _blockedColorGradient = new()
         {
             colorKeys = new[] { new GradientColorKey(Color.yellow, 0f), new GradientColorKey(Color.yellow, 1f) },
             alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) },
         };
-        [SerializeField] private bool _treatSelectionAsValidState;
-        [SerializeField] private bool _smoothMovement;
-        [SerializeField] private float _followTightness = 10f;
-        [SerializeField] private float _snapThresholdDistance = 10f;
-        [SerializeField] private GameObject _reticle;
-        [SerializeField] private GameObject _blockedReticle;
-        [SerializeField] private bool _stopLineAtFirstRaycastHit = true;
-        [SerializeField] private bool _stopLineAtSelection;
-        [SerializeField] private bool _snapEndpointIfAvailable = true;
-        [SerializeField] [Range(MinLineBendRatio, MaxLineBendRatio)]
-        private float _lineBendRatio = 0.5f;
-        [SerializeField] private bool _overrideInteractorLineOrigin = true;
-        [SerializeField] private Transform _lineOriginTransform;
-        [SerializeField] private float _lineOriginOffset;
+        [FoldoutGroup("Visuals"), SerializeField] 
+        private bool _treatSelectionAsValidState;               
+        
+        [FoldoutGroup("Reticle"), SerializeField] 
+        private GameObject _reticle;
+        [FoldoutGroup("Reticle"), SerializeField] 
+        private GameObject _blockedReticle;
         #endregion
 
         #region Properties
@@ -154,7 +187,7 @@ namespace VaporXR
         /// <remarks>
         /// Useful to disable when using the affordance system for line color control instead of through this behavior.
         /// </remarks>
-        public bool SetLineColorGradient { get => _lineColorGradient; set => _lineColorGradient = value; }
+        public bool SetLineColorGradient { get => _setLineColorGradient; set => _setLineColorGradient = value; }
 
         /// <summary>
         /// Controls the color of the line as a gradient from start to end to indicate a valid state.
@@ -313,7 +346,7 @@ namespace VaporXR
         private VXRBaseInteractor _lineRenderableAsSelectInteractor;
         private VXRBaseInteractor _lineRenderableAsHoverInteractor;
         private VXRBaseInteractor _lineRenderableAsBaseInteractor;
-        private VXRRayInteractor _lineRenderableAsRayInteractor;
+        private VXRTeleportInteractor _lineRenderableAsRayInteractor;
 
         // Reusable list of target points
         private NativeArray<Vector3> _targetPoints;
@@ -350,7 +383,7 @@ namespace VaporXR
 
         // Previously hit collider
         private Collider _previousCollider;
-        private XROrigin _xrOrigin;
+        private VXROrigin _xrOrigin;
 
         private bool _hasRayInteractor;
         private bool _hasBaseInteractor;
@@ -397,7 +430,7 @@ namespace VaporXR
                     _hasHoverInteractor = true;
                 }
 
-                if (_lineRenderable is VXRRayInteractor rayInteractor)
+                if (_lineRenderable is VXRTeleportInteractor rayInteractor)
                 {
                     _lineRenderableAsRayInteractor = rayInteractor;
                     _hasRayInteractor = true;
@@ -414,7 +447,7 @@ namespace VaporXR
             {
                 if (_xrOrigin == null)
                 {
-                    ComponentLocatorUtility<XROrigin>.TryFindComponent(out _xrOrigin);
+                    ComponentLocatorUtility<VXROrigin>.TryFindComponent(out _xrOrigin);
                 }
             }
         }
@@ -529,6 +562,12 @@ namespace VaporXR
                 return;
             }
 
+            if (!_lineRenderableAsRayInteractor.ShouldDrawLine)
+            {
+                _lineRenderer.enabled = false;
+                return;
+            }
+
             _numRenderPoints = 0;
 
             // Get all the line sample points from the ILineRenderable interface
@@ -541,7 +580,7 @@ namespace VaporXR
             var hasSelection = _hasSelectInteractor && _lineRenderableAsSelectInteractor.HasSelection;
 
             // Using a straight line type because it's likely the straight line won't gracefully follow an object not in it's path.
-            var hasStraightRayCast = _hasRayInteractor && _lineRenderableAsRayInteractor.LineType == VXRRayInteractor.LineModeType.StraightLine;
+            var hasStraightRayCast = _hasRayInteractor && _lineRenderableAsRayInteractor.LineType == VXRTeleportInteractor.LineModeType.StraightLine;
 
             // Query the line provider for origin data and apply overrides if needed.
             GetLineOriginAndDirection(ref _targetPoints, _numTargetPoints, hasStraightRayCast, out var lineOrigin, out var lineDirection);
@@ -958,7 +997,7 @@ namespace VaporXR
         #region - Helpers -
         private void SetColorGradient(Gradient colorGradient)
         {
-            if (!_lineColorGradient)
+            if (!_setLineColorGradient)
             {
                 return;
             }

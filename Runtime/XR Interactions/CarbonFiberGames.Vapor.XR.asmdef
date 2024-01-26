@@ -9,7 +9,9 @@
         "Unity.XR.CoreUtils",
         "Unity.Burst",
         "Unity.Mathematics",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "CarbonFiberGames.Vapor.DataAssets",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -27,6 +29,5 @@
             "define": "XR_HANDS_1_3_OR_NEWER"
         }
     ],
-    "versionDefines": [],
     "noEngineReferences": false
 }

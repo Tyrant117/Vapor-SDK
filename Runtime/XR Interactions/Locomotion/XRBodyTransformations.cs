@@ -38,40 +38,40 @@ namespace VaporXR.Locomotion
     }
 
     /// <summary>
-    /// Transformation that translates the target's <see cref="XRMovableBody.originTransform"/> by the specified amount.
+    /// Transformation that translates the target's <see cref="XRMovableBody.OriginTransform"/> by the specified amount.
     /// </summary>
     public class XROriginMovement : IXRBodyTransformation
     {
         /// <summary>
-        /// Amount of translation to apply to the <see cref="XRMovableBody.originTransform"/>.
+        /// Amount of translation to apply to the <see cref="XRMovableBody.OriginTransform"/>.
         /// </summary>
         public Vector3 motion { get; set; }
 
         /// <summary>
-        /// Whether to ignore <see cref="XRMovableBody.constrainedManipulator"/> even if it is set.
+        /// Whether to ignore <see cref="XRMovableBody.ConstrainedManipulator"/> even if it is set.
         /// Defaults to <see langword="false"/> to use the movement constraints if configured to.
         /// </summary>
         /// <remarks>
         /// Setting this to <see langword="true"/> will mean the body will always be moved using the Transform component directly.
         /// Setting this to <see langword="false"/> will use <see cref="IConstrainedXRBodyManipulator.MoveBody"/> to move the Origin
-        /// if the <see cref="XRMovableBody.constrainedManipulator"/> is not <see langword="null"/>, and otherwise use the Transform component.
+        /// if the <see cref="XRMovableBody.ConstrainedManipulator"/> is not <see langword="null"/>, and otherwise use the Transform component.
         /// </remarks>
         public bool forceUnconstrained { get; set; }
 
         /// <inheritdoc/>
         public virtual void Apply(XRMovableBody body)
         {
-            if (body.constrainedManipulator != null && !forceUnconstrained)
-                body.constrainedManipulator.MoveBody(motion);
+            if (body.ConstrainedManipulator != null && !forceUnconstrained)
+                body.ConstrainedManipulator.MoveBody(motion);
             else
-                body.originTransform.position += motion;
+                body.OriginTransform.position += motion;
         }
     }
 
     /// <summary>
-    /// Transformation that moves the target's <see cref="XRMovableBody.originTransform"/> such that the world position
+    /// Transformation that moves the target's <see cref="XRMovableBody.OriginTransform"/> such that the world position
     /// of where the user's body is grounded matches the specified position. The body ground position is determined by
-    /// the target's <see cref="XRMovableBody.bodyPositionEvaluator"/>.
+    /// the target's <see cref="XRMovableBody.BodyPositionEvaluator"/>.
     /// </summary>
     public class XRBodyGroundPosition : IXRBodyTransformation
     {
@@ -83,51 +83,51 @@ namespace VaporXR.Locomotion
         /// <inheritdoc/>
         public virtual void Apply(XRMovableBody body)
         {
-            var origin = body.originTransform;
+            var origin = body.OriginTransform;
             origin.position = targetPosition + origin.position - body.GetBodyGroundWorldPosition();
         }
     }
 
     /// <summary>
-    /// Transformation that rotates the target's <see cref="XRMovableBody.originTransform"/> such that its up vector
+    /// Transformation that rotates the target's <see cref="XRMovableBody.OriginTransform"/> such that its up vector
     /// matches the specified vector. Note that this does not maintain the world position of the user's body.
     /// </summary>
     public class XROriginUpAlignment : IXRBodyTransformation
     {
         /// <summary>
-        /// Vector that the <see cref="XRMovableBody.originTransform"/>'s up vector should match.
+        /// Vector that the <see cref="XRMovableBody.OriginTransform"/>'s up vector should match.
         /// </summary>
         public Vector3 targetUp { get; set; }
 
         /// <inheritdoc/>
         public virtual void Apply(XRMovableBody body)
         {
-            body.xrOrigin.MatchOriginUp(targetUp);
+            body.XROrigin.MatchOriginUp(targetUp);
         }
     }
 
     /// <summary>
-    /// Transformation that rotates the target's <see cref="XRMovableBody.originTransform"/> by the specified amount
+    /// Transformation that rotates the target's <see cref="XRMovableBody.OriginTransform"/> by the specified amount
     /// about the axis aligned with the Origin's up vector and passing through the world position of where the user's
-    /// body is grounded. The body ground position is determined by the target's <see cref="XRMovableBody.bodyPositionEvaluator"/>.
+    /// body is grounded. The body ground position is determined by the target's <see cref="XRMovableBody.BodyPositionEvaluator"/>.
     /// </summary>
     public class XRBodyYawRotation : IXRBodyTransformation
     {
         /// <summary>
-        /// Amount in degrees to rotate the <see cref="XRMovableBody.originTransform"/>.
+        /// Amount in degrees to rotate the <see cref="XRMovableBody.OriginTransform"/>.
         /// </summary>
         public float angleDelta { get; set; }
 
         /// <inheritdoc/>
         public virtual void Apply(XRMovableBody body)
         {
-            var origin = body.originTransform;
+            var origin = body.OriginTransform;
             origin.RotateAround(body.GetBodyGroundWorldPosition(), origin.up, angleDelta);
         }
     }
 
     /// <summary>
-    /// Transformation that rotates the target's <see cref="XRMovableBody.originTransform"/> about the axis aligned with
+    /// Transformation that rotates the target's <see cref="XRMovableBody.OriginTransform"/> about the axis aligned with
     /// the Origin's up vector and passing through the world position of the <see cref="XROrigin.Camera"/>, such that
     /// the projection of the camera's forward vector onto the Origin's XZ plane matches the projection of the specified
     /// vector onto the Origin's XZ plane.
@@ -136,15 +136,15 @@ namespace VaporXR.Locomotion
     {
         /// <summary>
         /// Vector that the forward vector of the <see cref="XROrigin.Camera"/> should match when both are projected
-        /// onto the XZ plane of the <see cref="XRMovableBody.originTransform"/>.
+        /// onto the XZ plane of the <see cref="XRMovableBody.OriginTransform"/>.
         /// </summary>
         public Vector3 targetDirection { get; set; }
 
         /// <inheritdoc/>
         public virtual void Apply(XRMovableBody body)
         {
-            var xrOrigin = body.xrOrigin;
-            var originUp = body.originTransform.up;
+            var xrOrigin = body.XROrigin;
+            var originUp = body.OriginTransform.up;
             var projectedCamForward = Vector3.ProjectOnPlane(xrOrigin.Camera.transform.forward, originUp).normalized;
             var projectedTargetForward = Vector3.ProjectOnPlane(targetDirection, originUp).normalized;
             var signedAngle = Vector3.SignedAngle(projectedCamForward, projectedTargetForward, originUp);
@@ -153,15 +153,15 @@ namespace VaporXR.Locomotion
     }
 
     /// <summary>
-    /// Transformation that sets the uniform local scale of the target's <see cref="XRMovableBody.originTransform"/> to
+    /// Transformation that sets the uniform local scale of the target's <see cref="XRMovableBody.OriginTransform"/> to
     /// the specified value, and then repositions the Origin such that the world position of where the user's body is
     /// grounded remains the same. The body ground position is determined by the target's
-    /// <see cref="XRMovableBody.bodyPositionEvaluator"/>.
+    /// <see cref="XRMovableBody.BodyPositionEvaluator"/>.
     /// </summary>
     public class XRBodyScale : IXRBodyTransformation
     {
         /// <summary>
-        /// Uniform value to scale the <see cref="XRMovableBody.originTransform"/> to. The local scale of the Origin
+        /// Uniform value to scale the <see cref="XRMovableBody.OriginTransform"/> to. The local scale of the Origin
         /// will be set to <see cref="Vector3.one"/> multiplied by this value.
         /// </summary>
         public float uniformScale { get; set; }
@@ -170,7 +170,7 @@ namespace VaporXR.Locomotion
         public virtual void Apply(XRMovableBody body)
         {
             var bodyGroundPositionBeforeScale = body.GetBodyGroundWorldPosition();
-            var origin = body.originTransform;
+            var origin = body.OriginTransform;
             origin.localScale = Vector3.one * uniformScale;
             var bodyGroundPositionAfterScale = body.GetBodyGroundWorldPosition();
             origin.position = bodyGroundPositionBeforeScale + origin.position - bodyGroundPositionAfterScale;

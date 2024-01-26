@@ -100,9 +100,11 @@ namespace VaporInspectorEditor
             {
                 evt.menu.AppendAction("Clear", ca =>
                 {
+                    Node.CleanupResolvers(true);
                     Node.Property.ClearArray();
                     Node.Property.serializedObject.ApplyModifiedProperties();
-                    ListView.schedule.Execute(() => ListView.RefreshItems()).ExecuteLater(100);
+                    Rebind();
+                    //ListView.schedule.Execute(() => ListView.RefreshItems()).ExecuteLater(100);
                 });
             }));
             var togStyle = tog.style;
@@ -138,8 +140,18 @@ namespace VaporInspectorEditor
             sizeVal.RegisterValueChangedCallback(evt =>
             {
                 var target = evt.target as IntegerField;
-                if (evt.newValue >= 0) return;
-                if (target != null) target.value = 0;
+                if(evt.newValue != evt.previousValue)
+                {
+                    Rebind();
+                }
+                if (evt.newValue >= 0)
+                {
+                    return;
+                }
+                if (target != null) 
+                {
+                    target.value = 0;
+                }
             });
             var valText = sizeVal[0][0];
             valText.style.marginLeft = 0;
@@ -209,13 +221,15 @@ namespace VaporInspectorEditor
                 var rootElement = toBind[0];
                 // var drawers = rootElement.userData as List<VaporDrawerInfo>;
                 var node = rootElement.userData as VaporInspectorNode;
-                if (rootElement is ILabeledGroup labeledGroup)
+                var foldout = rootElement.Q<StyledFoldout>();
+                if (foldout != null)
                 {
-                    labeledGroup.Label.text = $"Element {index}";
+                    foldout.Label.text = $"Element {index}";
                 }
 
                 // ReSharper disable once PossibleNullReferenceException
                 node.Rebind(prop);
+                //Debug.Log($"Node Property: {node.Target} - {node.Property.propertyPath}");
                 // foreach (var drawer in drawers)
                 // {
                 //     drawer.Rebind(prop);
@@ -236,14 +250,14 @@ namespace VaporInspectorEditor
                     var lastIndex = bindable.name.LastIndexOf('.') + 1;
                     var lastElement = bindable.name[lastIndex..];
                     var propToBind = prop.FindPropertyRelative(lastElement);
-                    // Debug.Log($"Binding Property: {propToBind.propertyPath}");
+                    //Debug.Log($"Binding Property: {propToBind.propertyPath} = {propToBind.boxedValue}");
                     field.BindProperty(propToBind);
-                    DrawerUtility.OnPropertyBuilt(field);
+                    //DrawerUtility.OnNodePropertyBuilt(field);
                 }
 
                 foreach (var b in rootElement.Query<StyledButton>().ToList())
                 {
-                    DrawerUtility.OnMethodBuilt(b);
+                    DrawerUtility.OnNodeMethodBuilt(b);
                 }
 
                 foreach (var list in rootElement.Query<StyledNodeList>().ToList())
@@ -275,12 +289,10 @@ namespace VaporInspectorEditor
             
             var nextProp = GetPropertyAtIndex(ArraySizeProperty.intValue - 1);
             var nodeRoot = new VaporInspectorNode(ElementType, nextProp);
-            // var root = new VaporListElementRoot(ElementType, nextProp);
             if (nodeRoot.IsDrawnWithVapor)
             {
                 nodeRoot.Draw(be);
-                // var rootContainer = root.GetVisualElement();
-                // be.Add(rootContainer);
+                Node.Add(nodeRoot);
             }
             else
             {
@@ -468,7 +480,11 @@ namespace VaporInspectorEditor
             {
                 return;
             }
+            //var propToRemove = GetPropertyAtIndex(ArraySizeProperty.intValue - 1);
+            //Debug.Log($"Removing Prop {propToRemove.propertyPath}");
+            //Node.CleanupResolverWithProperty(propToRemove);
             ListView.viewController.RemoveItem(ArraySizeProperty.intValue - 1);
+            Rebind();
 
             // Drawer.Property.arraySize--;
             // Drawer.Property.serializedObject.ApplyModifiedProperties();
@@ -478,6 +494,7 @@ namespace VaporInspectorEditor
         private void RemoveIndexFromList(int index)
         {
             ListView.viewController.RemoveItem(index);
+            Rebind();
             // Node.Property.DeleteArrayElementAtIndex(index);
             // Node.Property.serializedObject.ApplyModifiedProperties();
             // ListView.RefreshItems();

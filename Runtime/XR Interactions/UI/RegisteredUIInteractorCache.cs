@@ -10,10 +10,10 @@ namespace VaporXR.UI
     /// </summary>
     public class RegisteredUIInteractorCache
     {
-        XRUIInputModule m_InputModule;
-        XRUIInputModule m_RegisteredInputModule;
-        readonly IUIInteractor m_UiInteractor;
-        readonly VXRBaseInteractor m_BaseInteractor;
+        private XRUIInputModule m_InputModule;
+        private XRUIInputModule m_RegisteredInputModule;
+        private readonly IUIInteractor m_UiInteractor;
+        private readonly VXRBaseInteractor m_BaseInteractor;
         
         /// <summary>
         /// Initializes and returns an instance of <see cref="RegisteredUIInteractorCache"/>.
@@ -36,12 +36,18 @@ namespace VaporXR.UI
         public void RegisterOrUnregisterXRUIInputModule(bool enabled)
         {
             if (!Application.isPlaying || (m_BaseInteractor != null && !m_BaseInteractor.isActiveAndEnabled))
+            {
                 return;
-            
+            }
+
             if (enabled)
+            {
                 RegisterWithXRUIInputModule();
+            }
             else
+            {
                 UnregisterFromXRUIInputModule();
+            }
         }
 
         /// <summary>
@@ -51,10 +57,14 @@ namespace VaporXR.UI
         public void RegisterWithXRUIInputModule()
         {
             if (m_InputModule == null)
+            {
                 FindOrCreateXRUIInputModule();
+            }
 
             if (m_RegisteredInputModule == m_InputModule)
+            {
                 return;
+            }
 
             UnregisterFromXRUIInputModule();
 
@@ -69,12 +79,14 @@ namespace VaporXR.UI
         public void UnregisterFromXRUIInputModule()
         {
             if (m_RegisteredInputModule != null)
+            {
                 m_RegisteredInputModule.UnregisterInteractor(m_UiInteractor);
+            }
 
             m_RegisteredInputModule = null;
         }
         
-        void FindOrCreateXRUIInputModule()
+        private void FindOrCreateXRUIInputModule()
         {
             var eventSystem = EventSystem.current;
             if (eventSystem == null)
@@ -83,7 +95,9 @@ namespace VaporXR.UI
                 {
                     // Remove the Standalone Input Module if already implemented, since it will block the XRUIInputModule
                     if (eventSystem.TryGetComponent<StandaloneInputModule>(out var standaloneInputModule))
+                    {
                         Object.Destroy(standaloneInputModule);
+                    }
                 }
                 else
                 {
@@ -92,7 +106,9 @@ namespace VaporXR.UI
             }
 
             if (!eventSystem.TryGetComponent(out m_InputModule))
+            {
                 m_InputModule = eventSystem.gameObject.AddComponent<XRUIInputModule>();
+            }
         }
 
         /// <summary>

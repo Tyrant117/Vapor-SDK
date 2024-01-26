@@ -32,6 +32,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="newAttach">The <see cref="Transform"/> that is used as the attach point for Interactables.</param>
         void SetAttachTransform(Transform newAttach);
+        bool TryGetCurrent3DRaycastHit(out RaycastHit raycastHit);
 
         /// <summary>
         /// The last endpoint of this ray, either its maximum distance or a collision point.

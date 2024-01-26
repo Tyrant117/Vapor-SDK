@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.XR.CoreUtils;
 using UnityEngine;
 
 namespace VaporXR.Locomotion
@@ -12,43 +11,35 @@ namespace VaporXR.Locomotion
     [RequireComponent(typeof(VXRBodyTransformer))]
     public class LocomotionMediator : MonoBehaviour
     {
-        class LocomotionProviderData
+        private class LocomotionProviderData
         {
-            public LocomotionState state;
-            public int locomotionEndFrame;
+            public LocomotionState State;
+            public int LocomotionEndFrame;
         }
+        
+        private static readonly List<LocomotionProvider> s_ProvidersToRemove = new();
 
         /// <summary>
         /// The XR Origin controlled by the <see cref="VXRBodyTransformer"/> for locomotion.
         /// </summary>
-        public XROrigin xrOrigin
+        public VXROrigin XROrigin
         {
-            get => m_XRBodyTransformer.XROrigin;
-            set => m_XRBodyTransformer.XROrigin = value;
+            get => _xrBodyTransformer.XROrigin;
+            set => _xrBodyTransformer.XROrigin = value;
         }
 
-        VXRBodyTransformer m_XRBodyTransformer;
+        private VXRBodyTransformer _xrBodyTransformer;
+        private readonly Dictionary<LocomotionProvider, LocomotionProviderData> _providerDataMap = new();
 
-        readonly Dictionary<LocomotionProvider, LocomotionProviderData> m_ProviderDataMap =
-            new Dictionary<LocomotionProvider, LocomotionProviderData>();
-
-        static readonly List<LocomotionProvider> s_ProvidersToRemove = new List<LocomotionProvider>();
-
-        /// <summary>
-        /// See <see cref="MonoBehaviour"/>.
-        /// </summary>
         protected void Awake()
         {
-            m_XRBodyTransformer = GetComponent<VXRBodyTransformer>();
+            _xrBodyTransformer = GetComponent<VXRBodyTransformer>();
         }
 
-        /// <summary>
-        /// See <see cref="MonoBehaviour"/>.
-        /// </summary>
         protected void Update()
         {
             s_ProvidersToRemove.Clear();
-            foreach (var kvp in m_ProviderDataMap)
+            foreach (var kvp in _providerDataMap)
             {
                 var provider = kvp.Key;
                 if (provider == null)
@@ -58,46 +49,46 @@ namespace VaporXR.Locomotion
                 }
 
                 var providerData = kvp.Value;
-                if (providerData.state == LocomotionState.Preparing && provider.CanStartMoving)
+                if (providerData.State == LocomotionState.Preparing && provider.CanStartMoving)
                 {
                     StartLocomotion(provider, providerData);
                 }
-                else if (providerData.state == LocomotionState.Ended && Time.frameCount > providerData.locomotionEndFrame)
+                else if (providerData.State == LocomotionState.Ended && Time.frameCount > providerData.LocomotionEndFrame)
                 {
-                    providerData.state = LocomotionState.Idle;
+                    providerData.State = LocomotionState.Idle;
                 }
             }
 
             foreach (var provider in s_ProvidersToRemove)
             {
-                m_ProviderDataMap.Remove(provider);
+                _providerDataMap.Remove(provider);
             }
         }
 
-        internal bool TryPrepareLocomotion(LocomotionProvider provider)
+        public bool TryPrepareLocomotion(LocomotionProvider provider)
         {
-            if (!m_ProviderDataMap.TryGetValue(provider, out var providerData))
+            if (!_providerDataMap.TryGetValue(provider, out var providerData))
             {
                 // We can skip checking state because it is assumed to be Idle if it is not in the map.
                 providerData = new LocomotionProviderData();
-                m_ProviderDataMap[provider] = providerData;
+                _providerDataMap[provider] = providerData;
             }
             else if (GetProviderLocomotionState(provider).IsActive())
             {
                 return false;
             }
 
-            providerData.state = LocomotionState.Preparing;
+            providerData.State = LocomotionState.Preparing;
             return true;
         }
 
-        internal bool TryStartLocomotion(LocomotionProvider provider)
+        public bool TryStartLocomotion(LocomotionProvider provider)
         {
-            if (!m_ProviderDataMap.TryGetValue(provider, out var providerData))
+            if (!_providerDataMap.TryGetValue(provider, out var providerData))
             {
                 // We can skip checking state because it is assumed to be Idle if it is not in the map.
                 providerData = new LocomotionProviderData();
-                m_ProviderDataMap[provider] = providerData;
+                _providerDataMap[provider] = providerData;
             }
             else if (GetProviderLocomotionState(provider) == LocomotionState.Moving)
             {
@@ -108,23 +99,27 @@ namespace VaporXR.Locomotion
             return true;
         }
 
-        void StartLocomotion(LocomotionProvider provider, LocomotionProviderData providerData)
+        private void StartLocomotion(LocomotionProvider provider, LocomotionProviderData providerData)
         {
-            providerData.state = LocomotionState.Moving;
-            provider.OnLocomotionStart(m_XRBodyTransformer);
+            providerData.State = LocomotionState.Moving;
+            provider.OnLocomotionStart(_xrBodyTransformer);
         }
 
-        internal bool TryEndLocomotion(LocomotionProvider provider)
+        public bool TryEndLocomotion(LocomotionProvider provider)
         {
-            if (!m_ProviderDataMap.TryGetValue(provider, out var providerData))
+            if (!_providerDataMap.TryGetValue(provider, out var providerData))
+            {
                 return false;
+            }
 
-            var locomotionState = providerData.state;
+            var locomotionState = providerData.State;
             if (!locomotionState.IsActive())
+            {
                 return false;
+            }
 
-            providerData.state = LocomotionState.Ended;
-            providerData.locomotionEndFrame = Time.frameCount;
+            providerData.State = LocomotionState.Ended;
+            providerData.LocomotionEndFrame = Time.frameCount;
             provider.OnLocomotionEnd();
             return true;
         }
@@ -137,7 +132,7 @@ namespace VaporXR.Locomotion
         /// <see cref="LocomotionState.Idle"/> if the provider is not managed by this mediator.</returns>
         public LocomotionState GetProviderLocomotionState(LocomotionProvider provider)
         {
-            return m_ProviderDataMap.TryGetValue(provider, out var providerData) ? providerData.state : LocomotionState.Idle;
+            return _providerDataMap.TryGetValue(provider, out var providerData) ? providerData.State : LocomotionState.Idle;
         }
     }
 }

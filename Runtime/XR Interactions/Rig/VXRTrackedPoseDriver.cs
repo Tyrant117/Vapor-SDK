@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.XR;
+using VaporInspector;
 
 namespace VaporXR
 {
@@ -44,6 +45,17 @@ namespace VaporXR
             /// Update position only.
             /// </summary>
             PositionOnly,
+        }
+        
+        public enum ControllerType
+        {
+            None,
+            Oculus,
+            WMR,
+            Vive,
+            Knuckles,
+            Cosmos,
+            ReverbG2
         }
 
         /// <summary>
@@ -109,6 +121,8 @@ namespace VaporXR
 
         [SerializeField]
         private bool _enableTracking = true;
+
+        [SerializeField] private bool _isHmd;
         [FormerlySerializedAs("m_TrackingType")] [SerializeField, Tooltip("Which Transform properties to update.")]
         private TrackingType _trackingType;
         [FormerlySerializedAs("m_UpdateType")] [SerializeField, Tooltip("Updates the Transform properties after these phases of Input System event processing.")]
@@ -124,11 +138,29 @@ namespace VaporXR
         private XRInputDeviceQuaternionValueReader _rotationInput;
         [SerializeField, Tooltip("The input action to read the tracking state value of a tracked device. Identifies if position and rotation have valid data. Must be an Integer control type.")]
         private XRInputDeviceInputTrackingStateValueReader _trackingStateInput;
+        [SerializeField]
+        private Transform _trackingOffset;
+
+        [Title("Debug")]
+        [SerializeField, ReadOnly] 
+        private string _deviceName;
+        [SerializeField, ReadOnly] 
+        private string _deviceManufacturer;
+        [SerializeField, ReadOnly] 
+        private InputDeviceCharacteristics _deviceCharacteristics;
+
+        public ControllerType Controller { get; private set; }
+        public Transform TrackingOffset => _trackingOffset;
+
+        private Vector3 _controllerPositionOffset;
+        private Quaternion _controllerRotationOffset;
 
         private bool _isTracked;
         private Vector3 _currentPosition = Vector3.zero;
         private Quaternion _currentRotation = Quaternion.identity;
         private InputTrackingState _currentTrackingState = InputTrackingState.Position | InputTrackingState.Rotation;
+
+        private bool _deviceDebugSetup;
 
         #region  - Initialization -
         protected void Awake()
@@ -204,8 +236,25 @@ namespace VaporXR
         {
             _isTracked = _isTrackedInput.ReadValue();
             _currentTrackingState = _trackingStateInput.ReadValue();
-            _currentPosition = _positionInput.ReadValue();
-            _currentRotation = _rotationInput.ReadValue();
+            _currentPosition = _positionInput.ReadValue();// + _controllerPositionOffset;
+            _currentRotation = _rotationInput.ReadValue();// * _controllerRotationOffset;
+
+            if (!_deviceDebugSetup && _currentTrackingState != InputTrackingState.None)
+            {
+                _deviceName = _trackingStateInput.InputDevice.name;
+                _deviceManufacturer = _trackingStateInput.InputDevice.manufacturer;
+                _deviceCharacteristics = _trackingStateInput.InputDevice.characteristics;
+                if (!_isHmd)
+                {
+                    Controller = GetController(_deviceManufacturer, _deviceName);
+                    var offset = ControllerHardwareOffsets.GetDeviceOffset(Controller);
+                    _controllerPositionOffset = offset.position;
+                    _controllerRotationOffset = offset.rotation;
+                    TrackingOffset.SetLocalPositionAndRotation(_controllerPositionOffset, _controllerRotationOffset);
+                }
+
+                _deviceDebugSetup = true;
+            }
 
             SetLocalTransform(_currentPosition, _currentRotation);
         }
@@ -241,6 +290,66 @@ namespace VaporXR
         private bool HasStereoCamera(out Camera cameraComponent)
         {
             return TryGetComponent(out cameraComponent) && cameraComponent.stereoEnabled;
+        }
+        
+        private static ControllerType GetController(string deviceManufacturer, string deviceName)
+        {
+            const string windowsMr = "windowsmr";
+            const string windowsMrOpenXR = "windows mr controller";
+            const string vive = "vive";
+            const string cosmos = "cosmos";
+            const string oculus = "oculus";
+            const string knuckles = "knuckles";
+            const string knucklesOpenXR = "index controller";
+            const string wmrController = "spatial";
+            const string htc = "htc";
+            const string reverb = "reverb";
+            const string g2 = "g2";
+            const string openXrG2 = "hp reverb g2 controller";
+            const string reverbG2 = "0x045E/0x066A";
+            
+            if (string.IsNullOrWhiteSpace(deviceManufacturer) && string.IsNullOrWhiteSpace(deviceName))
+            {
+                return ControllerType.None;
+            }
+
+            deviceManufacturer ??= "";
+            deviceName ??= "";
+            deviceManufacturer = deviceManufacturer.ToLower();
+            deviceName = deviceName.ToLower();
+
+            if (deviceName.Contains(knuckles) || deviceName.Contains(knucklesOpenXR.ToLower()))
+            {
+                return ControllerType.Knuckles;
+            }
+
+            if (deviceManufacturer.Contains(oculus))
+            {
+                return ControllerType.Oculus;
+            }
+
+            if (deviceName.Contains(cosmos))
+            {
+                return ControllerType.Cosmos;
+            }
+
+            if (deviceManufacturer.Contains(htc) || deviceName.Contains(vive))
+            {
+                return ControllerType.Vive;
+            }
+
+            var isWindowsMixedReality = deviceManufacturer.Contains(windowsMr) || deviceName.Contains(wmrController) || deviceName.Contains(windowsMrOpenXR.ToLower()) ||
+                                        deviceName.Contains(openXrG2);
+            if (isWindowsMixedReality)
+            {
+                if (deviceName.Contains(reverbG2.ToLower()) || deviceName.Contains(openXrG2.ToLower()))
+                {
+                    return ControllerType.ReverbG2;
+                }
+                return ControllerType.WMR;
+            }
+
+            return ControllerType.None;
         }
     }
 }

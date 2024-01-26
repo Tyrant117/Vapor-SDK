@@ -30,7 +30,7 @@ namespace VaporXR.Locomotion
         [RichTextTooltip("The time (in seconds) to delay the first turn after receiving initial input for the turn.")]
         private float _delayTime;
         
-        [SerializeField, FoldoutGroup("Input")]
+        [SerializeField, FoldoutGroup("Input"), AutoReference(searchParents: true)]
         [RichTextTooltip("The update provider used for polling the input mapped to LeftHandTurnInput and RightHandTurnInput")]
         private VXRInputDeviceUpdateProvider _inputDeviceUpdateProvider;
         [SerializeField, FoldoutGroup("Input")] 

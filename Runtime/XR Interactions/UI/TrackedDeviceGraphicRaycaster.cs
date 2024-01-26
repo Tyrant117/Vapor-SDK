@@ -186,7 +186,9 @@ namespace VaporXR.UI
             foreach (var pokeUIInteractorSet in s_PokeHoverRaycasters.Values)
             {
                 if (pokeUIInteractorSet.Contains(interactor))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -413,7 +415,9 @@ namespace VaporXR.UI
             SortedSpherecastGraphics(canvas, origin, radius, layerMask, currentEventCamera, m_RaycastResultsCache);
 
             if (m_RaycastResultsCache.Count <= 0)
+            {
                 return false;
+            }
 
             var firstResult = m_RaycastResultsCache[0];
             var ray = new Ray(origin, firstResult.worldHitPosition - origin);
@@ -520,11 +524,7 @@ namespace VaporXR.UI
                 if (!ShouldTestGraphic(graphic, layerMask))
                     continue;
 
-#if UNITY_2020_1_OR_NEWER
                 var raycastPadding = graphic.raycastPadding;
-#else
-                var raycastPadding = Vector4.zero;
-#endif
 
                 if (SphereIntersectsRectTransform(graphic.rectTransform, raycastPadding, origin, out var worldPos, out var distance))
                 {

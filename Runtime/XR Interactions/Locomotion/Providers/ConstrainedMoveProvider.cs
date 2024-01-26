@@ -73,7 +73,7 @@ namespace VaporXR.Locomotion
         {
             m_IsMovingXROrigin = false;
 
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 
@@ -140,7 +140,7 @@ namespace VaporXR.Locomotion
 
         void FindCharacterController()
         {
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 
@@ -149,8 +149,8 @@ namespace VaporXR.Locomotion
             if (m_CharacterController == null && !m_AttemptedGetCharacterController)
             {
                 // Try on the Origin GameObject first, and then fallback to the XR Origin GameObject (if different)
-                if (!xrOrigin.TryGetComponent(out m_CharacterController) && xrOrigin != Mediator.xrOrigin.gameObject)
-                    Mediator.xrOrigin.TryGetComponent(out m_CharacterController);
+                if (!xrOrigin.TryGetComponent(out m_CharacterController) && xrOrigin != Mediator.XROrigin.gameObject)
+                    Mediator.XROrigin.TryGetComponent(out m_CharacterController);
 
                 m_AttemptedGetCharacterController = true;
             }

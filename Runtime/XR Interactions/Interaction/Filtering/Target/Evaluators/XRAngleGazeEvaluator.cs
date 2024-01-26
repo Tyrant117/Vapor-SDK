@@ -14,7 +14,7 @@ namespace VaporXR
     {
         private static Camera GetXROriginCamera()
         {
-            return ComponentLocatorUtility<XROrigin>.TryFindComponent(out var xrOrigin) ? xrOrigin.Camera : null;
+            return ComponentLocatorUtility<VXROrigin>.TryFindComponent(out var xrOrigin) ? xrOrigin.Camera : null;
         }
 
         [Tooltip("The Transform whose forward direction is used to evaluate the target Interactable angle. If none is specified, during OnEnable this property is initialized with the XROrigin Camera.")]

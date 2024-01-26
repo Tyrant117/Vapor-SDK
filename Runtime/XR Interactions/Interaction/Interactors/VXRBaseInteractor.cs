@@ -5,6 +5,7 @@ using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings.Variables;
 using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
+using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
 using VaporXR.Utilities;
@@ -18,10 +19,8 @@ namespace VaporXR
     /// This class hooks into the interaction system (via <see cref="VXRInteractionManager"/>) and provides base virtual methods for handling
     /// hover and selection.
     /// </summary>
-    [DisallowMultipleComponent]
     [DefaultExecutionOrder(XRInteractionUpdateOrder.k_Interactors)]
-    // ReSharper disable once InconsistentNaming
-    public class VXRBaseInteractor : MonoBehaviour, IXRGroupMember
+    public class VXRBaseInteractor : MonoBehaviour, IXRGroupMember, IXRTargetPriorityInteractor
     {
         private static readonly ProfilerMarker s_ProcessInteractionStrengthMarker = new ProfilerMarker("XRI.ProcessInteractionStrength.Interactors");
 
@@ -29,7 +28,7 @@ namespace VaporXR
         private const float InteractionStrengthSelect = 1f;
         
         #region Inspector
-        [SerializeField, FoldoutGroup("Components")]
+        [SerializeField, BoxGroup("Components")]
         private VXRInteractionManager _interactionManager;
         
         [SerializeField, FoldoutGroup("Interaction")]
@@ -38,16 +37,18 @@ namespace VaporXR
         private InteractorHandedness _handedness;
         [SerializeField, FoldoutGroup("Interaction")]
         private Transform _attachTransform;
-        
-        [SerializeField, FoldoutGroup("Select")]
-        private bool _keepSelectedTargetValid = true;
-        [SerializeField, FoldoutGroup("Select")]
-        private VXRBaseInteractable _startingSelectedInteractable;
-        
-        [SerializeField, FoldoutGroup("Visuals")]
+        [SerializeField, FoldoutGroup("Interaction")]
+        [RichTextTooltip("Whether to disable Interactor visuals <cls>VXRInteractorLineVisual</cls> when this Interactor" +
+            " is part of an <itf>IXRInteractionGroup</itf> and is incapable of interacting due to active interaction" +
+            " by another Interactor in the Group.")]
         private bool _disableVisualsWhenBlockedInGroup = true;
         
-        [SerializeField, FoldoutGroup("Filters")]
+        [SerializeField, FoldoutGroup("Input")]
+        private bool _keepSelectedTargetValid = true;
+        [SerializeField, FoldoutGroup("Input")]
+        private VXRBaseInteractable _startingSelectedInteractable;
+        
+        [SerializeField, FoldoutGroup("Filters", order: 90)]
         private XRBaseTargetFilter _startingTargetFilter;
         [SerializeField, FoldoutGroup("Filters")]
         [RequireInterface(typeof(IXRHoverFilter))]
@@ -503,7 +504,7 @@ namespace VaporXR
         {
             if (_interactionManager == null)
             {
-                _interactionManager = SingletonBus.Get<VXRInteractionManager>();
+                _interactionManager = ComponentLocatorUtility<VXRInteractionManager>.FindOrCreateComponent();
             }
         }
         
@@ -674,6 +675,8 @@ namespace VaporXR
         /// <seealso cref="OnHoverEntered(HoverEnterEventArgs)"/>
         public virtual void OnHoverEntering(HoverEnterEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Hover Entering: {args.interactableObject}");
+
             var added = _interactablesHovered.Add(args.interactableObject);
             Debug.Assert(added, "An Interactor received a Hover Enter event for an Interactable that it was already hovering over.", this);
 
@@ -693,6 +696,7 @@ namespace VaporXR
         /// <seealso cref="OnHoverExited(HoverExitEventArgs)"/>
         public virtual void OnHoverEntered(HoverEnterEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Hover Entered: {args.interactableObject}");
             _hoverEntered?.Invoke(args);
         }
 
@@ -708,6 +712,7 @@ namespace VaporXR
         /// <seealso cref="OnHoverExited(HoverExitEventArgs)"/>
         public virtual void OnHoverExiting(HoverExitEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Hover Exiting: {args.interactableObject}");
             var removed = _interactablesHovered.Remove(args.interactableObject);
             Debug.Assert(removed, "An Interactor received a Hover Exit event for an Interactable that it was not hovering over.", this);
 
@@ -731,6 +736,7 @@ namespace VaporXR
         /// <seealso cref="OnHoverEntered(HoverEnterEventArgs)"/>
         public virtual void OnHoverExited(HoverExitEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Hover Exited: {args.interactableObject}");
             _hoverExited?.Invoke(args);
         }
         
@@ -798,14 +804,19 @@ namespace VaporXR
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectEntering(SelectEnterEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Select Entering: {args.interactableObject}");
             var added = _interactablesSelected.Add(args.interactableObject);
             Debug.Assert(added, "An Interactor received a Select Enter event for an Interactable that it was already selecting.", this);
 
             if (args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
+            {
                 _interactionStrengthInteractables.Add(interactionStrengthInteractable);
+            }
 
             if (_interactablesSelected.Count == 1)
+            {
                 FirstInteractableSelected = args.interactableObject;
+            }            
 
             CaptureAttachPose(args.interactableObject);
         }
@@ -822,6 +833,8 @@ namespace VaporXR
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectEntered(SelectEnterEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Select Entered: {args.interactableObject}");
+
             _selectEntered?.Invoke(args);
         }
 
@@ -837,6 +850,7 @@ namespace VaporXR
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectExiting(SelectExitEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Select Exiting: {args.interactableObject}");
             var removed = _interactablesSelected.Remove(args.interactableObject);
             Debug.Assert(removed, "An Interactor received a Select Exit event for an Interactable that it was not selecting.", this);
 
@@ -845,7 +859,7 @@ namespace VaporXR
                 !IsHovering(interactionStrengthInteractable))
             {
                 _interactionStrengthInteractables.Remove(interactionStrengthInteractable);
-            }
+            }            
         }
 
         /// <summary>
@@ -860,6 +874,7 @@ namespace VaporXR
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectExited(SelectExitEventArgs args)
         {
+            Debug.Log($"{Handedness} Hand Select Exited: {args.interactableObject}");
             _selectExited?.Invoke(args);
 
             // The dictionaries are pruned so that they don't infinitely grow in size as selections are made.
@@ -868,7 +883,7 @@ namespace VaporXR
                 FirstInteractableSelected = null;
                 _attachPoseOnSelect.Clear();
                 _localAttachPoseOnSelect.Clear();
-            }
+            }            
         }
         
         /// <summary>

@@ -14,6 +14,14 @@ namespace VaporInspectorEditor
 {
     public static class DrawerUtility
     {
+        private static List<IVisualElementScheduledItem> _scheduledItems = new();
+        [InitializeOnLoadMethod]
+        private static void ClearDrawerData()
+        {
+            _scheduledItems.Clear();
+        }
+
+
         #region - Node Based Drawers -
         public static VisualElement DrawVaporFieldWithVerticalLayout(VaporInspectorNode node)
         {
@@ -933,7 +941,7 @@ namespace VaporInspectorEditor
             OnNodeMethodBuilt(button);
         }
 
-        private static void OnNodePropertyBuilt(PropertyField field)
+        public static void OnNodePropertyBuilt(PropertyField field)
         {
             var list = field.Q<ListView>();
             if (list != null)
@@ -978,7 +986,7 @@ namespace VaporInspectorEditor
             DrawConditionals(field, node, resolvers);
             DrawReadOnly(field, node);
             DrawAutoReference(field, node);
-            DrawTitle(field, node);
+            DrawTitle(node);
             DrawPathSelection(field, node);
             DrawInlineButtons(field, node, resolvers);
             DrawSuffix(field, node);
@@ -989,7 +997,7 @@ namespace VaporInspectorEditor
 
             if (resolvers.Count > 0)
             {
-                field.schedule.Execute(() => Resolve(resolvers)).Every(VaporInspectorsSettingsProvider.VaporInspectorResolverUpdateRate);
+                _scheduledItems.Add(node.Parent.VisualNode.schedule.Execute(() => Resolve(resolvers)).Every(VaporInspectorsSettingsProvider.VaporInspectorResolverUpdateRate));
             }
         }
 
@@ -1061,7 +1069,7 @@ namespace VaporInspectorEditor
             DrawConditionals(field, node, resolvers);
             DrawReadOnly(field, node);
             DrawAutoReference(field, node);
-            DrawTitle(field, node);
+            DrawTitle(node);
             DrawPathSelection(field, node);
             DrawInlineButtons(field, node, resolvers);
             DrawSuffix(field, node);
@@ -1444,9 +1452,9 @@ namespace VaporInspectorEditor
                         resolvers.Add(() => field.style.display = (bool)mi.Invoke(drawer.Target, null) ? DisplayStyle.Flex : DisplayStyle.None);
                         break;
                     case ResolverType.Field:
-                        var test = ReflectionUtility.GetField(drawer.Target, showIf.Resolver[1..]);
-                        var resolverContainer = new ResolverContainerStruct<bool>(drawer.Target, test, b => field.style.display = b ? DisplayStyle.Flex : DisplayStyle.None);
-                        resolvers.Add(() => resolverContainer.Resolve());
+                        //var test = ReflectionUtility.GetField(drawer.Target, showIf.Resolver[1..]);
+                        //var resolverContainer = new ResolverContainerStruct<bool>(drawer.Target, test, b => field.style.display = b ? DisplayStyle.Flex : DisplayStyle.None);
+                        //resolvers.Add(() => resolverContainer.Resolve());
                         
                         // var fi = ReflectionUtility.GetField(drawer.Target, showIf.Resolver[1..]);
                         // field.style.display = (bool)fi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None;
@@ -2097,8 +2105,13 @@ namespace VaporInspectorEditor
                         break;
                     case ResolverType.Property:
                         var pi = ReflectionUtility.GetProperty(drawer.Target, showIf.Resolver[1..]);
-                        field.style.display = (bool)pi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None;
-                        resolvers.Add(() => field.style.display = (bool)pi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None);
+                        var resolverContainerProp = new ResolverContainerStruct<bool>(drawer, pi, b => field.style.display = b ? DisplayStyle.Flex : DisplayStyle.None);
+                        drawer.VisualNode.AddResolver(resolverContainerProp);
+                        //resolvers.Add(() => resolverContainerProp.Resolve());
+
+                        //var pi = ReflectionUtility.GetProperty(drawer.Target, showIf.Resolver[1..]);
+                        //field.style.display = (bool)pi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None;
+                        //resolvers.Add(() => field.style.display = (bool)pi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None);
                         break;
                     case ResolverType.Method:
                         var mi = ReflectionUtility.GetMethod(drawer.Target, showIf.Resolver[1..]);
@@ -2107,8 +2120,9 @@ namespace VaporInspectorEditor
                         break;
                     case ResolverType.Field:
                         var test = ReflectionUtility.GetField(drawer.Target, showIf.Resolver[1..]);
-                        var resolverContainer = new ResolverContainerStruct<bool>(drawer.Target, test, b => field.style.display = b ? DisplayStyle.Flex : DisplayStyle.None);
-                        resolvers.Add(() => resolverContainer.Resolve());
+                        var resolverContainer = new ResolverContainerStruct<bool>(drawer, test, b => field.style.display = b ? DisplayStyle.Flex : DisplayStyle.None);
+                        drawer.VisualNode.AddResolver(resolverContainer);
+                        //resolvers.Add(() => resolverContainer.Resolve());
                         
                         // var fi = ReflectionUtility.GetField(drawer.Target, showIf.Resolver[1..]);
                         // field.style.display = (bool)fi.GetValue(drawer.Target) ? DisplayStyle.Flex : DisplayStyle.None;
@@ -2289,6 +2303,11 @@ namespace VaporInspectorEditor
                 if (!absolutePath)
                 {
                     var path = EditorUtility.OpenFolderPanel("Folder Path", "Assets", "");
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        return "";
+                    }
+
                     var start = path.IndexOf("Assets", StringComparison.Ordinal);
                     return path[start..];
                 }
@@ -2307,24 +2326,28 @@ namespace VaporInspectorEditor
             }
         }
 
-        public static void DrawTitle(PropertyField field, VaporInspectorNode drawer)
+        public static void DrawTitle(VaporInspectorNode node)
         {
-            if (drawer.TryGetAttribute<TitleAttribute>(out var atr))
+            if (!node.TryGetAttribute<TitleAttribute>(out var atr)) return;
+            
+            var labelText = $"<b>{atr.Title}</b>";
+            if (atr.Subtitle != string.Empty)
             {
-                string labelText = $"<b>{atr.Title}</b>";
-                if (atr.Subtitle != string.Empty)
-                {
-                    labelText = $"<b>{atr.Title}</b>\n<color=#9E9E9E><i><size=10>{atr.Subtitle}</size></i></color>";
-                }
-
-                var title = new Label(labelText);
-                title.style.borderBottomWidth = atr.Underline ? 1 : 0;
-                title.style.paddingBottom = 2;
-                title.style.borderBottomColor = ContainerStyles.TextDefault;
-                title.style.marginBottom = 1f;
-                int index = field.parent.IndexOf(field);
-                field.parent.Insert(index, title);
+                labelText = $"<b>{atr.Title}</b>\n<color=#9E9E9E><i><size=10>{atr.Subtitle}</size></i></color>";
             }
+
+            var title = new Label(labelText)
+            {
+                style =
+                {
+                    borderBottomWidth = atr.Underline ? 1 : 0,
+                    paddingBottom = 2,
+                    borderBottomColor = ContainerStyles.TextDefault,
+                    marginBottom = 1f
+                }
+            };
+            // Has to insert at hierarchy because .Insert uses the content container which is the PropertyField.
+            node.VisualNode.hierarchy.Insert(0, title);
         }
 
         public static void DrawInlineButtons(PropertyField field, VaporInspectorNode drawer, List<Action> resolvers)
@@ -2455,6 +2478,11 @@ namespace VaporInspectorEditor
                 }
             }
 
+            if (drawer.TryGetAttribute<RangeAttribute>(out var rangeAttribute))
+            {
+                _ClampRangeValues(drawer.Property, rangeAttribute.min, rangeAttribute.max);
+            }
+
             static void _ValidateInput(SerializedPropertyChangeEvent evt, MethodInfo mi, object target)
             {
                 var validated = _OnValidateInput(evt.changedProperty, mi, target);
@@ -2496,6 +2524,42 @@ namespace VaporInspectorEditor
                     SerializedPropertyType.Hash128 => (bool)mi.Invoke(target, new object[] { sp.hash128Value }),
                     _ => false,
                 };
+            }
+
+            static void _ClampRangeValues(SerializedProperty sp, float min, float max)
+            {
+                switch (sp.numericType)
+                {
+                    case SerializedPropertyNumericType.Int32:
+                        int vInt32 = sp.intValue;
+                        vInt32 = (int)Mathf.Clamp(vInt32, min, max);
+                        sp.intValue = vInt32;
+                        sp.serializedObject.ApplyModifiedProperties();
+                        break;
+                    case SerializedPropertyNumericType.Float:
+                        float f = sp.floatValue;
+                        f = Mathf.Clamp(f, min, max);
+                        sp.floatValue = f;
+                        sp.serializedObject.ApplyModifiedProperties();
+                        break;
+                    case SerializedPropertyNumericType.Double:
+                        double d = sp.floatValue;
+                        d = Math.Clamp(d, min, max);
+                        sp.doubleValue = d;
+                        sp.serializedObject.ApplyModifiedProperties();
+                        break;
+                    case SerializedPropertyNumericType.Unknown:
+                    case SerializedPropertyNumericType.Int8:
+                    case SerializedPropertyNumericType.UInt8:
+                    case SerializedPropertyNumericType.Int16:
+                    case SerializedPropertyNumericType.UInt16:
+                    case SerializedPropertyNumericType.UInt32:
+                    case SerializedPropertyNumericType.Int64:
+                    case SerializedPropertyNumericType.UInt64:
+                    default:
+                        Debug.LogError($"Range Attribute For Type {sp.numericType} is not supported.");
+                        break;
+                }
             }
         }
 
@@ -2587,12 +2651,29 @@ namespace VaporInspectorEditor
         #endregion
 
         #region - Resolvers -
-        private abstract class ResolverContainer
+        public abstract class ResolverContainer
         {
             public abstract void Resolve();
+
+            protected object NearestTarget(VaporInspectorNode parent)
+            {
+                var target = parent.Property?.boxedValue;
+                if (target == null)
+                {
+                    if (parent.IsRootNode)
+                    {
+                        target = parent.Root.targetObject;
+                    }
+                    else
+                    {
+                        return NearestTarget(parent.Parent);
+                    }
+                }
+                return target;
+            }
         }
 
-        private class ResolverContainerClass<T> : ResolverContainer where T : class
+        public class ResolverContainerClass<T> : ResolverContainer where T : class
         {
             private readonly Func<T> _checkForChanged;
             private readonly Action<T> _onValueChanged;
@@ -2621,11 +2702,11 @@ namespace VaporInspectorEditor
             }
         }
 
-        private class ResolverContainerStruct<T> : ResolverContainer where T : struct
+        public class ResolverContainerStruct<T> : ResolverContainer where T : struct
         {
             private ResolverType type;
             // private readonly Func<T> _checkForChanged;
-            private readonly object _target;
+            private readonly VaporInspectorNode _node;
             private readonly FieldInfo _fieldInfo;
             private readonly PropertyInfo _propertyInfo;
             private readonly MethodInfo _methodInfo;
@@ -2633,34 +2714,66 @@ namespace VaporInspectorEditor
             
             private T _currentValue;
 
-            public ResolverContainerStruct(object target, FieldInfo fieldInfo, Action<T> onValueChanged)
+            public ResolverContainerStruct(VaporInspectorNode node, FieldInfo fieldInfo, Action<T> onValueChanged)
             {
                 type = ResolverType.Field;
-                _target = target;
+                _node = node;
                 _fieldInfo = fieldInfo;
                 _onValueChanged = onValueChanged;
 
-                _currentValue = (T)_fieldInfo.GetValue(_target);
+                if (_node.Parent.Property == null && !(_node.Parent.ElementType is VaporInspectorNode.NodeElementType.Root or VaporInspectorNode.NodeElementType.Group))
+                {
+                    Debug.LogError($"Node parent is missing property {_node.Parent.VisualNode.name}");
+                    return;
+                }
+                _currentValue = (T)_fieldInfo.GetValue(NearestTarget(_node.Parent));
                 _onValueChanged.Invoke(_currentValue);
             }
 
-            // public ResolverContainerStruct(Func<T> checkForChanged, Action<T> onValueChanged)
-            // {
-            //     _checkForChanged = checkForChanged;
-            //     _onValueChanged = onValueChanged;
-            //     
-            //     _currentValue = _checkForChanged.Invoke();
-            //     _onValueChanged.Invoke(_currentValue);
-            // }
+            public ResolverContainerStruct(VaporInspectorNode node, PropertyInfo propertyInfo, Action<T> onValueChanged)
+            {
+                type = ResolverType.Property;
+                _node = node;
+                _propertyInfo = propertyInfo;
+                _onValueChanged = onValueChanged;
+
+                if (_node.Parent.Property == null && !(_node.Parent.ElementType is VaporInspectorNode.NodeElementType.Root or VaporInspectorNode.NodeElementType.Group))
+                {
+                    Debug.LogError($"Node parent is missing property {_node.Parent.VisualNode.name}");
+                    return;
+                }
+                _currentValue = (T)_propertyInfo.GetValue(NearestTarget(_node.Parent));
+                _onValueChanged.Invoke(_currentValue);
+            }
+
+            public ResolverContainerStruct(VaporInspectorNode node, MethodInfo methodInfo, Action<T> onValueChanged)
+            {
+                type = ResolverType.Method;
+                _node = node;
+                _methodInfo = methodInfo;
+                _onValueChanged = onValueChanged;
+
+                if (_node.Parent.Property == null && !(_node.Parent.ElementType is VaporInspectorNode.NodeElementType.Root or VaporInspectorNode.NodeElementType.Group))
+                {
+                    Debug.LogError($"Node parent is missing property {_node.Parent.VisualNode.name}");
+                    return;
+                }
+                _currentValue = (T)_methodInfo.Invoke(NearestTarget(_node.Parent), null);
+                _onValueChanged.Invoke(_currentValue);
+            }
 
             public override void Resolve()
             {
+                //if (_node.Parent.Property == null && !_node.Parent.IsRootNode) { Debug.LogError($"Node parent is missing property {_node.Parent.VisualNode.name}"); return; }
+
+                var target = NearestTarget(_node.Parent);
+
                 var val = type switch
                 {
                     ResolverType.None => default,
-                    ResolverType.Property => (T)_propertyInfo.GetValue(_target),
-                    ResolverType.Method => (T)_methodInfo.Invoke(_target, null),
-                    ResolverType.Field => (T)_fieldInfo.GetValue(_target),
+                    ResolverType.Property => (T)_propertyInfo.GetValue(target),
+                    ResolverType.Method => (T)_methodInfo.Invoke(target, null),
+                    ResolverType.Field => (T)_fieldInfo.GetValue(target),
                     _ => default
                 };
                 if (_currentValue.Equals(val))
@@ -2668,6 +2781,10 @@ namespace VaporInspectorEditor
                     return;
                 }
 
+                //var t = _node.Parent.Property.boxedValue.GetType();
+                //var pi = t.GetProperty($"{_propertyInfo.Name}", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                //val = (T)pi.GetValue(_node.Parent.Property.boxedValue);
+                //Debug.Log($"Resolving: {_node.Target} - {_propertyInfo.Name} - {_currentValue} == {val}");
                 _currentValue = val;
                 _onValueChanged.Invoke(_currentValue);
             }

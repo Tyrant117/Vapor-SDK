@@ -687,7 +687,7 @@ namespace VaporXR
             if (_interactionManager != null)
                 return;
 
-            _interactionManager = SingletonBus.Get<VXRInteractionManager>();
+            _interactionManager = ComponentLocatorUtility<VXRInteractionManager>.FindOrCreateComponent();
         }
 
         private void RegisterWithInteractionManager()

@@ -100,7 +100,7 @@ namespace VaporXR
         /// <summary>
         /// Temporary list used when getting the XR module devices.
         /// </summary>
-        private static List<InputDevice> _xrInputDevices;
+        private static List<InputDevice> s_XRInputDevices;
 
 #if XR_HANDS_1_3_OR_NEWER
         /// <summary>
@@ -282,13 +282,13 @@ namespace VaporXR
         /// <seealso cref="InputDevices.GetDevicesWithCharacteristics"/>
         public static bool TryGetDeviceWithExactCharacteristics(InputDeviceCharacteristics desiredCharacteristics, out InputDevice inputDevice)
         {
-            _xrInputDevices ??= new List<InputDevice>();
+            s_XRInputDevices ??= new List<InputDevice>();
             // The InputDevices.GetDevicesWithCharacteristics method does a bitwise comparison, not an equal check,
             // so it may return devices that have additional characteristic flags (HMD characteristics is a subset
             // of Eye Gaze characteristics, so this additional filtering ensures the correct device is returned if both are added).
             // Instead, get all devices and use equals to make sure the characteristics matches exactly.
-            InputDevices.GetDevices(_xrInputDevices);
-            foreach (var inputDev in _xrInputDevices)
+            InputDevices.GetDevices(s_XRInputDevices);
+            foreach (var inputDev in s_XRInputDevices)
             {
                 inputDevice = inputDev;
                 if (inputDevice.characteristics == desiredCharacteristics)

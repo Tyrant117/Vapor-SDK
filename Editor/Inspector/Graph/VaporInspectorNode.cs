@@ -31,7 +31,7 @@ namespace VaporInspectorEditor
         // Node Properties
         public SerializedObject Root { get; }
         public bool IsRootNode { get; }
-        public string Path { get; }
+        public string Path { get; private set; }
         public SerializedProperty Property { get; private set; }
         public Type Type { get; }
         public object Target { get; private set; }
@@ -129,6 +129,7 @@ namespace VaporInspectorEditor
             Root = parent.Root;
             Path = path;
             Parent = parent;
+            Property = parent.Property;
             Target = target;
             Type = PropertyInfo.PropertyType;
             IsRootNode = false;
@@ -146,6 +147,7 @@ namespace VaporInspectorEditor
             Root = parent.Root;
             Path = path;
             Parent = parent;
+            Property = parent.Property;
             Target = target;
             IsRootNode = false;
             ElementType = NodeElementType.Method;
@@ -156,6 +158,7 @@ namespace VaporInspectorEditor
         public VaporInspectorNode(VaporInspectorNode parent, VaporGroupAttribute groupAttribute)
         {
             Parent = parent;
+            Property = parent.Property;
             Group = groupAttribute;
             DrawOrder = groupAttribute.Order;
             ElementType = NodeElementType.Group;
@@ -351,11 +354,16 @@ namespace VaporInspectorEditor
             {
                 case 1:
                     Property = property;
-                    Target = property.boxedValue;
+                    if (ElementType is NodeElementType.Root)
+                    {
+                        Path = Property.propertyPath;
+                        VisualNode.Rename();
+                    }
                     break;
                 case 0:
                     Property = property.FindPropertyRelative(FieldInfo.Name);
-                    Target = property.boxedValue;
+                    Path = Property.propertyPath;
+                    VisualNode.Rename();
                     break;
             }
 
@@ -441,6 +449,47 @@ namespace VaporInspectorEditor
                 default:
                     attribute = null;
                     return false;
+            }
+        }
+
+        public void CleanupResolvers(bool includeChildren)
+        {
+            VisualNode.ClearResolvers();
+            if (includeChildren)
+            {
+                foreach(var child in Children)
+                {
+                    child.CleanupResolvers(true);
+                }
+            }
+        }
+
+        public void RestartResolvers(bool includeChildren)
+        {
+            VisualNode.StartResolvers();
+            if (includeChildren)
+            {
+                foreach (var child in Children)
+                {
+                    child.RestartResolvers(true);
+                }
+            }
+        }
+
+        public void CleanupResolverWithProperty(SerializedProperty propToRemove)
+        {
+            if(Property.propertyPath == propToRemove.propertyPath)
+            {
+                Debug.Log("Found Matching Prop To Cleanup");
+                CleanupResolvers(true);
+            }
+            else
+            {
+                Debug.Log($"Skipping {VisualNode.name}");
+                foreach (var child in Children)
+                {
+                    child.CleanupResolverWithProperty(propToRemove);
+                }
             }
         }
         #endregion

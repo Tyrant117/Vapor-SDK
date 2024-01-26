@@ -36,30 +36,6 @@ namespace VaporXR.Locomotion.Teleportation
             /// Teleportation occurs on deactivate.
             /// </summary>
             OnDeactivated,
-
-            /// <summary>
-            /// (Deprecated) OnSelectExit has been deprecated. Use OnSelectExited instead.
-            /// </summary>
-            [Obsolete("OnSelectExit has been deprecated. Use OnSelectExited instead. (UnityUpgradable) -> OnSelectExited", true)]
-            OnSelectExit = OnSelectExited,
-
-            /// <summary>
-            /// (Deprecated) OnSelectEnter has been deprecated. Use OnSelectEntered instead.
-            /// </summary>
-            [Obsolete("OnSelectEnter has been deprecated. Use OnSelectEntered instead. (UnityUpgradable) -> OnSelectEntered", true)]
-            OnSelectEnter = OnSelectEntered,
-
-            /// <summary>
-            /// (Deprecated) OnSelectEnter has been deprecated. Use OnSelectEntered instead.
-            /// </summary>
-            [Obsolete("OnActivate has been deprecated. Use OnActivated instead. (UnityUpgradable) -> OnActivated", true)]
-            OnActivate = OnActivated,
-
-            /// <summary>
-            /// (Deprecated) OnDeactivate has been deprecated. Use OnDeactivated instead.
-            /// </summary>
-            [Obsolete("OnDeactivate has been deprecated. Use OnDeactivated instead. (UnityUpgradable) -> OnDeactivated", true)]
-            OnDeactivate = OnDeactivated,
         }
 
         const float k_DefaultNormalToleranceDegrees = 30f;
@@ -221,16 +197,20 @@ namespace VaporXR.Locomotion.Teleportation
         /// <seealso cref="TeleportationProvider.QueueTeleportRequest"/>
         protected virtual bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest) => false;
 
-        void SendTeleportRequest(VXRBaseInteractor interactor)
+        private void SendTeleportRequest(VXRBaseInteractor interactor)
         {
             if (interactor == null)
+            {
                 return;
+            }
 
             if (m_TeleportationProvider == null && !ComponentLocatorUtility<TeleportationProvider>.TryFindComponent(out m_TeleportationProvider))
+            {
                 return;
+            }
 
             RaycastHit raycastHit = default;
-            if (interactor is VXRRayInteractor rayInteractor && rayInteractor != null)
+            if (interactor is IXRRayProvider rayInteractor && rayInteractor != null)
             {
                 // Are we still selecting this object and within the tolerated normal threshold?
                 if (!rayInteractor.TryGetCurrent3DRaycastHit(out raycastHit) ||
@@ -336,7 +316,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnSelectEntered)
+            {
                 SendTeleportRequest(args.interactorObject);
+            }
 
             base.OnSelectEntered(args);
         }
@@ -345,7 +327,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override void OnSelectExited(SelectExitEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnSelectExited && !args.isCanceled)
+            {
                 SendTeleportRequest(args.interactorObject);
+            }
 
             base.OnSelectExited(args);
         }
@@ -354,7 +338,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override void OnActivated(ActivateEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnActivated)
+            {
                 SendTeleportRequest(args.interactorObject);
+            }
 
             base.OnActivated(args);
         }
@@ -363,7 +349,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override void OnDeactivated(DeactivateEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnDeactivated)
+            {
                 SendTeleportRequest(args.interactorObject);
+            }
 
             base.OnDeactivated(args);
         }
@@ -392,7 +380,7 @@ namespace VaporXR.Locomotion.Teleportation
             optionalReticleForward = null;
             reticleUp = hitNormal;
             Vector3 reticleForward;
-            var xrOrigin = teleportationProvider.Mediator.xrOrigin;
+            var xrOrigin = teleportationProvider.Mediator.XROrigin;
             switch (matchOrientation)
             {
                 case MatchOrientation.WorldSpaceUp:

@@ -24,7 +24,7 @@ namespace VaporXR.Locomotion
 
         #region Inspector
         [SerializeField, AutoReference(searchParents: true)] [Tooltip("The XR Origin to transform (will find one if None).")]
-        private XROrigin _xrOrigin;
+        private VXROrigin _xrOrigin;
 
         [SerializeField]
         [RequireInterface(typeof(IXRBodyPositionEvaluator))]
@@ -48,7 +48,7 @@ namespace VaporXR.Locomotion
         /// <remarks>
         /// Setting this property at runtime also re-links the <see cref="ConstrainedBodyManipulator"/> to the new origin.
         /// </remarks>
-        public XROrigin XROrigin
+        public VXROrigin XROrigin
         {
             get => _xrOrigin;
             set
@@ -132,7 +132,7 @@ namespace VaporXR.Locomotion
         {
             if (_xrOrigin == null)
             {
-                if (!ComponentLocatorUtility<XROrigin>.TryFindComponent(out _xrOrigin))
+                if (!ComponentLocatorUtility<VXROrigin>.TryFindComponent(out _xrOrigin))
                 {
                     Debug.LogError("XR Body Transformer requires an XR Origin in the scene.", this);
                     enabled = false;
@@ -153,8 +153,7 @@ namespace VaporXR.Locomotion
                 if (_xrOrigin.Origin.TryGetComponent<CharacterController>(out _))
                 {
                     _usingDynamicConstrainedBodyManipulator = true;
-                    _constrainedBodyManipulator =
-                        ScriptableSingletonCache<CharacterControllerBodyManipulator>.GetInstance(this);
+                    _constrainedBodyManipulator = ScriptableSingletonCache<CharacterControllerBodyManipulator>.GetInstance(this);
                 }
             }
 

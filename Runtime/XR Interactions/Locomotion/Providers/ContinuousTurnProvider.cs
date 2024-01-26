@@ -18,7 +18,7 @@ namespace VaporXR.Locomotion
         [RichTextTooltip("The number of degrees/second clockwise to rotate when turning.")]
         private float _turnSpeed = 60f;
         
-        [SerializeField, FoldoutGroup("Input")]
+        [SerializeField, FoldoutGroup("Input"), AutoReference(searchParents: true)]
         [RichTextTooltip("The update provider used for polling the input mapped to LeftHandTurnInput and RightHandTurnInput")]
         private VXRInputDeviceUpdateProvider _inputDeviceUpdateProvider;
         [SerializeField, FoldoutGroup("Input")]

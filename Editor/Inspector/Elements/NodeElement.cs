@@ -1,4 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.EditorCoroutines.Editor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VaporInspector;
@@ -11,14 +15,19 @@ namespace VaporInspectorEditor
     public class NodeElement : VisualElement
     {
         public VaporInspectorNode Node { get; }
+        public VisualElement TargetVisualElement { get; }
+
 
         public override VisualElement contentContainer { get; }
+
+        private List<DrawerUtility.ResolverContainer> _resolvers = new();
+        private EditorCoroutine _resolverRoutine;
 
         public NodeElement(VaporInspectorNode node)
         {
             Node = node;
             userData = Node;
-            name = $"Node_[{Node.DrawOrder}]";
+            Rename();
 
             var shouldFlexGrow = Node.Group is { Type: UIGroupType.Horizontal } || (Node.OverrideGroupTypeWithDrawn && Node.DrawnWithGroup == UIGroupType.Horizontal);
             switch (Node.ElementType)
@@ -101,6 +110,10 @@ namespace VaporInspectorEditor
                 child.Draw(this);
             }
 
+            this.RegisterCallback<DetachFromPanelEvent>(OnDetachedFromPanel);
+            _resolverRoutine = EditorCoroutineUtility.StartCoroutine(ResolveContainers(), this);
+            //schedule.Execute(ResolveContainers).Every(VaporInspectorsSettingsProvider.VaporInspectorResolverUpdateRate);
+
             VisualElement _InsertDrawWithVaporGroup()
             {
                 VaporGroupAttribute vaporGroup = Node.DrawnWithGroup switch
@@ -121,6 +134,46 @@ namespace VaporInspectorEditor
                 }
 
                 return vaporPropertyGroup;
+            }
+        }
+
+        private void OnDetachedFromPanel(DetachFromPanelEvent evt)
+        {
+            ClearResolvers();
+        }        
+
+        public void Rename()
+        {
+            name = $"Node_[{Node.DrawOrder}]_[{Node.IsRootNode}]_[{Node.ElementType}]_[{Node.Path}]";
+        }
+
+        public void AddResolver(DrawerUtility.ResolverContainer resolver)
+        {
+            _resolvers.Add(resolver);
+        }
+
+        public void ClearResolvers()
+        {
+            //Debug.Log("Resolvers Cleared!");
+            _resolvers.Clear();
+            EditorCoroutineUtility.StopCoroutine(_resolverRoutine);
+        }
+
+        public void StartResolvers()
+        {
+            //Debug.Log("Resolvers Started!");
+            _resolverRoutine = EditorCoroutineUtility.StartCoroutine(ResolveContainers(), this);
+        }
+
+        private IEnumerator ResolveContainers()
+        {
+            while (true)
+            {
+                foreach (var resolver in _resolvers)
+                {
+                    resolver.Resolve();
+                }
+                yield return null;
             }
         }
     }

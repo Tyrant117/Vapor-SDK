@@ -144,7 +144,7 @@ namespace VaporXR
 
         NativeArray<Vector3> m_InteractorLinePoints;
 
-        XROrigin m_XROrigin;
+        VXROrigin m_XROrigin;
         GameObject m_ReticleInstance;
         VXRBaseInteractor m_Interactor;
         Vector3 m_TargetEndPoint;
@@ -212,7 +212,7 @@ namespace VaporXR
         void FindXROrigin()
         {
             if (m_XROrigin == null)
-                ComponentLocatorUtility<XROrigin>.TryFindComponent(out m_XROrigin);
+                ComponentLocatorUtility<VXROrigin>.TryFindComponent(out m_XROrigin);
         }
 
         void SetupReticlePrefab()

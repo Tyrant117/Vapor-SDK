@@ -14,7 +14,7 @@ namespace VaporXR
         /// The <see cref="UIHoverEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        UIHoverEnterEvent uiHoverEntered { get; }
+        UIHoverEnterEvent UiHoverEntered { get; }
 
         /// <summary>
         /// The event that is called when this Interactor ends hovering over a UI element.
@@ -23,7 +23,7 @@ namespace VaporXR
         /// The <see cref="UIHoverEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        UIHoverExitEvent uiHoverExited { get; }
+        UIHoverExitEvent UiHoverExited { get; }
 
         /// <summary>
         /// The <see cref="XRUIInputModule"/> calls this method when the Interactor begins hovering over a UI element.

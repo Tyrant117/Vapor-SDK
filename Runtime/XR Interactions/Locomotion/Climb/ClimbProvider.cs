@@ -91,7 +91,7 @@ namespace VaporXR.Locomotion
         /// </remarks>
         public void StartClimbGrab(ClimbInteractable climbInteractable, VXRBaseInteractor interactor)
         {
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
             {
                 return;

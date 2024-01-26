@@ -14,7 +14,7 @@ namespace VaporXR.Locomotion
     public class UnderCameraBodyPositionEvaluator : ScriptableObject, IXRBodyPositionEvaluator
     {
         /// <inheritdoc/>
-        public Vector3 GetBodyGroundLocalPosition(XROrigin xrOrigin)
+        public Vector3 GetBodyGroundLocalPosition(VXROrigin xrOrigin)
         {
             var bodyPosition = xrOrigin.CameraInOriginSpacePos;
             bodyPosition.y = 0f;

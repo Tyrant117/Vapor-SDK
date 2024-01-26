@@ -6,7 +6,7 @@ using VaporInspector;
 
 namespace VaporXR
 {
-    [Serializable]
+    [Serializable, DrawWithVapor]
     public class Axis2DInputProvider
     {
         // Inspector
@@ -41,6 +41,11 @@ namespace VaporXR
         public void UnbindUpdateEvent()
         {
             if (_reader == null)
+            {
+                return;
+            }
+            
+            if (_updateProvider == null)
             {
                 return;
             }

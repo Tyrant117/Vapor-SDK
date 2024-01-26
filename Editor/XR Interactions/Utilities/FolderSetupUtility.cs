@@ -14,11 +14,18 @@ namespace VaporXREditor
         public const string ReadersRelativePath = "Vapor/XR/Readers";
         
         private const string VaporXRReadersCreated = "vaporXRReadersCreated";
+        private const string VaporXRInteractionLayersCreated = "vaporXRInteractionLayersCreated";
 
         public static bool AreVaporXRReadersCreated
         {
             get => EditorPrefs.GetBool(VaporXRReadersCreated, false);
             set => EditorPrefs.SetBool(VaporXRReadersCreated, value);
+        }
+
+        public static bool AreInteractionLayersCreated
+        {
+            get => EditorPrefs.GetBool(VaporXRInteractionLayersCreated, false);
+            set => EditorPrefs.SetBool(VaporXRInteractionLayersCreated, value);
         }
         
         [InitializeOnLoadMethod]
@@ -32,14 +39,17 @@ namespace VaporXREditor
 
         private static void CreateReaders()
         {
-            if(AreVaporXRReadersCreated) return;
+            if(AreVaporXRReadersCreated)
+            {
+                return;
+            }
 
             Debug.Log("<b>[VaporXR]</b> Creating Readers");
             try
             {
                 AssetDatabase.StartAssetEditing();
-                _CreateSide("Left", InputDeviceCharacteristics.Left);
-                _CreateSide("Right", InputDeviceCharacteristics.Right);
+                _CreateSide("Left", XRInputTrackingAggregator.Characteristics.LeftController);
+                _CreateSide("Right", XRInputTrackingAggregator.Characteristics.RightController);
                 _CreateHmd();
                 _CreateHaptics();
             }
@@ -56,96 +66,43 @@ namespace VaporXREditor
                 
                 var reader = ScriptableObject.CreateInstance<T>();
                 reader.name = $"{prefix}_{usage.name}";
-                reader.characteristics = characteristics;
-                reader.usage = new InputFeatureUsageString<U>(usage);
+                reader.Characteristics = characteristics;
+                reader.Usage = new InputFeatureUsageString<U>(usage);
                 AssetDatabase.CreateAsset(reader, $"Assets/{ReadersRelativePath}/{reader.name}.asset");
             }
 
             void _CreateSide(string s, InputDeviceCharacteristics inputDeviceCharacteristics)
             {
-                _CreateReader<XRInputDeviceVector3ValueReader, Vector3>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.devicePosition);
-                _CreateReader<XRInputDeviceQuaternionValueReader, Quaternion>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.deviceRotation);
-                _CreateReader<XRInputDeviceFloatValueReader, float>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.grip);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.gripButton);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.isTracked);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.isTracked);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.menuButton);
-                _CreateReader<XRInputDeviceVector2ValueReader, Vector2>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.primary2DAxis);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.primary2DAxisClick);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.primary2DAxisTouch);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.primaryButton);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.primaryTouch);
-                _CreateReader<XRInputDeviceVector2ValueReader, Vector2>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.secondary2DAxis);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.secondary2DAxisClick);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.secondary2DAxisTouch);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.secondaryButton);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.secondaryTouch);
-                _CreateReader<XRInputDeviceInputTrackingStateValueReader, InputTrackingState>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.trackingState);
-                _CreateReader<XRInputDeviceFloatValueReader, float>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.trigger);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.triggerButton);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>(s,
-                    InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller | inputDeviceCharacteristics,
-                    CommonUsages.userPresence);
-                
+                _CreateReader<XRInputDeviceVector3ValueReader, Vector3>(s, inputDeviceCharacteristics, CommonUsages.devicePosition);
+                _CreateReader<XRInputDeviceQuaternionValueReader, Quaternion>(s, inputDeviceCharacteristics, CommonUsages.deviceRotation);
+                _CreateReader<XRInputDeviceFloatValueReader, float>(s, inputDeviceCharacteristics, CommonUsages.grip);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.gripButton);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.isTracked);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.isTracked);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.menuButton);
+                _CreateReader<XRInputDeviceVector2ValueReader, Vector2>(s, inputDeviceCharacteristics, CommonUsages.primary2DAxis);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.primary2DAxisClick);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.primary2DAxisTouch);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.primaryButton);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.primaryTouch);
+                _CreateReader<XRInputDeviceVector2ValueReader, Vector2>(s, inputDeviceCharacteristics, CommonUsages.secondary2DAxis);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.secondary2DAxisClick);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.secondary2DAxisTouch);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.secondaryButton);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.secondaryTouch);
+                _CreateReader<XRInputDeviceInputTrackingStateValueReader, InputTrackingState>(s, inputDeviceCharacteristics, CommonUsages.trackingState);
+                _CreateReader<XRInputDeviceFloatValueReader, float>(s, inputDeviceCharacteristics, CommonUsages.trigger);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.triggerButton);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>(s, inputDeviceCharacteristics, CommonUsages.userPresence);
             }
 
             void _CreateHmd()
             {
-                _CreateReader<XRInputDeviceInputTrackingStateValueReader, InputTrackingState>("Hmd",
-                    InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice,
-                    CommonUsages.trackingState);
-                _CreateReader<XRInputDeviceVector3ValueReader, Vector3>("Hmd",
-                    InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice,
-                    CommonUsages.centerEyePosition);
-                _CreateReader<XRInputDeviceQuaternionValueReader, Quaternion>("Hmd",
-                    InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice,
-                    CommonUsages.centerEyeRotation);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>("Hmd",
-                    InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice,
-                    CommonUsages.isTracked);
-                _CreateReader<XRInputDeviceBoolValueReader, bool>("Hmd",
-                    InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice,
-                    CommonUsages.userPresence);
+                _CreateReader<XRInputDeviceInputTrackingStateValueReader, InputTrackingState>("Hmd", XRInputTrackingAggregator.Characteristics.Hmd, CommonUsages.trackingState);
+                _CreateReader<XRInputDeviceVector3ValueReader, Vector3>("Hmd",XRInputTrackingAggregator.Characteristics.Hmd, CommonUsages.centerEyePosition);
+                _CreateReader<XRInputDeviceQuaternionValueReader, Quaternion>("Hmd",XRInputTrackingAggregator.Characteristics.Hmd, CommonUsages.centerEyeRotation);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>("Hmd",XRInputTrackingAggregator.Characteristics.Hmd, CommonUsages.isTracked);
+                _CreateReader<XRInputDeviceBoolValueReader, bool>("Hmd",XRInputTrackingAggregator.Characteristics.Hmd, CommonUsages.userPresence);
             }
             
             void _CreateHaptics()
@@ -155,8 +112,7 @@ namespace VaporXREditor
                 {
                     var leftHaptic = ScriptableObject.CreateInstance<XRInputDeviceHapticImpulseProvider>();
                     leftHaptic.name = "Left_Controller";
-                    leftHaptic.Characteristics = InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller |
-                                                 InputDeviceCharacteristics.Left;
+                    leftHaptic.Characteristics = XRInputTrackingAggregator.Characteristics.LeftController;
                     AssetDatabase.CreateAsset(leftHaptic, $"Assets/{ReadersRelativePath}/{leftHaptic.name}.asset");
                 }
 
@@ -165,8 +121,7 @@ namespace VaporXREditor
                 {
                     var rightHaptic = ScriptableObject.CreateInstance<XRInputDeviceHapticImpulseProvider>();
                     rightHaptic.name = "Right_Controller";
-                    rightHaptic.Characteristics = InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.Controller |
-                                                  InputDeviceCharacteristics.Right;
+                    rightHaptic.Characteristics = XRInputTrackingAggregator.Characteristics.RightController;
                     AssetDatabase.CreateAsset(rightHaptic, $"Assets/{ReadersRelativePath}/{rightHaptic.name}.asset");
                 }
             }
@@ -174,9 +129,31 @@ namespace VaporXREditor
 
         private static void CreateInteractionLayers()
         {
-            FolderUtility.CreateFolderFromPath($"Assets/{FolderRelativePath}/Keys");
-            var keyValuePairs = new List<KeyGenerator.KeyValuePair> { KeyGenerator.StringToKeyValuePair("Default") };
-            KeyGenerator.FormatKeyFiles($"{FolderRelativePath}/Keys", "VaporKeyDefinitions", "InteractionLayerKeys", keyValuePairs);
+            if(AreInteractionLayersCreated)
+            {
+                return;
+            }
+
+            Debug.Log("<b>[VaporXR]</b> Creating Interaction Layers");
+
+            try
+            {
+                FolderUtility.CreateFolderFromPath($"Assets/{FolderRelativePath}/Keys");
+                var keyValuePairs = new List<KeyGenerator.KeyValuePair> { KeyGenerator.StringToKeyValuePair("Default") };
+                KeyGenerator.FormatKeyFiles($"{FolderRelativePath}/Keys", "VaporKeyDefinitions", "InteractionLayerKeys", keyValuePairs);
+
+                FolderUtility.CreateFolderFromPath($"Assets/{FolderRelativePath}/Resources");
+                var assets = AssetDatabase.FindAssets($"InteractionLayerSettings", new[] { $"Assets/{FolderRelativePath}/Resources" });
+                if (assets is not { Length: 0 }) return;
+
+                var reader = ScriptableObject.CreateInstance<InteractionLayerSettings>();
+                reader.name = $"InteractionLayerSettings";
+                AssetDatabase.CreateAsset(reader, $"Assets/{FolderRelativePath}/Resources/{reader.name}.asset");
+            }
+            finally
+            {
+                AreInteractionLayersCreated = true;
+            }
         }
     }
 }

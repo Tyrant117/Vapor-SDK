@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Vapor.Utilities;
 using VaporInspector;
 
@@ -185,7 +184,10 @@ namespace VaporXR.Locomotion
             OnLocomotionEnding();
 
             if (_activeBodyTransformer != null)
+            {
                 _activeBodyTransformer.BeforeApplyTransformations -= OnBeforeTransformationsApplied;
+            }
+
             _activeBodyTransformer = null;
         }
 

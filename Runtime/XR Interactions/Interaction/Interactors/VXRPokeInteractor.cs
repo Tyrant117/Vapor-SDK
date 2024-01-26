@@ -189,14 +189,14 @@ namespace VaporXR
 
         #region Events
         /// <inheritdoc />
-        public UIHoverEnterEvent uiHoverEntered
+        public UIHoverEnterEvent UiHoverEntered
         {
             get => _uiHoverEntered;
             set => _uiHoverEntered = value;
         }
 
         /// <inheritdoc />
-        public UIHoverExitEvent uiHoverExited
+        public UIHoverExitEvent UiHoverExited
         {
             get => _uiHoverExited;
             set => _uiHoverExited = value;

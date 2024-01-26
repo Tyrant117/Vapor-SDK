@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace VaporXR
 {
@@ -10,9 +11,9 @@ namespace VaporXR
     public struct InteractionLayerMask : ISerializationCallbackReceiver
     {
         [SerializeField] 
-        private uint m_Bits;
+        private uint _bits;
 
-        private int m_Mask;
+        private int _mask;
         
         /// <summary>
         /// Implicitly converts an InteractionLayerMask to an integer.
@@ -21,7 +22,7 @@ namespace VaporXR
         /// <returns>Returns the integer value of the Interaction Layer Mask.</returns>
         public static implicit operator int(InteractionLayerMask mask)
         {
-            return mask.m_Mask;
+            return mask._mask;
         }
         
         /// <summary>
@@ -32,8 +33,8 @@ namespace VaporXR
         public static implicit operator InteractionLayerMask(int intVal)
         {
             InteractionLayerMask mask;
-            mask.m_Mask = intVal;
-            mask.m_Bits = (uint)intVal;
+            mask._mask = intVal;
+            mask._bits = (uint)intVal;
             return mask;
         }
         
@@ -41,13 +42,13 @@ namespace VaporXR
         /// Converts an interaction layer mask value to an integer value.
         /// </summary>
         /// <returns>Returns the integer value equivalent to this Interaction Layer Mask.</returns>
-        public int value
+        public int Value
         {
-            get => m_Mask;
+            get => _mask;
             set
             {
-                m_Mask = value;
-                m_Bits = (uint)value;
+                _mask = value;
+                _bits = (uint)value;
             }
         }
 
@@ -58,7 +59,7 @@ namespace VaporXR
         /// <returns>Returns the name of the supplied Interaction Layer value.</returns>
         public static string LayerToName(int layer)
         {
-            if (layer < 0 || layer >= InteractionLayerSettings.layerSize)
+            if (layer is < 0 or >= InteractionLayerSettings.LayerSize)
                 return string.Empty;
 
             return InteractionLayerSettings.Instance.GetLayerNameAt(layer);
@@ -103,7 +104,7 @@ namespace VaporXR
         /// </summary>
         public void OnAfterDeserialize()
         {
-            m_Mask = (int)m_Bits;
+            _mask = (int)_bits;
         }
 
         /// <summary>

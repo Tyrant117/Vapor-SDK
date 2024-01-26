@@ -15,7 +15,6 @@ namespace VaporXR
     /// toggling a flashlight on and off.
     /// </summary>
     /// <seealso cref="IXRActivateInteractable"/>
-    // ReSharper disable once InconsistentNaming
     public class VXRInputInteractor : VXRBaseInteractor
     {
         /// <summary>
@@ -198,25 +197,37 @@ namespace VaporXR
         }
 
         #region Inspector
+        [SerializeField, BoxGroup("Components"), AutoReference(searchParents: true)]
+        private VXRInputDeviceUpdateProvider _updateProvider;
+
         [SerializeField, FoldoutGroup("Interaction")]
         private TargetPriorityMode _targetPriorityMode;
         
-        [SerializeField, FoldoutGroup("Select")] 
-        private XRInputDeviceButtonReader _selectInput;
-        [SerializeField, FoldoutGroup("Select")]
+        [SerializeField, FoldoutGroup("Input")] 
+        private ButtonInputProvider _selectInput;
+        [SerializeField, FoldoutGroup("Input")]
         private InputTriggerType _selectActionTrigger = InputTriggerType.StateChange;
         
-        [SerializeField, FoldoutGroup("Activate")]
-        private XRInputDeviceButtonReader _activateInput;
-        [SerializeField, FoldoutGroup("Activate")]
+        [SerializeField, FoldoutGroup("Input")]
+        private ButtonInputProvider _activateInput;
+        [SerializeField, FoldoutGroup("Input")]
         private bool _allowHoveredActivate;
         #endregion
 
         #region Properties
         /// <summary>
+        /// Update provider used for polling input for the button providers.
+        /// </summary>
+        public VXRInputDeviceUpdateProvider UpdateProvider
+        {
+            get => _updateProvider;
+            set => _updateProvider = value;
+        }
+        
+        /// <summary>
         /// Input to use for selecting an interactable.
         /// </summary>
-        public XRInputDeviceButtonReader SelectInput
+        public ButtonInputProvider SelectInput
         {
             get => _selectInput;
             set => _selectInput = value;
@@ -228,7 +239,7 @@ namespace VaporXR
         /// This can be used to trigger a secondary action on an interactable object,
         /// such as pulling a trigger on a ball launcher after picking it up.
         /// </summary>
-        public XRInputDeviceButtonReader ActivateInput
+        public ButtonInputProvider ActivateInput
         {
             get => _activateInput;
             set => _activateInput = value;
@@ -336,14 +347,14 @@ namespace VaporXR
         /// <seealso cref="ActivateInput"/>
         public LogicalInputState LogicalActivateState { get; } = new();
 
-        /// <summary>
-        /// The list of button input readers used by this interactor. This interactor will automatically enable or disable direct actions
-        /// if that mode is used during <see cref="OnEnable"/> and <see cref="OnDisable"/>.
-        /// </summary>
-        /// <seealso cref="XRInputButtonReader.EnableDirectActionIfModeUsed"/>
-        /// <seealso cref="XRInputButtonReader.DisableDirectActionIfModeUsed"/>
-        protected List<XRInputDeviceButtonReader> ButtonReaders { get; } = new();
-        protected List<XRInputDeviceValueReader> ValueReaders { get; } = new();
+        // /// <summary>
+        // /// The list of button input readers used by this interactor. This interactor will automatically enable or disable direct actions
+        // /// if that mode is used during <see cref="OnEnable"/> and <see cref="OnDisable"/>.
+        // /// </summary>
+        // /// <seealso cref="XRInputButtonReader.EnableDirectActionIfModeUsed"/>
+        // /// <seealso cref="XRInputButtonReader.DisableDirectActionIfModeUsed"/>
+        // protected List<ButtonInputProvider> ButtonReaders { get; } = new();
+        // protected List<XRInputDeviceValueReader> ValueReaders { get; } = new();
         #endregion
 
         #region Fields
@@ -367,8 +378,22 @@ namespace VaporXR
 
             base.Awake();
 
-            ButtonReaders.Add(_selectInput);
-            ButtonReaders.Add(_activateInput);
+            // ButtonReaders.Add(_selectInput);
+            // ButtonReaders.Add(_activateInput);
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            _selectInput.BindToUpdateEvent(_updateProvider);
+            _activateInput.BindToUpdateEvent(_updateProvider);
+        }
+
+        protected override void OnDisable()
+        {
+            _selectInput.UnbindUpdateEvent();
+            _activateInput.UnbindUpdateEvent();
+            base.OnDisable();
         }
         #endregion
 
@@ -378,8 +403,8 @@ namespace VaporXR
             base.PreprocessInteractor(updatePhase);
             if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic) return;
             
-            LogicalSelectState.UpdateInput(_selectInput.ReadIsPerformed(), _selectInput.ReadWasPerformedThisFrame(), HasSelection);
-            LogicalActivateState.UpdateInput(_activateInput.ReadIsPerformed(), _activateInput.ReadWasPerformedThisFrame(), HasSelection);
+            LogicalSelectState.UpdateInput(_selectInput.CurrentState.Active, _selectInput.CurrentState.ActivatedThisFrame, HasSelection);
+            LogicalActivateState.UpdateInput(_activateInput.CurrentState.Active, _activateInput.CurrentState.ActivatedThisFrame, HasSelection);
         }
 
         public override void ProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase)

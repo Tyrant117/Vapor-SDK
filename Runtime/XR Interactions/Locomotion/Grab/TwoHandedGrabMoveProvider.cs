@@ -192,7 +192,7 @@ namespace VaporXR.Locomotion
         {
             attemptingMove = false;
             var wasMoving = m_IsMoving;
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             m_IsMoving = m_LeftGrabMoveProvider.IsGrabbing() && m_RightGrabMoveProvider.IsGrabbing() && xrOrigin != null;
             if (!m_IsMoving)
             {
@@ -240,7 +240,7 @@ namespace VaporXR.Locomotion
         {
             base.MoveRig(translationInWorldSpace);
 
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 

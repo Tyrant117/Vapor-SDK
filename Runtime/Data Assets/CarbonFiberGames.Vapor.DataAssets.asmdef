@@ -1,0 +1,16 @@
+{
+    "name": "CarbonFiberGames.Vapor.DataAssets",
+    "rootNamespace": "VaporDataAssets",
+    "references": [
+        "GUID:b609f4d6b0021554baeca5f5ca57f3b6"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

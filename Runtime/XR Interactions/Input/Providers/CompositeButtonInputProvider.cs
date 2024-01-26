@@ -2,15 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VaporInspector;
 
 namespace VaporXR
 {
-    [System.Serializable]
+    [Serializable, DrawWithVapor]
     public class CompositeButtonInputProvider
     {
-        [SerializeField] private List<ButtonInputProvider> _buttonInputProviders;
-        
-        public InputInteractionState CurrentState { get; private set; }
+        [SerializeField] private List<ButtonInputProvider> _buttonInputProviders = new();
+
+        public List<ButtonInputProvider> ButtonInputProviders => _buttonInputProviders;
+        public InputInteractionState CurrentState { get; private set; } = new();
         public bool IsHeld => CurrentState.Active;
         
         private IInputDeviceUpdateProvider _updateProvider;
@@ -20,6 +22,16 @@ namespace VaporXR
 
         public void BindUpdateSource(IInputDeviceUpdateProvider sourceUpdate)
         {
+            if (_buttonInputProviders.Count == 0)
+            {
+                return;
+            }
+            
+            foreach (var button in _buttonInputProviders)
+            {
+                button.Setup();
+            }
+            
             _updateProvider = sourceUpdate;
             _updateProvider.RegisterForInputUpdate(UpdateInput);
             _updateProvider.RegisterForPostInputUpdate(PostUpdateInput);
@@ -27,11 +39,16 @@ namespace VaporXR
 
         public void UnbindUpdateSource()
         {
-            foreach (var button in _buttonInputProviders)
+            if (_buttonInputProviders.Count == 0)
             {
-                button.Setup();
+                return;
             }
-
+            
+            if (_updateProvider == null)
+            {
+                return;
+            }
+            
             _updateProvider.UnRegisterForInputUpdate(UpdateInput);
             _updateProvider.UnRegisterForPostInputUpdate(PostUpdateInput);
             _updateProvider = null;

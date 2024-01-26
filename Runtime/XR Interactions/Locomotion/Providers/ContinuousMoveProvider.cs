@@ -28,7 +28,7 @@ namespace VaporXR.Locomotion
         [RichTextTooltip("The source Transform to define the forward direction.")]
         private Transform _forwardSource;
 
-        [SerializeField, FoldoutGroup("Input", order: 10)]
+        [SerializeField, FoldoutGroup("Input", order: 10), AutoReference(searchParents: true)]
         [RichTextTooltip("The update provider used for polling the input mapped to LeftHandTurnInput and RightHandTurnInput")]
         private VXRInputDeviceUpdateProvider _inputDeviceUpdateProvider;
         [SerializeField, FoldoutGroup("Input")]
@@ -108,7 +108,7 @@ namespace VaporXR.Locomotion
         {
             _isMovingXROrigin = false;
 
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 
@@ -141,7 +141,7 @@ namespace VaporXR.Locomotion
             if (input == Vector2.zero)
                 return Vector3.zero;
 
-            var xrOrigin = Mediator.xrOrigin;
+            var xrOrigin = Mediator.XROrigin;
             if (xrOrigin == null)
                 return Vector3.zero;
 
@@ -193,7 +193,7 @@ namespace VaporXR.Locomotion
         /// <param name="translationInWorldSpace">The translation amount in world space to move the rig (pre-gravity).</param>
         protected virtual void MoveRig(Vector3 translationInWorldSpace)
         {
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 
@@ -229,7 +229,7 @@ namespace VaporXR.Locomotion
 
         private void FindCharacterController()
         {
-            var xrOrigin = Mediator.xrOrigin?.Origin;
+            var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
                 return;
 
@@ -238,8 +238,8 @@ namespace VaporXR.Locomotion
             if (_characterController == null && !_attemptedGetCharacterController)
             {
                 // Try on the Origin GameObject first, and then fallback to the XR Origin GameObject (if different)
-                if (!xrOrigin.TryGetComponent(out _characterController) && xrOrigin != Mediator.xrOrigin.gameObject)
-                    Mediator.xrOrigin.TryGetComponent(out _characterController);
+                if (!xrOrigin.TryGetComponent(out _characterController) && xrOrigin != Mediator.XROrigin.gameObject)
+                    Mediator.XROrigin.TryGetComponent(out _characterController);
 
                 _attemptedGetCharacterController = true;
             }

@@ -160,7 +160,7 @@ namespace VaporXR.Locomotion.Teleportation
             // Correct version of system?.xrOrigin?.Origin?.transform
             if (mediator != null)
             {
-                var xrOrigin = mediator.xrOrigin;
+                var xrOrigin = mediator.XROrigin;
                 if (xrOrigin != null)
                 {
                     var origin = xrOrigin.Origin;

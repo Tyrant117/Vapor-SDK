@@ -64,7 +64,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (m_TeleportAnchorTransform == null)
+            {
                 return false;
+            }
 
             teleportRequest.destinationPosition = m_TeleportAnchorTransform.position;
             teleportRequest.destinationRotation = m_TeleportAnchorTransform.rotation;

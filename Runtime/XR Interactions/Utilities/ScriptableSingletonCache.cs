@@ -10,8 +10,8 @@ namespace VaporXR.Utilities
     /// <typeparam name="T">Type of ScriptableObject instance to provide.</typeparam>
     public static class ScriptableSingletonCache<T> where T : ScriptableObject
     {
-        static T s_Instance;
-        static readonly Dictionary<ScriptableObject, HashSet<object>> s_UsersPerInstance = new Dictionary<ScriptableObject, HashSet<object>>();
+        private static T s_Instance;
+        private static readonly Dictionary<ScriptableObject, HashSet<object>> s_UsersPerInstance = new();
 
         /// <summary>
         /// Gets a singleton instance of <typeparamref name="T"/>. This creates an instance if one does not already exist.
@@ -21,7 +21,9 @@ namespace VaporXR.Utilities
         public static T GetInstance(object user)
         {
             if (s_Instance == null)
+            {
                 s_Instance = ScriptableObject.CreateInstance<T>();
+            }
 
             if (!s_UsersPerInstance.TryGetValue(s_Instance, out var users))
             {

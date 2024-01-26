@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
+using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
 using Debug = UnityEngine.Debug;
@@ -212,7 +213,7 @@ namespace VaporXR
             if (m_InteractionManager != null)
                 return;
 
-            m_InteractionManager = SingletonBus.Get<VXRInteractionManager>();
+            m_InteractionManager = ComponentLocatorUtility<VXRInteractionManager>.FindOrCreateComponent();
         }
 
         private void RegisterWithInteractionManager()

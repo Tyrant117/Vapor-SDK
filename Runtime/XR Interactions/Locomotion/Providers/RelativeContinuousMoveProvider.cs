@@ -107,7 +107,7 @@ namespace VaporXR.Locomotion
             // Initialize the Head Transform if necessary, getting the Camera from XR Origin
             if (_headTransform == null)
             {
-                var xrOrigin = Mediator.xrOrigin;
+                var xrOrigin = Mediator.XROrigin;
                 if (xrOrigin != null)
                 {
                     var xrCamera = xrOrigin.Camera;

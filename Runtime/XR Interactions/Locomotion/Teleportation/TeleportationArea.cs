@@ -13,7 +13,9 @@ namespace VaporXR.Locomotion.Teleportation
         protected override bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (raycastHit.collider == null)
+            {
                 return false;
+            }
 
             teleportRequest.destinationPosition = raycastHit.point;
             teleportRequest.destinationRotation = transform.rotation;

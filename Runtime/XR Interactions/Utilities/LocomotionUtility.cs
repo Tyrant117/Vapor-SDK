@@ -17,7 +17,7 @@ namespace VaporXR.Utilities
         /// <returns>
         /// Returns the world space position of the projection of the camera position onto the XZ plane of the XR Origin.
         /// </returns>
-        public static Vector3 GetCameraFloorWorldPosition(this XROrigin xrOrigin)
+        public static Vector3 GetCameraFloorWorldPosition(this VXROrigin xrOrigin)
         {
             var cameraInOriginSpacePos = xrOrigin.CameraInOriginSpacePos;
             var cameraFloorInOriginSpacePos = new Vector3(cameraInOriginSpacePos.x, 0f, cameraInOriginSpacePos.z);

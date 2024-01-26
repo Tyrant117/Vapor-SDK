@@ -15,7 +15,7 @@ namespace VaporXR.Locomotion
         /// </summary>
         /// <param name="xrOrigin">The XR Origin whose body position to get.</param>
         /// <returns>Returns the position of where the user's body is grounded, in the local space of the <see cref="XROrigin.Origin"/>.</returns>
-        Vector3 GetBodyGroundLocalPosition(XROrigin xrOrigin);
+        Vector3 GetBodyGroundLocalPosition(VXROrigin xrOrigin);
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace VaporXR.Locomotion
         /// <param name="evaluator">The evaluator that determines the body position.</param>
         /// <param name="xrOrigin">The XR Origin whose body position to get.</param>
         /// <returns>Returns the world position of where the user's body is grounded.</returns>
-        public static Vector3 GetBodyGroundWorldPosition(this IXRBodyPositionEvaluator evaluator, XROrigin xrOrigin)
+        public static Vector3 GetBodyGroundWorldPosition(this IXRBodyPositionEvaluator evaluator, VXROrigin xrOrigin)
         {
             return xrOrigin.Origin.transform.TransformPoint(evaluator.GetBodyGroundLocalPosition(xrOrigin));
         }

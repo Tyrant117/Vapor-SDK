@@ -1,72 +1,67 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace VaporXR
 {
     /// <summary>
     /// <see cref="InputInteractionState"/> type to hold current state for a given interaction.
     /// </summary>
-    [Serializable]
-    public struct InputInteractionState
+    public class InputInteractionState
     {
-        [Range(0f, 1f)]
-        [SerializeField]
-        private float m_Value;
-
+        private float _value;
         /// <summary>
         /// The value of the interaction in this frame.
         /// </summary>
         public float Value
         {
-            get => m_Value;
-            set => m_Value = value;
+            get => _value;
+            set => _value = value;
         }
 
-        [SerializeField]
-        private bool m_Active;
-
+        private bool _active;
         /// <summary>
         /// Whether it is currently on.
         /// </summary>
         public bool Active
         {
-            get => m_Active;
-            set => m_Active = value;
+            get => _active;
+            set => _active = value;
         }
 
-        private bool m_ActivatedThisFrame;
+        private bool _activatedThisFrame;
 
         /// <summary>
         /// Whether the interaction state activated this frame.
         /// </summary>
         public bool ActivatedThisFrame
         {
-            get => m_ActivatedThisFrame;
-            set => m_ActivatedThisFrame = value;
+            get => _activatedThisFrame;
+            set => _activatedThisFrame = value;
         }
 
-        private bool m_DeactivatedThisFrame;
+        private bool _deactivatedThisFrame;
 
         /// <summary>
         /// Whether the interaction state deactivated this frame.
         /// </summary>
         public bool DeactivatedThisFrame
         {
-            get => m_DeactivatedThisFrame;
-            set => m_DeactivatedThisFrame = value;
+            get => _deactivatedThisFrame;
+            set => _deactivatedThisFrame = value;
         }
 
-        private int clickCount;
+        private int _clickCount;
         public int ClickCount
         {
-            get => clickCount;
-            set => clickCount = value;
+            get => _clickCount;
+            set => _clickCount = value;
         }
-        private float lastActivated;
+        private float _lastActivated;
         public float LastActivated
         {
-            get => lastActivated;
-            set => lastActivated = value;
+            get => _lastActivated;
+            set => _lastActivated = value;
         }
 
         /// <summary>

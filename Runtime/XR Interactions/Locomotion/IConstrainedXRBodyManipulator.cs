@@ -10,7 +10,7 @@ namespace VaporXR.Locomotion
     public interface IConstrainedXRBodyManipulator
     {
         /// <summary>
-        /// The body whose <see cref="XRMovableBody.originTransform"/> to move.
+        /// The body whose <see cref="XRMovableBody.OriginTransform"/> to move.
         /// </summary>
         /// <seealso cref="OnLinkedToBody"/>
         /// <seealso cref="OnUnlinkedFromBody"/>

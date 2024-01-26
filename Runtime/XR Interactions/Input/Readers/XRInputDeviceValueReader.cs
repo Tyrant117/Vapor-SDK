@@ -24,7 +24,7 @@ namespace VaporXR
         /// <para><see cref="InputDeviceCharacteristics.HeldInHand"/> | <see cref="InputDeviceCharacteristics.TrackedDevice"/> | <see cref="InputDeviceCharacteristics.Controller"/> | <see cref="InputDeviceCharacteristics.Left"/> or</para>
         /// <para><see cref="InputDeviceCharacteristics.HeldInHand"/> | <see cref="InputDeviceCharacteristics.TrackedDevice"/> | <see cref="InputDeviceCharacteristics.Controller"/> | <see cref="InputDeviceCharacteristics.Right"/>.</para>
         /// </summary>
-        public InputDeviceCharacteristics characteristics
+        public InputDeviceCharacteristics Characteristics
         {
             get => m_Characteristics;
             set => m_Characteristics = value;
@@ -47,13 +47,21 @@ namespace VaporXR
         /// <summary>
         /// The name of the input feature usage to read.
         /// </summary>
-        public InputFeatureUsageString<TValue> usage
+        public InputFeatureUsageString<TValue> Usage
         {
             get => m_Usage;
             set => m_Usage = value;
         }
 
-        InputDevice m_InputDevice;
+        private InputDevice _inputDevice;
+        public InputDevice InputDevice
+        {
+            get
+            {
+                RefreshInputDeviceIfNeeded();
+                return _inputDevice;
+            }
+        }
 
         /// <inheritdoc />
         public abstract TValue ReadValue();
@@ -67,7 +75,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see langword="bool"/>.</returns>
         protected bool ReadBoolValue()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<bool>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<bool>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -79,7 +87,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see langword="uint"/>.</returns>
         protected uint ReadUIntValue()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<uint>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<uint>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -91,7 +99,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see langword="float"/>.</returns>
         protected float ReadFloatValue()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<float>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<float>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -103,7 +111,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see cref="Vector2"/>.</returns>
         protected Vector2 ReadVector2Value()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector2>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector2>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -115,7 +123,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see cref="Vector3"/>.</returns>
         protected Vector3 ReadVector3Value()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -127,7 +135,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see cref="Quaternion"/>.</returns>
         protected Quaternion ReadQuaternionValue()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Quaternion>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Quaternion>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -139,7 +147,7 @@ namespace VaporXR
         /// <returns>Returns the value of the input as a <see cref="InputTrackingState"/>.</returns>
         protected InputTrackingState ReadInputTrackingStateValue()
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<InputTrackingState>(m_Usage.name), out var value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<InputTrackingState>(m_Usage.name), out var value))
                 return value;
 
             return default;
@@ -152,7 +160,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadBoolValue(out bool value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<bool>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<bool>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -166,7 +174,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadUIntValue(out uint value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<uint>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<uint>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -180,7 +188,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadFloatValue(out float value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<float>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<float>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -194,7 +202,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadVector2Value(out Vector2 value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector2>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector2>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -208,7 +216,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadVector3Value(out Vector3 value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Vector3>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -222,7 +230,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadQuaternionValue(out Quaternion value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<Quaternion>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<Quaternion>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -236,7 +244,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the value was successfully read.</returns>
         protected bool TryReadInputTrackingStateValue(out InputTrackingState value)
         {
-            if (RefreshInputDeviceIfNeeded() && m_InputDevice.TryGetFeatureValue(new InputFeatureUsage<InputTrackingState>(m_Usage.name), out value))
+            if (RefreshInputDeviceIfNeeded() && _inputDevice.TryGetFeatureValue(new InputFeatureUsage<InputTrackingState>(m_Usage.name), out value))
                 return true;
 
             value = default;
@@ -250,7 +258,7 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the input device is valid or if a valid one with matching characteristics was found.</returns>
         protected bool RefreshInputDeviceIfNeeded()
         {
-            return m_InputDevice.isValid || XRInputTrackingAggregator.TryGetDeviceWithExactCharacteristics(m_Characteristics, out m_InputDevice);
+            return _inputDevice.isValid || XRInputTrackingAggregator.TryGetDeviceWithExactCharacteristics(m_Characteristics, out _inputDevice);
         }
     }
 }
