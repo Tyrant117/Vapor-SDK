@@ -13,19 +13,19 @@ namespace VaporXREditor
         public const string FolderRelativePath = "Vapor/XR";
         public const string ReadersRelativePath = "Vapor/XR/Readers";
         
-        private const string VaporXRReadersCreated = "vaporXRReadersCreated";
-        private const string VaporXRInteractionLayersCreated = "vaporXRInteractionLayersCreated";
+        private const string VaporXRReadersCreated = "_vaporXRReadersCreated";
+        private const string VaporXRInteractionLayersCreated = "_vaporXRInteractionLayersCreated";
 
         public static bool AreVaporXRReadersCreated
         {
-            get => EditorPrefs.GetBool(VaporXRReadersCreated, false);
-            set => EditorPrefs.SetBool(VaporXRReadersCreated, value);
+            get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRReadersCreated, false);
+            set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRReadersCreated, value);
         }
 
         public static bool AreInteractionLayersCreated
         {
-            get => EditorPrefs.GetBool(VaporXRInteractionLayersCreated, false);
-            set => EditorPrefs.SetBool(VaporXRInteractionLayersCreated, value);
+            get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, false);
+            set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, value);
         }
         
         [InitializeOnLoadMethod]
@@ -41,6 +41,7 @@ namespace VaporXREditor
         {
             if(AreVaporXRReadersCreated)
             {
+                Debug.Log("<b>[VaporXR]</b> Readers Already Created");
                 return;
             }
 
@@ -131,6 +132,7 @@ namespace VaporXREditor
         {
             if(AreInteractionLayersCreated)
             {
+                Debug.Log("<b>[VaporXR]</b> Interaction Layers Already Created");
                 return;
             }
 

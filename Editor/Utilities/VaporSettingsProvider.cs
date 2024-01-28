@@ -8,18 +8,18 @@ namespace VaporEditor
 {
     public class VaporSettingsProvider : SettingsProvider
     {
-        private const string EnableVaporXR = "enableVaporXR";
+        private const string EnableVaporXR = "_enableVaporXR";
 
         [SettingsProvider]
         public static SettingsProvider CreateSettingsProvider()
-        {
+        {           
             return new VaporSettingsProvider("Vapor/Modules", SettingsScope.User);
         }
 
-        public static bool VaporInspectorsEnabled
+        public static bool VaporXREnabled
         {
-            get => EditorPrefs.GetBool(EnableVaporXR, false);
-            set => EditorPrefs.SetBool(EnableVaporXR, value);
+            get => EditorPrefs.GetBool(PlayerSettings.productName + EnableVaporXR, false);
+            set => EditorPrefs.SetBool(PlayerSettings.productName + EnableVaporXR, value);
         }
 
         public VaporSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
@@ -29,7 +29,7 @@ namespace VaporEditor
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            var header = new VisualElement() /*new StyledHeaderBox("Inspector Settings")*/
+            var header = new VisualElement()
             {
                 style =
                 {
@@ -42,10 +42,10 @@ namespace VaporEditor
             {
                 tooltip = "Enables the VAPOR_XR define allowing for XR interactions."
             };
-            enableTog.SetValueWithoutNotify(VaporInspectorsEnabled);
+            enableTog.SetValueWithoutNotify(VaporXREnabled);
             enableTog.RegisterValueChangedCallback(x =>
             {
-                VaporInspectorsEnabled = x.newValue;
+                VaporXREnabled = x.newValue;
                 DefineVaporXREnabled();
             });
 
@@ -57,7 +57,7 @@ namespace VaporEditor
 
         private static void DefineVaporXREnabled()
         {
-            var enabled = VaporInspectorsEnabled;
+            var enabled = VaporXREnabled;
             PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), out var defines);
             if (enabled)
             {

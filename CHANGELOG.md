@@ -1,3 +1,6 @@
+# v0.2.4
+* Made the project settins work per project.
+
 # v0.2.0
 * Added XR Interactions to the kit.
 

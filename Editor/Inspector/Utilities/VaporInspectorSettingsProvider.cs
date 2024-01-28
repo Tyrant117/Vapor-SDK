@@ -14,8 +14,8 @@ namespace VaporInspectorEditor
             DefineVaporEnabled();
         }
 
-        private const string EnableVaporInspectors = "enableVaporInspectors";
-        private const string VaporInspectorsResolverUpdate = "vaporInspectorsResolverUpdate";
+        private const string EnableVaporInspectors = "_enableVaporInspectors";
+        private const string VaporInspectorsResolverUpdate = "_vaporInspectorsResolverUpdate";
         // private const string EnableExplicitImplementation = "enableExplicitImplementation";
 
         [SettingsProvider]
@@ -26,14 +26,14 @@ namespace VaporInspectorEditor
 
         public static bool VaporInspectorsEnabled
         {
-            get => EditorPrefs.GetBool(EnableVaporInspectors, true);
-            set => EditorPrefs.SetBool(EnableVaporInspectors, value);
+            get => EditorPrefs.GetBool(PlayerSettings.productName + EnableVaporInspectors, true);
+            set => EditorPrefs.SetBool(PlayerSettings.productName + EnableVaporInspectors, value);
         }
 
         public static int VaporInspectorResolverUpdateRate
         {
-            get => EditorPrefs.GetInt(VaporInspectorsResolverUpdate, 1000);
-            set => EditorPrefs.SetInt(VaporInspectorsResolverUpdate, value);
+            get => EditorPrefs.GetInt(PlayerSettings.productName + VaporInspectorsResolverUpdate, 1000);
+            set => EditorPrefs.SetInt(PlayerSettings.productName + VaporInspectorsResolverUpdate, value);
         }
 
         public VaporInspectorsSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
