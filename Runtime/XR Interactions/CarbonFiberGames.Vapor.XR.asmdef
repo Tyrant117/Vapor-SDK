@@ -24,6 +24,11 @@
     ],
     "versionDefines": [
         {
+            "name": "com.unity.xr.core-utils",
+            "expression": "2.2.3",
+            "define": "VAPOR_XR"
+        },
+        {
             "name": "com.unity.xr.hands",
             "expression": "1.3.0",
             "define": "XR_HANDS_1_3_OR_NEWER"

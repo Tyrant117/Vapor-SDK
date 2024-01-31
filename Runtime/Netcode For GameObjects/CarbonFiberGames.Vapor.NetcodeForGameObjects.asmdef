@@ -13,7 +13,15 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "COM_UNITY_MODULE_NETCODE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.netcode.gameobjects",
+            "expression": "1.8.0",
+            "define": "COM_UNITY_MODULE_NETCODE"
+        }
+    ],
     "noEngineReferences": false
 }
