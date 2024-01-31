@@ -42,10 +42,13 @@ namespace VaporXR
         private HandPoseDatumProperty _idlePoseDatum;
         [FoldoutGroup("Poses"), SerializeField] 
         private HandPoseDatumProperty _closedPoseDatum;
-        [FoldoutGroup("Poses"), SerializeField]
-        private Collider _poseCollider;
-        [FoldoutGroup("Poses"), SerializeField]
-        private Collider _otherPoseCollider;
+
+        [FoldoutGroup("Hover Posing"), SerializeField]
+        private Collider _hoverPoseCollider;
+        [FoldoutGroup("Hover Posing"), SerializeField]
+        private Collider _otherHoverPoseCollider;
+        [FoldoutGroup("Hover Posing"), SerializeField]
+        private List<Collider> _ignoreTriggerPoseZoneColliders;
 
         [FoldoutGroup("Input"), SerializeField, AutoReference] private VXRInputDeviceUpdateProvider _updateProvider;
         [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbTouchInput;
@@ -94,6 +97,7 @@ namespace VaporXR
         private static readonly WaitForEndOfFrame s_WaitForEndOfFrame = new();
 
         private bool _idlePosing;
+        private bool _returningToIdle;
         private HandPose _currentPose;
         private HandPose _interpolatedPose;
         private HandPose _dynamicPose;
@@ -108,7 +112,11 @@ namespace VaporXR
             _hasRigidbody = _rigidbody != null;
             Assert.IsTrue(!_usePhysicsHand || _hasRigidbody, $"Attempting to use a physics hand without a rigidbody. A rigibody must be added to {name}.");
 
-            Physics.IgnoreCollision(_poseCollider, _otherPoseCollider, true);
+            Physics.IgnoreCollision(_hoverPoseCollider, _otherHoverPoseCollider, true);
+            foreach (var col in _ignoreTriggerPoseZoneColliders)
+            {
+                Physics.IgnoreCollision(_hoverPoseCollider, col, true);
+            }
 
             _PopulateFingers();
             _interpolatedPose = _flexedPoseDatum.Value.Copy();
@@ -257,6 +265,24 @@ namespace VaporXR
             }
         }
 
+        #region - Trigger Contacts -
+        private void OnTriggerEnter(Collider other)
+        {
+            if(other.TryGetComponent<TriggerPoseZone>(out var poseZone))
+            {
+                SetHandPose(poseZone.Pose, duration: poseZone.Duration);
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.TryGetComponent<TriggerPoseZone>(out var poseZone))
+            {
+                FallbackToIdle(poseZone.Duration);
+            }
+        }
+        #endregion
+
         #region - Tracking -
         private void TrackPosition()
         {
@@ -313,6 +339,8 @@ namespace VaporXR
             {
                 if(_handPoseRoutine != null)
                 {
+                    PosingComplete = null;
+                    _returningToIdle = false;
                     StopCoroutine(_handPoseRoutine);
                 }
 
@@ -347,8 +375,12 @@ namespace VaporXR
         {
             if (duration > 0)
             {
-                PosingComplete += OnIdlePosingComplete;
-                SetHandPose(_idlePoseDatum.Value, duration: duration);
+                if (!_returningToIdle)
+                {
+                    _returningToIdle = true;
+                    PosingComplete += OnIdlePosingComplete;
+                    SetHandPose(_idlePoseDatum.Value, duration: duration);
+                }
             }
             else
             {
@@ -361,6 +393,7 @@ namespace VaporXR
         {
             PosingComplete -= OnIdlePosingComplete;
             _idlePosing = true;
+            _returningToIdle = false;
         }
         #endregion
     }
