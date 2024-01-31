@@ -22,7 +22,7 @@ namespace VaporXR
         [SerializeField] private HandFinger _finger;
         [SerializeField] private BendAxis _curlAxis = BendAxis.LocalX;
         [SerializeField] private BendAxis _swayAxis = BendAxis.LocalZ;
-        [SerializeField] private List<Transform> _joints;
+        [SerializeField] private List<Transform> _joints = new();
 
         [SerializeField] private Transform _rootJoint;
         [SerializeField] private Transform _tip;
@@ -55,6 +55,7 @@ namespace VaporXR
                 return;
             }
 
+            _joints ??= new();
             _joints.Clear();
             var joint = _rootJoint;
             while (joint != _tip)
