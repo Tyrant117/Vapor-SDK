@@ -1,0 +1,19 @@
+{
+    "name": "SteamworksTransport",
+    "rootNamespace": "VaporNetcode.Transport.Steam",
+    "references": [
+        "GUID:68bd7fdb68ef2684e982e8a9825b18a5",
+        "GUID:da94170b274833b41ad88c2602c02178"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!DISABLESTEAMWORKS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

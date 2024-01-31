@@ -1,0 +1,19 @@
+{
+    "name": "SteamworksTransportNGO",
+    "rootNamespace": "VaporNetcodeForGo.Transport",
+    "references": [
+        "GUID:68bd7fdb68ef2684e982e8a9825b18a5",
+        "GUID:1491147abca9d7d4bb7105af628b223e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!DISABLESTEAMWORKS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,19 @@
+{
+    "name": "CarbonFiberGames.Vapor.NetcodeForGameObjects",
+    "rootNamespace": "VaporNetcodeForGo",
+    "references": [
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:6f1965c989c67cc40a02406c75e35d2d",
+        "GUID:155b6dd60f23ff041be60361f9946152",
+        "GUID:b609f4d6b0021554baeca5f5ca57f3b6"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

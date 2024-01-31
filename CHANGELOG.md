@@ -1,3 +1,6 @@
+# v0.2.5
+* Updated to work with Netcode for GameObjects.
+
 # v0.2.4
 * Made the project settins work per project.
 

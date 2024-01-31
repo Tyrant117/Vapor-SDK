@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Vapor.ObjectLogging;
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace VaporNetcode
 {
@@ -120,6 +117,10 @@ namespace VaporNetcode
 #endif
         [Tooltip("List of ID:Type pairs for SyncClass"), SerializeField]
         private List<string> _syncClassLookupList = new();
+
+        #region Properties
+        public int MaxConnections { get; set; }
+        #endregion
 
         public event Action ServerInitialized;
         public event Action ClientInitialized;
