@@ -42,7 +42,11 @@ namespace VaporXR
         private HandPoseDatumProperty _idlePoseDatum;
         [FoldoutGroup("Poses"), SerializeField] 
         private HandPoseDatumProperty _closedPoseDatum;
-        
+        [FoldoutGroup("Poses"), SerializeField]
+        private Collider _poseCollider;
+        [FoldoutGroup("Poses"), SerializeField]
+        private Collider _otherPoseCollider;
+
         [FoldoutGroup("Input"), SerializeField, AutoReference] private VXRInputDeviceUpdateProvider _updateProvider;
         [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbTouchInput;
         [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbDownInput;
@@ -103,7 +107,9 @@ namespace VaporXR
         {
             _hasRigidbody = _rigidbody != null;
             Assert.IsTrue(!_usePhysicsHand || _hasRigidbody, $"Attempting to use a physics hand without a rigidbody. A rigibody must be added to {name}.");
-            
+
+            Physics.IgnoreCollision(_poseCollider, _otherPoseCollider, true);
+
             _PopulateFingers();
             _interpolatedPose = _flexedPoseDatum.Value.Copy();
             _dynamicPose = _flexedPoseDatum.Value.Copy();
