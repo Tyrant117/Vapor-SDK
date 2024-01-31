@@ -12,7 +12,8 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "!DISABLESTEAMWORKS"
+        "!DISABLESTEAMWORKS",
+        "STEAMWORKS_NET"
     ],
     "versionDefines": [],
     "noEngineReferences": false
