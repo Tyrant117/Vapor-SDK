@@ -13,7 +13,8 @@
     "autoReferenced": true,
     "defineConstraints": [
         "!DISABLESTEAMWORKS",
-        "STEAMWORKS_NET"
+        "STEAMWORKS_NET",
+        "VAPOR_NETCODE"
     ],
     "versionDefines": [],
     "noEngineReferences": false
