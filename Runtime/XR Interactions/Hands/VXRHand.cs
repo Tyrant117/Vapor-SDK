@@ -58,6 +58,11 @@ namespace VaporXR
         [FoldoutGroup("Input"), SerializeField] private Axis1DInputProvider _indexInput;
         [FoldoutGroup("Input"), SerializeField] private Axis1DInputProvider _gripInput;
 
+        [FoldoutGroup("Debug"), SerializeField]
+        private bool _attachStateDebugger;
+        [FoldoutGroup("Debug"), SerializeField, ShowIf("%_attachStateDebugger")]
+        private StateLogger _stateLogger;
+
         [FoldoutGroup("Editor"), Button]
         private void TogglePoseEditor()
         {
@@ -181,13 +186,13 @@ namespace VaporXR
             _hoverState = new State("Hover", false);
             _grabState = new State("Grab", false);
 
-            _idleState.InitEvents(OnIdleEntered, OnIdleUpdated);
+            _idleState.InitEvents(OnIdleEntered, OnIdleUpdated, OnIdleExited);
             _hoverState.InitEvents(OnPoseEntered, null, OnPoseExited);
             _grabState.InitEvents(OnPoseEntered, null, OnPoseExited);
 
             _fsm.AddState(_idleState);
             _fsm.AddState(_hoverState);
-            _fsm.AddState(_grabState);            
+            _fsm.AddState(_grabState);
 
             _fsm.AddTriggerTransition((int)HandPoseType.Grab, new Transition(_idleState, _grabState, 2, CanTransition));
             _fsm.AddTriggerTransition((int)HandPoseType.Hover, new Transition(_idleState, _hoverState, 1, CanTransition));
@@ -200,6 +205,12 @@ namespace VaporXR
             _fsm.AddTriggerTransition((int)HandPoseType.Idle, new Transition(_grabState, _idleState, 1, CanReturnToIdle));
 
             _fsm.Init();
+
+            if (_attachStateDebugger)
+            {
+                _stateLogger = new StateLogger();
+                _fsm.AttachLogger(_stateLogger);
+            }
         }
 
         private void SetFingerPoses()
@@ -229,7 +240,7 @@ namespace VaporXR
         }
 
         private void Start()
-        {
+        {            
             SetupStateMachine();
         }
 
@@ -388,6 +399,7 @@ namespace VaporXR
             _pendingPoseTransform = relativeTo;
             _pendingPoseDuration = duration;
 
+            Debug.Log($"Requesting Pose: Current: {_currentSource} | {poseType} from {source}");
             _fsm.Trigger((int)poseType);
         }
 
@@ -398,6 +410,7 @@ namespace VaporXR
             _pendingPoseTransform = null;
             _pendingPoseDuration = duration;
 
+            Debug.Log($"Requesting Idle: Current: {_currentSource} | From: {source}");
             _fsm.Trigger((int)HandPoseType.Idle);
         }
 
@@ -552,6 +565,16 @@ namespace VaporXR
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+            }
+        }
+
+        private void OnIdleExited(State s, Transition t)
+        {
+            if (_handPoseRoutine != null)
+            {
+                StopCoroutine(_handPoseRoutine);
+                _handPoseRoutine = null;
+                _isPosing = false;
             }
         }
 
