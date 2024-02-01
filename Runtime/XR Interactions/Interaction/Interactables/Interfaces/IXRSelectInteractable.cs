@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VaporXR
@@ -20,9 +21,9 @@ namespace VaporXR
         /// The <see cref="SelectEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="lastSelectExited"/>
-        /// <seealso cref="selectEntered"/>
-        SelectEnterEvent firstSelectEntered { get; }
+        /// <seealso cref="LastSelectExited"/>
+        /// <seealso cref="SelectEntered"/>
+        event Action<SelectEnterEventArgs> FirstSelectEntered;
 
         /// <summary>
         /// The event that is called only when the last remaining selecting Interactor
@@ -32,9 +33,9 @@ namespace VaporXR
         /// The <see cref="SelectExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="firstSelectEntered"/>
-        /// <seealso cref="selectExited"/>
-        SelectExitEvent lastSelectExited { get; }
+        /// <seealso cref="FirstSelectEntered"/>
+        /// <seealso cref="SelectExited"/>
+        event Action<SelectExitEventArgs> LastSelectExited;
 
         /// <summary>
         /// The event that is called when an Interactor begins selecting this Interactable.
@@ -43,8 +44,8 @@ namespace VaporXR
         /// The <see cref="SelectEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="selectExited"/>
-        SelectEnterEvent selectEntered { get; }
+        /// <seealso cref="SelectExited"/>
+        event Action<SelectEnterEventArgs> SelectEntered;
 
         /// <summary>
         /// The event that is called when an Interactor ends selecting this Interactable.
@@ -53,8 +54,8 @@ namespace VaporXR
         /// The <see cref="SelectExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="selectEntered"/>
-        SelectExitEvent selectExited { get; }
+        /// <seealso cref="SelectEntered"/>
+        event Action<SelectExitEventArgs> SelectExited;
 
         /// <summary>
         /// (Read Only) The list of Interactors currently selecting this Interactable (may by empty).
@@ -64,9 +65,9 @@ namespace VaporXR
         /// It is exposed as a <see cref="List{T}"/> rather than an <see cref="IReadOnlyList{T}"/> to avoid GC Allocations
         /// when enumerating the list.
         /// </remarks>
-        /// <seealso cref="isSelected"/>
+        /// <seealso cref="IsSelected"/>
         /// <seealso cref="VXRBaseInteractor.InteractablesSelected"/>
-        List<VXRBaseInteractor> interactorsSelecting { get; }
+        List<VXRBaseInteractor> InteractorsSelecting { get; }
 
         /// <summary>
         /// (Read Only) The first interactor that selected this interactable since not being selected by any interactor.
@@ -74,26 +75,32 @@ namespace VaporXR
         /// when it released while multiple interactors were selecting this interactable.
         /// </summary>
         /// <seealso cref="VXRBaseInteractor.FirstInteractableSelected"/>
-        VXRBaseInteractor firstInteractorSelecting { get; }
+        VXRBaseInteractor FirstInteractorSelecting { get; }
+
+
+        /// <summary>
+        /// Indicates whether this interactable can be selected by an interactor.
+        /// </summary>
+        bool CanSelect { get; set; }
 
         /// <summary>
         /// (Read Only) Indicates whether this interactable is currently being selected by any interactor.
         /// </summary>
         /// <remarks>
-        /// In other words, returns whether <see cref="interactorsSelecting"/> contains any interactors.
+        /// In other words, returns whether <see cref="InteractorsSelecting"/> contains any interactors.
         /// <example>
         /// <code>interactorsSelecting.Count > 0</code>
         /// </example>
         /// </remarks>
-        /// <seealso cref="interactorsSelecting"/>
+        /// <seealso cref="InteractorsSelecting"/>
         /// <seealso cref="VXRBaseInteractor.HasSelection"/>
-        bool isSelected { get; }
+        bool IsSelected { get; }
 
         /// <summary>
         /// Indicates the selection policy of an Interactable.
         /// </summary>
         /// <seealso cref="InteractableSelectMode"/>
-        InteractableSelectMode selectMode { get; }
+        InteractableSelectMode SelectMode { get; }
 
         /// <summary>
         /// Determines if a given Interactor can select this Interactable.
@@ -189,9 +196,9 @@ namespace VaporXR
         /// <remarks>
         /// Equivalent to <code>interactorsSelecting.Count > 0 ? interactorsSelecting[0] : null</code>
         /// </remarks>
-        /// <seealso cref="IXRSelectInteractable.interactorsSelecting"/>
+        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
         public static VXRBaseInteractor GetOldestInteractorSelecting(this IXRSelectInteractable interactable) =>
-            interactable?.interactorsSelecting.Count > 0 ? interactable.interactorsSelecting[0] : null;
+            interactable?.InteractorsSelecting.Count > 0 ? interactable.InteractorsSelecting[0] : null;
 
         /// <summary>
         /// Gets whether the interactable is currently being selected by an interactor associated with the left hand or controller.
@@ -223,9 +230,9 @@ namespace VaporXR
         public static bool IsSelectedByRight(this IXRSelectInteractable interactable) =>
             IsSelectedBy(interactable, InteractorHandedness.Right);
 
-        static bool IsSelectedBy(IXRSelectInteractable interactable, InteractorHandedness handedness)
+        private static bool IsSelectedBy(IXRSelectInteractable interactable, InteractorHandedness handedness)
         {
-            var interactorsSelecting = interactable.interactorsSelecting;
+            var interactorsSelecting = interactable.InteractorsSelecting;
             for (var i = 0; i < interactorsSelecting.Count; ++i)
             {
                 if (interactorsSelecting[i].Handedness == handedness)
@@ -239,7 +246,7 @@ namespace VaporXR
     /// <summary>
     /// Options for the selection policy of an Interactable.
     /// </summary>
-    /// <seealso cref="IXRSelectInteractable.selectMode"/>
+    /// <seealso cref="IXRSelectInteractable.SelectMode"/>
     public enum InteractableSelectMode
     {
         /// <summary>

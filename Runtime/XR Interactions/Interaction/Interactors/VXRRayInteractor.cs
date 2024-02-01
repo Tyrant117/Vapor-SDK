@@ -318,14 +318,7 @@ namespace VaporXR
         private bool _occludeARHitsWith3DObjects;
         [SerializeField, FoldoutGroup("AR")]
         [RichTextTooltip("Whether AR raycast hits will be occluded by 2D world space objects such as UI.")]
-        private bool _occludeARHitsWith2DObjects;
-        
-        [SerializeField, FoldoutGroup("Events")]
-        [RichTextTooltip("The event that is called when the Interactor begins hovering over a UI element.")]
-        private UIHoverEnterEvent _uiHoverEntered = new();
-        [SerializeField, FoldoutGroup("Events")]
-        [RichTextTooltip("The event that is called when this Interactor ends hovering over a UI element.")]
-        private UIHoverExitEvent _uiHoverExited = new();
+        private bool _occludeARHitsWith2DObjects;        
         #endregion
 
         #region Properties
@@ -1009,19 +1002,8 @@ namespace VaporXR
         #endregion
 
         #region Events
-        /// <inheritdoc />
-        public UIHoverEnterEvent UiHoverEntered
-        {
-            get => _uiHoverEntered;
-            set => _uiHoverEntered = value;
-        }
-
-        /// <inheritdoc />
-        public UIHoverExitEvent UiHoverExited
-        {
-            get => _uiHoverExited;
-            set => _uiHoverExited = value;
-        }
+        public event Action<UIHoverEventArgs> UiHoverEntered;
+        public event Action<UIHoverEventArgs> UiHoverExited;
         #endregion
 
 #if AR_FOUNDATION_PRESENT
@@ -2626,7 +2608,7 @@ namespace VaporXR
                 _hoverUISelectActive = false;
             }
 
-            _uiHoverEntered?.Invoke(args);
+            UiHoverEntered?.Invoke(args);
         }
 
         /// <summary>
@@ -2649,7 +2631,7 @@ namespace VaporXR
                 _hoverUISelectActive = false;
             }
 
-            _uiHoverExited?.Invoke(args);
+            UiHoverExited?.Invoke(args);
         }
 
         private void RestoreAttachTransform()

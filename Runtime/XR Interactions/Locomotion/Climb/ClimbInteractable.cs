@@ -120,7 +120,7 @@ namespace VaporXR.Locomotion
 
         protected virtual void Reset()
         {
-            selectMode = InteractableSelectMode.Multiple;
+            SelectMode = InteractableSelectMode.Multiple;
             m_ClimbTransform = transform;
         }
 
@@ -142,12 +142,12 @@ namespace VaporXR.Locomotion
         /// <inheritdoc />
         public override bool IsSelectableBy(VXRBaseInteractor interactor)
         {
-            return base.IsSelectableBy(interactor) && (IsSelected(interactor) || !m_FilterInteractionByDistance ||
+            return base.IsSelectableBy(interactor) && (IsSelectedBy(interactor) || !m_FilterInteractionByDistance ||
                 GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
         }
 
         /// <inheritdoc />
-        protected override void OnSelectEntered(SelectEnterEventArgs args)
+        public override void OnSelectEntered(SelectEnterEventArgs args)
         {
             base.OnSelectEntered(args);
             if (m_ClimbProvider != null || ComponentLocatorUtility<ClimbProvider>.TryFindComponent(out m_ClimbProvider))
@@ -155,7 +155,7 @@ namespace VaporXR.Locomotion
         }
 
         /// <inheritdoc />
-        protected override void OnSelectExited(SelectExitEventArgs args)
+        public override void OnSelectExited(SelectExitEventArgs args)
         {
             base.OnSelectExited(args);
             if (m_ClimbProvider != null)

@@ -87,7 +87,7 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="RegisterInteractable(IXRInteractable)"/>
-        /// <seealso cref="IXRInteractable.registered"/>
+        /// <seealso cref="IXRInteractable.Registered"/>
         public event Action<InteractableRegisteredEventArgs> interactableRegistered;
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="UnregisterInteractable(IXRInteractable)"/>
-        /// <seealso cref="IXRInteractable.unregistered"/>
+        /// <seealso cref="IXRInteractable.Unregistered"/>
         public event Action<InteractableUnregisteredEventArgs> interactableUnregistered;
 
 
@@ -638,7 +638,7 @@ namespace VaporXR
         /// <seealso cref="CanSelect"/>
         public bool IsFocusPossible(VXRBaseInteractor interactor, IXRFocusInteractable interactable)
         {
-            return interactable.canFocus && HasInteractionLayerOverlap(interactor, interactable);
+            return interactable.CanFocus && HasInteractionLayerOverlap(interactor, interactable);
         }
 
         /// <summary>
@@ -892,7 +892,7 @@ namespace VaporXR
         {
             if (m_Interactables.Register(interactable))
             {
-                foreach (var interactableCollider in interactable.colliders)
+                foreach (var interactableCollider in interactable.Colliders)
                 {
                     if (interactableCollider == null)
                         continue;
@@ -970,7 +970,7 @@ namespace VaporXR
                 // This makes the assumption that the list of Colliders has not been changed after
                 // the Interactable is registered. If any were removed afterward, those would remain
                 // in the dictionary.
-                foreach (var interactableCollider in interactable.colliders)
+                foreach (var interactableCollider in interactable.Colliders)
                 {
                     if (interactableCollider == null)
                         continue;
@@ -1334,9 +1334,9 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to potentially exit its focus state due to cancellation.</param>
         public virtual void CancelInteractableFocus(IXRFocusInteractable interactable)
         {
-            for (var i = interactable.interactionGroupsFocusing.Count - 1; i >= 0; --i)
+            for (var i = interactable.InteractionGroupsFocusing.Count - 1; i >= 0; --i)
             {
-                FocusCancel(interactable.interactionGroupsFocusing[i], interactable);
+                FocusCancel(interactable.InteractionGroupsFocusing[i], interactable);
             }
         }
 
@@ -1394,9 +1394,9 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to potentially exit its selection state due to cancellation.</param>
         public virtual void CancelInteractableSelection(IXRSelectInteractable interactable)
         {
-            for (var i = interactable.interactorsSelecting.Count - 1; i >= 0; --i)
+            for (var i = interactable.InteractorsSelecting.Count - 1; i >= 0; --i)
             {
-                SelectCancel(interactable.interactorsSelecting[i], interactable);
+                SelectCancel(interactable.InteractorsSelecting[i], interactable);
             }
         }
 
@@ -1452,9 +1452,9 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to potentially exit its hover state due to cancellation.</param>
         public virtual void CancelInteractableHover(IXRHoverInteractable interactable)
         {
-            for (var i = interactable.interactorsHovering.Count - 1; i >= 0; --i)
+            for (var i = interactable.InteractorsHovering.Count - 1; i >= 0; --i)
             {
-                HoverCancel(interactable.interactorsHovering[i], interactable);
+                HoverCancel(interactable.InteractorsHovering[i], interactable);
             }
         }
 
@@ -1473,10 +1473,14 @@ namespace VaporXR
             var group = asGroupMember?.ContainingGroup;
 
             if (group == null || !CanFocus(interactor, interactable))
+            {
                 return;
+            }
 
-            if (interactable.isFocused && !ResolveExistingFocus(group, interactable))
+            if (interactable.IsFocused && !ResolveExistingFocus(group, interactable))
+            {
                 return;
+            }
 
             using (m_FocusEnterEventArgs.Get(out var args))
             {
@@ -1538,7 +1542,7 @@ namespace VaporXR
         /// </remarks>
         public virtual void SelectEnter(VXRBaseInteractor interactor, IXRSelectInteractable interactable)
         {
-            if (interactable.isSelected && !ResolveExistingSelect(interactor, interactable))
+            if (interactable.IsSelected && !ResolveExistingSelect(interactor, interactable))
                 return;
 
             using (m_SelectEnterEventArgs.Get(out var args))
@@ -1911,12 +1915,12 @@ namespace VaporXR
         /// <seealso cref="FocusEnter(VXRBaseInteractor, IXRFocusInteractable)"/>
         protected virtual bool ResolveExistingFocus(IXRInteractionGroup interactionGroup, IXRFocusInteractable interactable)
         {
-            Debug.Assert(interactable.isFocused, this);
+            Debug.Assert(interactable.IsFocused, this);
 
             if (interactionGroup.focusInteractable == interactable)
                 return false;
 
-            switch (interactable.focusMode)
+            switch (interactable.FocusMode)
             {
                 case InteractableFocusMode.Single:
                     ExitInteractableFocus(interactable);
@@ -1924,7 +1928,7 @@ namespace VaporXR
                 case InteractableFocusMode.Multiple:
                     break;
                 default:
-                    Debug.Assert(false, $"Unhandled {nameof(InteractableFocusMode)}={interactable.focusMode}", this);
+                    Debug.Assert(false, $"Unhandled {nameof(InteractableFocusMode)}={interactable.FocusMode}", this);
                     return false;
             }
 
@@ -1942,12 +1946,12 @@ namespace VaporXR
         /// <seealso cref="SelectEnter(VXRBaseInteractor, IXRSelectInteractable)"/>
         protected virtual bool ResolveExistingSelect(VXRBaseInteractor interactor, IXRSelectInteractable interactable)
         {
-            Debug.Assert(interactable.isSelected, this);
+            Debug.Assert(interactable.IsSelected, this);
 
             if (interactor.IsSelecting(interactable))
                 return false;
 
-            switch (interactable.selectMode)
+            switch (interactable.SelectMode)
             {
                 case InteractableSelectMode.Single:
                     ExitInteractableSelection(interactable);
@@ -1955,7 +1959,7 @@ namespace VaporXR
                 case InteractableSelectMode.Multiple:
                     break;
                 default:
-                    Debug.Assert(false, $"Unhandled {nameof(InteractableSelectMode)}={interactable.selectMode}", this);
+                    Debug.Assert(false, $"Unhandled {nameof(InteractableSelectMode)}={interactable.SelectMode}", this);
                     return false;
             }
 
@@ -1970,10 +1974,10 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
-        /// <seealso cref="IXRInteractable.interactionLayers"/>
+        /// <seealso cref="IXRInteractable.InteractionLayers"/>
         protected static bool HasInteractionLayerOverlap(VXRBaseInteractor interactor, IXRInteractable interactable)
         {
-            return (interactor.InteractionLayers & interactable.interactionLayers) != 0;
+            return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
 
         /// <summary>
@@ -2008,17 +2012,17 @@ namespace VaporXR
 
         private void ExitInteractableSelection(IXRSelectInteractable interactable)
         {
-            for (var i = interactable.interactorsSelecting.Count - 1; i >= 0; --i)
+            for (var i = interactable.InteractorsSelecting.Count - 1; i >= 0; --i)
             {
-                SelectExit(interactable.interactorsSelecting[i], interactable);
+                SelectExit(interactable.InteractorsSelecting[i], interactable);
             }
         }
 
         private void ExitInteractableFocus(IXRFocusInteractable interactable)
         {
-            for (var i = interactable.interactionGroupsFocusing.Count - 1; i >= 0; --i)
+            for (var i = interactable.InteractionGroupsFocusing.Count - 1; i >= 0; --i)
             {
-                FocusExit(interactable.interactionGroupsFocusing[i], interactable);
+                FocusExit(interactable.InteractionGroupsFocusing[i], interactable);
             }
         }
 

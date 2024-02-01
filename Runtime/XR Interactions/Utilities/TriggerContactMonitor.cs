@@ -163,9 +163,9 @@ namespace VaporXR.Utilities
             if (m_EnteredUnassociatedColliders.Count == 0 || interactionManager == null)
                 return;
 
-            for (int index = 0, count = interactable.colliders.Count; index < count; ++index)
+            for (int index = 0, count = interactable.Colliders.Count; index < count; ++index)
             {
-                var col = interactable.colliders[index];
+                var col = interactable.Colliders[index];
                 if (col == null)
                     continue;
 

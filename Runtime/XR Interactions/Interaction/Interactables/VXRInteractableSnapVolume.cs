@@ -26,7 +26,7 @@ namespace VaporXR
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> that this snap volume will communicate with (will find one if <see langword="null"/>).
         /// </summary>
-        public VXRInteractionManager interactionManager
+        public VXRInteractionManager InteractionManager
         {
             get => m_InteractionManager;
             set
@@ -365,8 +365,8 @@ namespace VaporXR
 
             if (m_BoundSelectInteractable != null)
             {
-                m_BoundSelectInteractable.firstSelectEntered.RemoveListener(OnFirstSelectEntered);
-                m_BoundSelectInteractable.lastSelectExited.RemoveListener(OnLastSelectExited);
+                m_BoundSelectInteractable.FirstSelectEntered -= OnFirstSelectEntered;
+                m_BoundSelectInteractable.LastSelectExited -= OnLastSelectExited;
             }
 
             m_BoundInteractable = source;
@@ -374,8 +374,8 @@ namespace VaporXR
 
             if (m_BoundSelectInteractable != null)
             {
-                m_BoundSelectInteractable.firstSelectEntered.AddListener(OnFirstSelectEntered);
-                m_BoundSelectInteractable.lastSelectExited.AddListener(OnLastSelectExited);
+                m_BoundSelectInteractable.FirstSelectEntered += OnFirstSelectEntered;
+                m_BoundSelectInteractable.LastSelectExited += OnLastSelectExited;
             }
 
             // Refresh the snap collider enabled state (which is what the callbacks do)
@@ -384,7 +384,7 @@ namespace VaporXR
 
         private void RefreshSnapColliderEnabled()
         {
-            var isSelected = m_BoundSelectInteractable is { isSelected: true };
+            var isSelected = m_BoundSelectInteractable is { IsSelected: true };
             if (m_DisableSnapColliderWhenSelected)
                 SetSnapColliderEnabled(!isSelected);
             else

@@ -11,7 +11,7 @@ namespace VaporXR
     /// <summary>
     /// Interactor used for interacting with interactables through poking.
     /// </summary>
-    /// <seealso cref="XRPokeFilter"/>
+    /// <seealso cref="VXRPokeFilter"/>
     // ReSharper disable once InconsistentNaming
     public class VXRPokeInteractor : VXRBaseInteractor, IUIHoverInteractor, IPokeStateDataProvider, IAttachPointVelocityProvider
     {
@@ -63,12 +63,7 @@ namespace VaporXR
         private bool _requirePokeFilter = true;
         [SerializeField, FoldoutGroup("Interaction")]
         [Tooltip("When enabled, this allows the poke interactor to hover and select UI elements.")]
-        private bool _enableUIInteraction = true;
-        
-        [SerializeField, FoldoutGroup("Events")]
-        private UIHoverEnterEvent _uiHoverEntered = new();
-        [SerializeField, FoldoutGroup("Events")]
-        private UIHoverExitEvent _uiHoverExited = new();
+        private bool _enableUIInteraction = true;       
         
         [SerializeField, FoldoutGroup("Debug", order: 1000)]
         [Tooltip("Denotes whether or not debug visuals are enabled for this poke interactor.")]
@@ -188,19 +183,8 @@ namespace VaporXR
         #endregion
 
         #region Events
-        /// <inheritdoc />
-        public UIHoverEnterEvent UiHoverEntered
-        {
-            get => _uiHoverEntered;
-            set => _uiHoverEntered = value;
-        }
-
-        /// <inheritdoc />
-        public UIHoverExitEvent UiHoverExited
-        {
-            get => _uiHoverExited;
-            set => _uiHoverExited = value;
-        }
+        public event Action<UIHoverEventArgs> UiHoverEntered;       
+        public event Action<UIHoverEventArgs> UiHoverExited;
         
         // Used to avoid GC Alloc each frame in UpdateUIModel
         private Func<Vector3> _positionGetter;
@@ -422,7 +406,7 @@ namespace VaporXR
                         baseInteractable.SelectFilters.GetAll(_interactableSelectFilters);
                         foreach (var filter in _interactableSelectFilters)
                         {
-                            if (filter is XRPokeFilter pokeFilter && filter.canProcess)
+                            if (filter is VXRPokeFilter pokeFilter && filter.canProcess)
                             {
                                 newPokeCollision = new PokeCollision(hitCollider, interactable, pokeFilter);
                                 return true;
@@ -493,7 +477,7 @@ namespace VaporXR
         /// <seealso cref="OnUIHoverExited(UIHoverEventArgs)"/>
         public virtual void OnUIHoverEntered(UIHoverEventArgs args)
         {
-            _uiHoverEntered?.Invoke(args);
+            UiHoverEntered?.Invoke(args);
         }
         
         /// <summary>
@@ -506,7 +490,7 @@ namespace VaporXR
         /// <seealso cref="OnUIHoverEntered(UIHoverEventArgs)"/>
         public virtual void OnUIHoverExited(UIHoverEventArgs args)
         {
-            _uiHoverExited?.Invoke(args);
+            UiHoverExited?.Invoke(args);
         }
         #endregion
 

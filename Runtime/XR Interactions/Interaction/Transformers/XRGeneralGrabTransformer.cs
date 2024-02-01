@@ -315,7 +315,7 @@ namespace VaporXR
         {
             base.OnGrab(grabInteractable);
 
-            var interactor = grabInteractable.interactorsSelecting[0];
+            var interactor = grabInteractable.InteractorsSelecting[0];
             var grabInteractableTransform = grabInteractable.transform;
             var grabAttachTransform = grabInteractable.GetAttachTransform(interactor);
 
@@ -376,11 +376,11 @@ namespace VaporXR
         {
             base.OnGrabCountChanged(grabInteractable, targetPose, localScale);
 
-            var newGrabCount = grabInteractable.interactorsSelecting.Count;
+            var newGrabCount = grabInteractable.InteractorsSelecting.Count;
             if (newGrabCount == 1)
             {
                 // If the initial grab interactor changes, or we reduce the grab count, we need to recompute initial grab parameters. 
-                var interactor0 = grabInteractable.interactorsSelecting[0];
+                var interactor0 = grabInteractable.InteractorsSelecting[0];
                 if (interactor0 != m_OriginalInteractor || newGrabCount < m_LastGrabCount)
                 {
                     OnGrab(grabInteractable);
@@ -388,8 +388,8 @@ namespace VaporXR
             }
             else if (newGrabCount > 1)
             {
-                var interactor0 = grabInteractable.interactorsSelecting[0];
-                var interactor1 = grabInteractable.interactorsSelecting[1];
+                var interactor0 = grabInteractable.InteractorsSelecting[0];
+                var interactor1 = grabInteractable.InteractorsSelecting[1];
 
                 var interactor0Transform = interactor0.GetAttachTransform(grabInteractable);
                 var grabAttachTransform1 = grabInteractable.GetAttachTransform(interactor1);
@@ -410,19 +410,19 @@ namespace VaporXR
 
         void ComputeAdjustedInteractorPose(VXRGrabInteractable grabInteractable, out Vector3 newHandleBar, out Vector3 adjustedInteractorPosition, out Quaternion adjustedInteractorRotation)
         {
-            if (grabInteractable.interactorsSelecting.Count == 1 || m_TwoHandedRotationMode == TwoHandedRotationMode.FirstHandOnly)
+            if (grabInteractable.InteractorsSelecting.Count == 1 || m_TwoHandedRotationMode == TwoHandedRotationMode.FirstHandOnly)
             {
                 newHandleBar = m_StartHandleBar;
-                var attachTransform = grabInteractable.interactorsSelecting[0].GetAttachTransform(grabInteractable);
+                var attachTransform = grabInteractable.InteractorsSelecting[0].GetAttachTransform(grabInteractable);
                 adjustedInteractorPosition = attachTransform.position;
                 adjustedInteractorRotation = attachTransform.rotation;
                 return;
             }
 
-            if (grabInteractable.interactorsSelecting.Count > 1)
+            if (grabInteractable.InteractorsSelecting.Count > 1)
             {
-                var interactor0 = grabInteractable.interactorsSelecting[0];
-                var interactor1 = grabInteractable.interactorsSelecting[1];
+                var interactor0 = grabInteractable.InteractorsSelecting[0];
+                var interactor1 = grabInteractable.InteractorsSelecting[1];
 
                 var interactor0Transform = interactor0.GetAttachTransform(grabInteractable);
                 var interactor1Transform = interactor1.GetAttachTransform(grabInteractable);
@@ -633,7 +633,7 @@ namespace VaporXR
         
         Vector3 ComputeNewScale(in VXRGrabInteractable grabInteractable, in Vector3 startScale, in Vector3 currentScale, in Vector3 startHandleBar, in Vector3 newHandleBar, bool trackScale)
         {
-            var interactorsCount = grabInteractable.interactorsSelecting.Count;
+            var interactorsCount = grabInteractable.InteractorsSelecting.Count;
             if (trackScale && interactorsCount == 1 && m_AllowOneHandedScaling && m_HasScaleValueProvider && m_ScaleValueProvider.ScaleMode == ScaleMode.ScaleOverTime)
             {
                 var scaleInput = m_ScaleValueProvider.ScaleValue;

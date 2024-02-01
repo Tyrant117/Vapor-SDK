@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Vapor;
 using VaporInspector;
@@ -28,6 +29,15 @@ namespace VaporKeys
             scriptName = scriptName.Replace("SO", "");
             scriptName = scriptName.Replace("So", "");
             KeyGenerator.GenerateKeys(GetType(), $"{scriptName}Keys", true);
+        }
+
+        public static void GenerateKeysOfType<T>() where T : KeySo
+        {
+            var scriptName = typeof(T).Name;
+            scriptName = scriptName.Replace("Scriptable", "");
+            scriptName = scriptName.Replace("SO", "");
+            scriptName = scriptName.Replace("So", "");
+            KeyGenerator.GenerateKeys(typeof(T), $"{scriptName}Keys", true);
         }
     }
 }

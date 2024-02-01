@@ -27,7 +27,7 @@ namespace VaporXR
 
         internal static void UpdateTarget(VXRGrabInteractable grabInteractable, ref Pose targetPose)
         {
-            var interactor = grabInteractable.interactorsSelecting[0];
+            var interactor = grabInteractable.InteractorsSelecting[0];
             var interactorAttachPose = interactor.GetAttachTransform(grabInteractable).GetWorldPose();
             var thisTransformPose = grabInteractable.transform.GetWorldPose();
             var thisAttachTransform = grabInteractable.GetAttachTransform(interactor);

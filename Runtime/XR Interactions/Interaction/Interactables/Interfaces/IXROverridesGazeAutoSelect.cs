@@ -10,31 +10,31 @@ namespace VaporXR
     public interface IXROverridesGazeAutoSelect
     {
         /// <summary>
-        /// Enables this interactable to override the <see cref="XRRayInteractor.hoverTimeToSelect"/> on a <see cref="XRGazeInteractor"/>.
+        /// Enables this interactable to override the <see cref="VXRRayInteractor.HoverTimeToSelect"/> on a <see cref="VXRGazeInteractor"/>.
         /// </summary>
-        /// <seealso cref="gazeTimeToSelect"/>
+        /// <seealso cref="GazeTimeToSelect"/>
         /// <seealso cref="XRRayInteractor.hoverToSelect"/>
-        public bool overrideGazeTimeToSelect { get; }
+        public bool OverrideGazeTimeToSelect { get; }
 
         /// <summary>
         /// Number of seconds for which an <see cref="XRGazeInteractor"/> must hover over this interactable to select it if <see cref="XRRayInteractor.hoverToSelect"/> is enabled.
         /// </summary>
-        /// <seealso cref="overrideGazeTimeToSelect"/>
+        /// <seealso cref="OverrideGazeTimeToSelect"/>
         /// <seealso cref="XRRayInteractor.hoverTimeToSelect"/>
-        public float gazeTimeToSelect { get; }
+        public float GazeTimeToSelect { get; }
 
         /// <summary>
         /// Enables this interactable to override the <see cref="XRRayInteractor.timeToAutoDeselect"/> on a <see cref="XRGazeInteractor"/>.
         /// </summary>
-        /// <seealso cref="timeToAutoDeselectGaze"/>
+        /// <seealso cref="TimeToAutoDeselectGaze"/>
         /// <seealso cref="XRRayInteractor.autoDeselect"/>
-        public bool overrideTimeToAutoDeselectGaze { get; }
+        public bool OverrideTimeToAutoDeselectGaze { get; }
 
         /// <summary>
         /// Number of seconds that the interactable will remain selected by a <see cref="XRGazeInteractor"/> before being
-        /// automatically deselected if <see cref="overrideTimeToAutoDeselectGaze"/> is true.
+        /// automatically deselected if <see cref="OverrideTimeToAutoDeselectGaze"/> is true.
         /// </summary>
-        /// <seealso cref="overrideTimeToAutoDeselectGaze"/>
-        public float timeToAutoDeselectGaze { get; }
+        /// <seealso cref="OverrideTimeToAutoDeselectGaze"/>
+        public float TimeToAutoDeselectGaze { get; }
     }
 }

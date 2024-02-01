@@ -502,8 +502,8 @@ namespace VaporXR
             // by user code, and we assume it will be restored back to the initial captured pose.
             // When Use Dynamic Attach is enabled, we can instead rely on using the dedicated GameObject for this interactor.
             Pose interactableAttachPose;
-            if (grabInteractable != null && !grabInteractable.useDynamicAttach &&
-                grabInteractable.isSelected &&
+            if (grabInteractable != null && !grabInteractable.UseDynamicAttach &&
+                grabInteractable.IsSelected &&
                 interactableAttachTransform != interactable.transform &&
                 interactableAttachTransform.IsChildOf(interactable.transform))
             {
@@ -511,7 +511,7 @@ namespace VaporXR
                 // for the pose to be calculated correctly. This transforms the captured pose in local space
                 // into the current pose in world space. If the pose of the attach transform was not modified
                 // after being selected, this will be the same value as calculated in the else statement.
-                var localAttachPose = grabInteractable.GetLocalAttachPoseOnSelect(grabInteractable.firstInteractorSelecting);
+                var localAttachPose = grabInteractable.GetLocalAttachPoseOnSelect(grabInteractable.FirstInteractorSelecting);
                 var attachTransformParent = interactableAttachTransform.parent;
                 interactableAttachPose =
                     new Pose(attachTransformParent.TransformPoint(localAttachPose.position),
@@ -668,8 +668,8 @@ namespace VaporXR
         public override bool CanSelect(IXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) &&
-                ((!HasSelection && !interactable.isSelected) ||
-                    (IsSelecting(interactable) && interactable.interactorsSelecting.Count == 1));
+                ((!HasSelection && !interactable.IsSelected) ||
+                    (IsSelecting(interactable) && interactable.InteractorsSelecting.Count == 1));
         }
 
         /// <summary>

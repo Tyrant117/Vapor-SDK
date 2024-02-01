@@ -19,7 +19,6 @@ namespace VaporXR
     /// </summary>
     [SelectionBase]
     [DefaultExecutionOrder(XRInteractionUpdateOrder.k_Interactables)]
-    // ReSharper disable once InconsistentNaming
     public abstract class VXRBaseInteractable : MonoBehaviour, IXRActivateInteractable, IXRHoverInteractable, IXRSelectInteractable, IXRFocusInteractable, IXRInteractionStrengthInteractable,
         IXROverridesGazeAutoSelect
     {
@@ -128,106 +127,73 @@ namespace VaporXR
         private static readonly ProfilerMarker s_ProcessInteractionStrengthMarker = new("VXRI.ProcessInteractionStrength.Interactables");
 
         #region Inspector
-        [SerializeField, FoldoutGroup("Components")]
-        [RichTextTooltip("")]
+        [BoxGroup("Components"), SerializeField]
+        [RichTextTooltip("The <cls>VXRInteractionManager</cls> that this Interactable will communicate with (will find one if <lw>null</lw>).")]
         private VXRInteractionManager _interactionManager;
-        [SerializeField, FoldoutGroup("Components")]
-        [RichTextTooltip("")]
+        [BoxGroup("Components"), SerializeField]
+        [RichTextTooltip("Colliders to use for interaction with this Interactable (if empty, will use any child Colliders).")]
         private List<Collider> _colliders = new();
         
-        [SerializeField, FoldoutGroup("Interaction")]
-        [RichTextTooltip("")]
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.")]
         private InteractionLayerMask _interactionLayers = 1;
-        [SerializeField, FoldoutGroup("Interaction")]
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("Indicates whether this interactable can be hovered by an interactor.")]
+        private bool _canHover = true;
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("Indicates whether this interactable can be selected by an interactor.")]
+        private bool _canSelect;
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("Indicates whether this interactable can be activated by an interactor.")]
+        private bool _canActivate;
+
+        [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("")]
         private DistanceCalculationModeType _distanceCalculationMode = DistanceCalculationModeType.ColliderPosition;
-        [SerializeField, FoldoutGroup("Interaction")]
+        [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("")]
         private InteractableSelectMode _selectMode = InteractableSelectMode.Single;
-        [SerializeField, FoldoutGroup("Interaction")]
+        [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("")]
-        private InteractableFocusMode _focusMode = InteractableFocusMode.Single;
+        private InteractableFocusMode _focusMode = InteractableFocusMode.Single;               
         
-        [SerializeField, FoldoutGroup("Visuals")]
-        [RichTextTooltip("")]
-        private GameObject _customReticle;
-        
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
+        [TitleGroup("Interaction/Gaze", title: "Gaze", order: 100), SerializeField]
+        [RichTextTooltip("Enables interaction with <cls>VXRGazeInteractor</cls>.")]
         private bool _allowGazeInteraction;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
-        private bool _allowGazeSelect;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
-        private bool _overrideGazeTimeToSelect;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
-        private float _gazeTimeToSelect = 0.5f;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
-        private bool _overrideTimeToAutoDeselectGaze;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
-        private float _timeToAutoDeselectGaze = 3f;
-        [SerializeField, FoldoutGroup("Gaze")]
-        [RichTextTooltip("")]
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeInteraction")]
+        [RichTextTooltip("Enables gaze assistance with this interactable.")]
         private bool _allowGazeAssistance;
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeInteraction")]
+        [RichTextTooltip("Enables <cls>VXRGazeInteractor</cls> to select this <cls>VXRBaseInteractable</cls>.")]
+        private bool _allowGazeSelect;
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeSelect")]
+        [RichTextTooltip("Enables this interactable to override the <cls>VXRRayInteractor</cls><mth>.HoverTimeToSelect</mth> on a <cls>VXRGazeInteractor</cls>.")]
+        private bool _overrideGazeTimeToSelect;
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeSelect"), Suffix("s")]
+        [RichTextTooltip("Number of seconds for which an <cls>VXRGazeInteractor</cls> must hover over this interactable to select it if <cls>VXRRayInteractor</cls><mth>.HoverToSelect</mth> is enabled.")]
+        private float _gazeTimeToSelect = 0.5f;
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeSelect")]
+        [RichTextTooltip("Enables this interactable to override the <cls>VXRRayInteractor</cls><mth>.TimeToAutoDeselect</mth> on a <cls>VXRGazeInteractor</cls>.")]
+        private bool _overrideTimeToAutoDeselectGaze;
+        [TitleGroup("Interaction/Gaze"), SerializeField, ShowIf("%_allowGazeSelect"), Suffix("s")]
+        [RichTextTooltip("Number of seconds that the interactable will remain selected by a <cls>VXRGazeInteractor</cls> before being automatically deselected if <mth>OverrideTimeToAutoDeselectGaze</mth> is <lw>true</lw>.")]
+        private float _timeToAutoDeselectGaze = 3f;
+
+        [FoldoutGroup("Visuals"), SerializeField]
+        [RichTextTooltip("The reticle that appears at the end of the line when valid.")]
+        private GameObject _customReticle;        
         
-        [SerializeField, FoldoutGroup("Hover Events", order: 100)]
-        [RichTextTooltip("")]
-        private HoverEnterEvent _firstHoverEntered = new();
-        [SerializeField, FoldoutGroup("Hover Events")]
-        [RichTextTooltip("")]
-        private HoverExitEvent _lastHoverExited = new();
-        [SerializeField, FoldoutGroup("Hover Events")]
-        [RichTextTooltip("")]
-        private HoverEnterEvent _hoverEntered = new();
-        [SerializeField, FoldoutGroup("Hover Events")]
-        [RichTextTooltip("")]
-        private HoverExitEvent _hoverExited = new();
-        
-        [SerializeField, FoldoutGroup("Select Events", order: 101)]
-        [RichTextTooltip("")]
-        private SelectEnterEvent _firstSelectEntered = new();
-        [SerializeField, FoldoutGroup("Select Events")]
-        [RichTextTooltip("")]
-        private SelectExitEvent _lastSelectExited = new();
-        [SerializeField, FoldoutGroup("Select Events")]
-        [RichTextTooltip("")]
-        private SelectEnterEvent _selectEntered = new();
-        [SerializeField, FoldoutGroup("Select Events")]
-        [RichTextTooltip("")]
-        private SelectExitEvent _selectExited = new();
-        
-        [SerializeField, FoldoutGroup("Focus Events", order: 102)]
-        [RichTextTooltip("")]
-        private FocusEnterEvent _firstFocusEntered = new();
-        [SerializeField, FoldoutGroup("Focus Events")]
-        [RichTextTooltip("")]
-        private FocusExitEvent _lastFocusExited = new();
-        [SerializeField, FoldoutGroup("Focus Events")]
-        [RichTextTooltip("")]
-        private FocusEnterEvent _focusEntered = new();
-        [SerializeField, FoldoutGroup("Focus Events")]
-        [RichTextTooltip("")]
-        private FocusExitEvent _focusExited = new();
-        
-        [SerializeField, FoldoutGroup("Activation Events", order: 103)]
-        [RichTextTooltip("")]
-        private ActivateEvent _activated = new();
-        [SerializeField, FoldoutGroup("Activation Events")]
-        [RichTextTooltip("")]
-        private DeactivateEvent _deactivated = new();
-        
-        [SerializeField, FoldoutGroup("Filters", order: 90)] [RequireInterface(typeof(IXRHoverFilter))]
-        [RichTextTooltip("")]
+        [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRHoverFilter)), ShowIf("$CanHover")] 
+        [RichTextTooltip("The hover filters that this object uses to automatically populate the <mth>HoverFilters</mth> List at startup (optional, may be empty)." +
+            "\nAll objects in this list should implement the <itf>IXRHoverFilter</itf> interface.")]
         private List<Object> _startingHoverFilters = new();
-        [SerializeField, FoldoutGroup("Filters")] [RequireInterface(typeof(IXRSelectFilter))]
-        [RichTextTooltip("")]
+        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRSelectFilter)), ShowIf("$CanSelect")]
+        [RichTextTooltip("The select filters that this object uses to automatically populate the <mth>SelectFilters</mth> List at startup (optional, may be empty)." +
+            "\nAll objects in this list should implement the <itf>IXRSelectFilter</itf> interface.")]
         private List<Object> _startingSelectFilters = new();
-        [SerializeField, FoldoutGroup("Filters")] [RequireInterface(typeof(IXRInteractionStrengthFilter))]
-        [RichTextTooltip("")]
+        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRInteractionStrengthFilter)), ShowIf("$CanSelect")]
+        [RichTextTooltip("The select filters that this object uses to automatically populate the <mth>InteractionStrengthFilters</mth> List at startup (optional, may be empty)." +
+            "\nAll objects in this list should implement the <itf>IXRInteractionStrengthFilter</itf> interface.")]
         private List<Object> _startingInteractionStrengthFilters = new();
         #endregion
 
@@ -249,7 +215,7 @@ namespace VaporXR
         /// <summary>
         /// (Read Only) Colliders to use for interaction with this Interactable (if empty, will use any child Colliders).
         /// </summary>
-        public List<Collider> colliders => _colliders;
+        public List<Collider> Colliders => _colliders;
 
         /// <summary>
         /// Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
@@ -258,28 +224,28 @@ namespace VaporXR
         /// <seealso cref="IsHoverableBy(VXRBaseInteractor)"/>
         /// <seealso cref="IsSelectableBy(VXRBaseInteractor)"/>
         /// <inheritdoc />
-        public InteractionLayerMask interactionLayers { get => _interactionLayers; set => _interactionLayers = value; }
+        public InteractionLayerMask InteractionLayers { get => _interactionLayers; set => _interactionLayers = value; }
 
         /// <summary>
         /// Specifies how this Interactable calculates its distance to a location, either using its Transform position, Collider
         /// position or Collider volume.
         /// </summary>
         /// <seealso cref="GetDistance"/>
-        /// <seealso cref="colliders"/>
+        /// <seealso cref="Colliders"/>
         /// <seealso cref="DistanceCalculationModeType"/>
         public DistanceCalculationModeType DistanceCalculationMode { get => _distanceCalculationMode; set => _distanceCalculationMode = value; }
 
-        /// <inheritdoc />
-        public InteractableSelectMode selectMode { get => _selectMode; set => _selectMode = value; }
+        public InteractableSelectMode SelectMode { get => _selectMode; set => _selectMode = value; }
         
-        /// <inheritdoc />
-        public InteractableFocusMode focusMode { get => _focusMode; set => _focusMode = value; }
+        public InteractableFocusMode FocusMode { get => _focusMode; set => _focusMode = value; }
 
         /// <summary>
         /// The reticle that appears at the end of the line when valid.
         /// </summary>
         public GameObject CustomReticle { get => _customReticle; set => _customReticle = value; }
         
+
+        // ***** Gazing *****
         /// <summary>
         /// Enables interaction with <see cref="VXRGazeInteractor"/>.
         /// </summary>
@@ -291,109 +257,47 @@ namespace VaporXR
         /// <seealso cref="VXRRayInteractor.HoverToSelect"/>
         public bool AllowGazeSelect { get => _allowGazeSelect; set => _allowGazeSelect = value; }
         
-        /// <inheritdoc />
-        public bool overrideGazeTimeToSelect { get => _overrideGazeTimeToSelect; set => _overrideGazeTimeToSelect = value; }
+        public bool OverrideGazeTimeToSelect { get => _overrideGazeTimeToSelect; set => _overrideGazeTimeToSelect = value; }
         
-        /// <inheritdoc />
-        public float gazeTimeToSelect { get => _gazeTimeToSelect; set => _gazeTimeToSelect = value; }
+        public float GazeTimeToSelect { get => _gazeTimeToSelect; set => _gazeTimeToSelect = value; }
         
-        /// <inheritdoc />
-        public bool overrideTimeToAutoDeselectGaze { get => _overrideTimeToAutoDeselectGaze; set => _overrideTimeToAutoDeselectGaze = value; }
+        public bool OverrideTimeToAutoDeselectGaze { get => _overrideTimeToAutoDeselectGaze; set => _overrideTimeToAutoDeselectGaze = value; }
         
-        /// <inheritdoc />
-        public float timeToAutoDeselectGaze { get => _timeToAutoDeselectGaze; set => _timeToAutoDeselectGaze = value; }
+        public float TimeToAutoDeselectGaze { get => _timeToAutoDeselectGaze; set => _timeToAutoDeselectGaze = value; }
         
         /// <summary>
         /// Enables gaze assistance with this interactable.
         /// </summary>
-        public bool AllowGazeAssistance { get => _allowGazeAssistance; set => _allowGazeAssistance = value; }
-        
-        /// <inheritdoc />
-        public HoverEnterEvent firstHoverEntered { get => _firstHoverEntered; set => _firstHoverEntered = value; }
+        public bool AllowGazeAssistance { get => _allowGazeAssistance; set => _allowGazeAssistance = value; }               
 
-        /// <inheritdoc />
-        public HoverExitEvent lastHoverExited { get => _lastHoverExited; set => _lastHoverExited = value; }
-        
-        /// <inheritdoc />
-        public HoverEnterEvent hoverEntered { get => _hoverEntered; set => _hoverEntered = value; }
-        
-        /// <inheritdoc />
-        public HoverExitEvent hoverExited { get => _hoverExited; set => _hoverExited = value; }
 
-        /// <inheritdoc />
-        public SelectEnterEvent firstSelectEntered { get => _firstSelectEntered; set => _firstSelectEntered = value; }
-        
-        /// <inheritdoc />
-        public SelectExitEvent lastSelectExited { get => _lastSelectExited; set => _lastSelectExited = value; }
-        
-        /// <inheritdoc />
-        public SelectEnterEvent selectEntered { get => _selectEntered; set => _selectEntered = value; }
-        
-        /// <inheritdoc />
-        public SelectExitEvent selectExited { get => _selectExited; set => _selectExited = value; }
-        
-        /// <inheritdoc />
-        public FocusEnterEvent firstFocusEntered { get => _firstFocusEntered; set => _firstFocusEntered = value; }
-
-        /// <inheritdoc />
-        public FocusExitEvent lastFocusExited { get => _lastFocusExited; set => _lastFocusExited = value; }
-
-        /// <inheritdoc />
-        public FocusEnterEvent focusEntered { get => _focusEntered; set => _focusEntered = value; }
-
-        /// <inheritdoc />
-        public FocusExitEvent focusExited { get => _focusExited; set => _focusExited = value; }
-
-        /// <inheritdoc />
-        public ActivateEvent activated { get => _activated; set => _activated = value; }
-        
-        /// <inheritdoc />
-        public DeactivateEvent deactivated { get => _deactivated; set => _deactivated = value; }
-
+        // ***** Hovering *****
+        public bool CanHover { get => _canHover; set => _canHover = value; }
+        public bool IsHovered => _interactorsHovering.Count > 0;
         private readonly HashSetList<VXRBaseInteractor> _interactorsHovering = new();
-        /// <inheritdoc />
-        public List<VXRBaseInteractor> interactorsHovering => (List<VXRBaseInteractor>)_interactorsHovering.AsList();
+        public List<VXRBaseInteractor> InteractorsHovering => (List<VXRBaseInteractor>)_interactorsHovering.AsList();
 
-        /// <inheritdoc />
-        public bool isHovered => _interactorsHovering.Count > 0;
 
+        // ***** Selecting *****
+        public bool CanSelect { get => _canSelect; set => _canSelect = value; }
+        public bool IsSelected => _interactorsSelecting.Count > 0;
         private readonly HashSetList<VXRBaseInteractor> _interactorsSelecting = new();
+        public List<VXRBaseInteractor> InteractorsSelecting => (List<VXRBaseInteractor>)_interactorsSelecting.AsList();
+        public VXRBaseInteractor FirstInteractorSelecting { get; private set; }
 
-        /// <inheritdoc />
-        public List<VXRBaseInteractor> interactorsSelecting => (List<VXRBaseInteractor>)_interactorsSelecting.AsList();
-
-        /// <inheritdoc />
-        public VXRBaseInteractor firstInteractorSelecting { get; private set; }
-
-        /// <inheritdoc />
-        public bool isSelected => _interactorsSelecting.Count > 0;
-
+        // ***** Focusing *****
+        public bool IsFocused => _interactionGroupsFocusing.Count > 0;
+        public bool CanFocus => _focusMode != InteractableFocusMode.None;
         private readonly HashSetList<IXRInteractionGroup> _interactionGroupsFocusing = new();
+        public List<IXRInteractionGroup> InteractionGroupsFocusing => (List<IXRInteractionGroup>)_interactionGroupsFocusing.AsList();
+        public IXRInteractionGroup FirstInteractionGroupFocusing { get; private set; }
 
-        /// <inheritdoc />
-        public List<IXRInteractionGroup> interactionGroupsFocusing => (List<IXRInteractionGroup>)_interactionGroupsFocusing.AsList();
 
-        /// <inheritdoc />
-        public IXRInteractionGroup firstInteractionGroupFocusing { get; private set; }
+        // ***** Activation *****
+        public bool CanActivate { get => _canActivate; set => _canActivate = value; }
 
-        /// <inheritdoc />
-        public bool isFocused => _interactionGroupsFocusing.Count > 0;
 
-        /// <inheritdoc />
-        public bool canFocus => _focusMode != InteractableFocusMode.None;
-        
-        /// <summary>
-        /// The hover filters that this object uses to automatically populate the <see cref="HoverFilters"/> List at
-        /// startup (optional, may be empty).
-        /// All objects in this list should implement the <see cref="IXRHoverFilter"/> interface.
-        /// </summary>
-        /// <remarks>
-        /// To access and modify the hover filters used after startup, the <see cref="HoverFilters"/> List should
-        /// be used instead.
-        /// </remarks>
-        /// <seealso cref="HoverFilters"/>
-        public List<Object> StartingHoverFilters { get => _startingHoverFilters; set => _startingHoverFilters = value; }
-
+        // ***** Filters *****
         private readonly ExposedRegistrationList<IXRHoverFilter> _hoverFilters = new() { BufferChanges = false };
         /// <summary>
         /// The list of hover filters in this object.
@@ -407,17 +311,6 @@ namespace VaporXR
         /// <seealso cref="ProcessHoverFilters"/>
         public IXRFilterList<IXRHoverFilter> HoverFilters => _hoverFilters;
 
-        /// <summary>
-        /// The select filters that this object uses to automatically populate the <see cref="SelectFilters"/> List at
-        /// startup (optional, may be empty).
-        /// All objects in this list should implement the <see cref="IXRSelectFilter"/> interface.
-        /// </summary>
-        /// <remarks>
-        /// To access and modify the select filters used after startup, the <see cref="SelectFilters"/> List should
-        /// be used instead.
-        /// </remarks>
-        /// <seealso cref="SelectFilters"/>
-        public List<Object> StartingSelectFilters { get => _startingSelectFilters; set => _startingSelectFilters = value; }
 
         private readonly ExposedRegistrationList<IXRSelectFilter> _selectFilters = new() { BufferChanges = false };
         /// <summary>
@@ -432,18 +325,6 @@ namespace VaporXR
         /// <seealso cref="ProcessSelectFilters"/>
         public IXRFilterList<IXRSelectFilter> SelectFilters => _selectFilters;
         
-
-        /// <summary>
-        /// The interaction strength filters that this object uses to automatically populate the <see cref="InteractionStrengthFilters"/> List at
-        /// startup (optional, may be empty).
-        /// All objects in this list should implement the <see cref="IXRInteractionStrengthFilter"/> interface.
-        /// </summary>
-        /// <remarks>
-        /// To access and modify the select filters used after startup, the <see cref="InteractionStrengthFilters"/> List should
-        /// be used instead.
-        /// </remarks>
-        /// <seealso cref="InteractionStrengthFilters"/>
-        public List<Object> StartingInteractionStrengthFilters { get => _startingInteractionStrengthFilters; set => _startingInteractionStrengthFilters = value; }
 
         private readonly ExposedRegistrationList<IXRInteractionStrengthFilter> _interactionStrengthFilters = new() { BufferChanges = false };
         /// <summary>
@@ -461,8 +342,7 @@ namespace VaporXR
         public IXRFilterList<IXRInteractionStrengthFilter> InteractionStrengthFilters => _interactionStrengthFilters;
 
         private readonly BindableVariable<float> _mLargestInteractionStrength = new();
-        /// <inheritdoc />
-        public IReadOnlyBindableVariable<float> largestInteractionStrength => _mLargestInteractionStrength;
+        public IReadOnlyBindableVariable<float> LargestInteractionStrength => _mLargestInteractionStrength;
         #endregion
 
         #region Fields
@@ -486,11 +366,26 @@ namespace VaporXR
         #endregion
 
         #region Events
-        /// <inheritdoc />
-        public event Action<InteractableRegisteredEventArgs> registered;
+        public event Action<InteractableRegisteredEventArgs> Registered;
+        public event Action<InteractableUnregisteredEventArgs> Unregistered;
 
-        /// <inheritdoc />
-        public event Action<InteractableUnregisteredEventArgs> unregistered;
+        public event Action<HoverEnterEventArgs> FirstHoverEntered;
+        public event Action<HoverExitEventArgs> LastHoverExited;
+        public event Action<HoverEnterEventArgs> HoverEntered;
+        public event Action<HoverExitEventArgs> HoverExited;
+
+        public event Action<SelectEnterEventArgs> FirstSelectEntered;
+        public event Action<SelectExitEventArgs> LastSelectExited;
+        public event Action<SelectEnterEventArgs> SelectEntered;
+        public event Action<SelectExitEventArgs> SelectExited;
+
+        public event Action<FocusEnterEventArgs> FirstFocusEntered;
+        public event Action<FocusExitEventArgs> LastFocusExited;
+        public event Action<FocusEnterEventArgs> FocusEntered;
+        public event Action<FocusExitEventArgs> FocusExited;
+
+        public event Action<ActivateEventArgs> Activated;
+        public event Action<DeactivateEventArgs> Deactivated;
 
         /// <summary>
         /// Overriding callback of this object's distance calculation.
@@ -572,13 +467,7 @@ namespace VaporXR
                 _registeredInteractionManager = null;
             }
         }
-        
-        /// <inheritdoc />
-        void IXRInteractable.OnRegistered(InteractableRegisteredEventArgs args) => OnRegistered(args);
-
-        /// <inheritdoc />
-        void IXRInteractable.OnUnregistered(InteractableUnregisteredEventArgs args) => OnUnregistered(args);
-        
+               
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
         /// when this Interactable is registered with it.
@@ -588,13 +477,13 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="VXRInteractionManager.RegisterInteractable(IXRInteractable)"/>
-        protected virtual void OnRegistered(InteractableRegisteredEventArgs args)
+        public virtual void OnRegistered(InteractableRegisteredEventArgs args)
         {
             if (args.manager != _interactionManager)
                 Debug.LogWarning($"An Interactable was registered with an unexpected {nameof(VXRInteractionManager)}." +
                                  $" {this} was expecting to communicate with \"{_interactionManager}\" but was registered with \"{args.manager}\".", this);
 
-            registered?.Invoke(args);
+            Registered?.Invoke(args);
         }
 
         /// <summary>
@@ -606,18 +495,17 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="VXRInteractionManager.UnregisterInteractable(IXRInteractable)"/>
-        protected virtual void OnUnregistered(InteractableUnregisteredEventArgs args)
+        public virtual void OnUnregistered(InteractableUnregisteredEventArgs args)
         {
             if (args.manager != _registeredInteractionManager)
                 Debug.LogWarning($"An Interactable was unregistered from an unexpected {nameof(VXRInteractionManager)}." +
                                  $" {this} was expecting to communicate with \"{_registeredInteractionManager}\" but was unregistered from \"{args.manager}\".", this);
 
-            unregistered?.Invoke(args);
+            Unregistered?.Invoke(args);
         }
         #endregion
 
         #region - Processing -
-        /// <inheritdoc />
         public virtual void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
         }
@@ -632,7 +520,7 @@ namespace VaporXR
         /// <seealso cref="VXRBaseInteractor.CanHover"/>
         public virtual bool IsHoverableBy(VXRBaseInteractor interactor)
         {
-            return _allowGazeInteraction || !(interactor is VXRGazeInteractor);
+            return (_allowGazeInteraction || !(interactor is VXRGazeInteractor)) && ProcessHoverFilters(interactor);
         }
         
         /// <summary>
@@ -642,29 +530,11 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if this Interactable is currently being hovered by the Interactor.
         /// Otherwise, returns <seealso langword="false"/>.</returns>
         /// <remarks>
-        /// In other words, returns whether <see cref="interactorsHovering"/> contains <paramref name="interactor"/>.
+        /// In other words, returns whether <see cref="InteractorsHovering"/> contains <paramref name="interactor"/>.
         /// </remarks>
-        /// <seealso cref="interactorsHovering"/>
-        public bool IsHovered(VXRBaseInteractor interactor) => _interactorsHovering.Contains(interactor);
-        
-        /// <inheritdoc />
-        bool IXRHoverInteractable.IsHoverableBy(VXRBaseInteractor interactor)
-        {
-            return IsHoverableBy(interactor) && ProcessHoverFilters(interactor);
-        }
+        /// <seealso cref="InteractorsHovering"/>
+        public bool IsHoveredBy(VXRBaseInteractor interactor) => _interactorsHovering.Contains(interactor);
 
-        /// <inheritdoc />
-        void IXRHoverInteractable.OnHoverEntering(HoverEnterEventArgs args) => OnHoverEntering(args);
-
-        /// <inheritdoc />
-        void IXRHoverInteractable.OnHoverEntered(HoverEnterEventArgs args) => OnHoverEntered(args);
-
-        /// <inheritdoc />
-        void IXRHoverInteractable.OnHoverExiting(HoverExitEventArgs args) => OnHoverExiting(args);
-
-        /// <inheritdoc />
-        void IXRHoverInteractable.OnHoverExited(HoverExitEventArgs args) => OnHoverExited(args);
-        
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
         /// right before the Interactor first initiates hovering over an Interactable
@@ -675,7 +545,7 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnHoverEntered(HoverEnterEventArgs)"/>
-        protected virtual void OnHoverEntering(HoverEnterEventArgs args)
+        public virtual void OnHoverEntering(HoverEnterEventArgs args)
         {
             if (_customReticle != null)
                 AttachCustomReticle(args.interactorObject);
@@ -697,12 +567,14 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnHoverExited(HoverExitEventArgs)"/>
-        protected virtual void OnHoverEntered(HoverEnterEventArgs args)
+        public virtual void OnHoverEntered(HoverEnterEventArgs args)
         {
             if (_interactorsHovering.Count == 1)
-                _firstHoverEntered?.Invoke(args);
+            {
+                FirstHoverEntered?.Invoke(args);
+            }
 
-            _hoverEntered?.Invoke(args);
+            HoverEntered?.Invoke(args);
         }
 
         /// <summary>
@@ -715,17 +587,19 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnHoverExited(HoverExitEventArgs)"/>
-        protected virtual void OnHoverExiting(HoverExitEventArgs args)
+        public virtual void OnHoverExiting(HoverExitEventArgs args)
         {
             if (_customReticle != null)
+            {
                 RemoveCustomReticle(args.interactorObject);
+            }
 
             var removed = _interactorsHovering.Remove(args.interactorObject);
             Debug.Assert(removed, "An Interactable received a Hover Exit event for an Interactor that was not hovering over it.", this);
 
             if (_variableSelectInteractors.Count > 0 &&
                 args.interactorObject is VXRInputInteractor variableSelectInteractor &&
-                !IsSelected(variableSelectInteractor))
+                !IsSelectedBy(variableSelectInteractor))
             {
                 _variableSelectInteractors.Remove(variableSelectInteractor);
             }
@@ -741,12 +615,14 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnHoverEntered(HoverEnterEventArgs)"/>
-        protected virtual void OnHoverExited(HoverExitEventArgs args)
+        public virtual void OnHoverExited(HoverExitEventArgs args)
         {
             if (_interactorsHovering.Count == 0)
-                _lastHoverExited?.Invoke(args);
+            {
+                LastHoverExited?.Invoke(args);
+            }
 
-            _hoverExited?.Invoke(args);
+            HoverExited?.Invoke(args);
         }
         
         /// <summary>
@@ -773,9 +649,9 @@ namespace VaporXR
         /// <seealso cref="VXRBaseInteractor.CanSelect"/>
         public virtual bool IsSelectableBy(VXRBaseInteractor interactor)
         {
-            return (_allowGazeInteraction && _allowGazeSelect) || !(interactor is VXRGazeInteractor);
+            return ((_allowGazeInteraction && _allowGazeSelect) || !(interactor is VXRGazeInteractor)) && ProcessSelectFilters(interactor);
         }
-        
+
         /// <summary>
         /// Determines whether this Interactable is currently being selected by the Interactor.
         /// </summary>
@@ -783,28 +659,10 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if this Interactable is currently being selected by the Interactor.
         /// Otherwise, returns <seealso langword="false"/>.</returns>
         /// <remarks>
-        /// In other words, returns whether <see cref="interactorsSelecting"/> contains <paramref name="interactor"/>.
+        /// In other words, returns whether <see cref="InteractorsSelecting"/> contains <paramref name="interactor"/>.
         /// </remarks>
-        /// <seealso cref="interactorsSelecting"/>
-        public bool IsSelected(VXRBaseInteractor interactor) => _interactorsSelecting.Contains(interactor);
-        
-        /// <inheritdoc />
-        bool IXRSelectInteractable.IsSelectableBy(VXRBaseInteractor interactor)
-        {
-            return IsSelectableBy(interactor) && ProcessSelectFilters(interactor);
-        }
-        
-        /// <inheritdoc />
-        void IXRSelectInteractable.OnSelectEntering(SelectEnterEventArgs args) => OnSelectEntering(args);
-
-        /// <inheritdoc />
-        void IXRSelectInteractable.OnSelectEntered(SelectEnterEventArgs args) => OnSelectEntered(args);
-
-        /// <inheritdoc />
-        void IXRSelectInteractable.OnSelectExiting(SelectExitEventArgs args) => OnSelectExiting(args);
-
-        /// <inheritdoc />
-        void IXRSelectInteractable.OnSelectExited(SelectExitEventArgs args) => OnSelectExited(args);
+        /// <seealso cref="InteractorsSelecting"/>
+        public bool IsSelectedBy(VXRBaseInteractor interactor) => _interactorsSelecting.Contains(interactor);
         
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method right
@@ -816,16 +674,20 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
-        protected virtual void OnSelectEntering(SelectEnterEventArgs args)
+        public virtual void OnSelectEntering(SelectEnterEventArgs args)
         {
             var added = _interactorsSelecting.Add(args.interactorObject);
             Debug.Assert(added, "An Interactable received a Select Enter event for an Interactor that was already selecting it.", this);
 
             if (args.interactorObject is VXRInputInteractor variableSelectInteractor)
+            {
                 _variableSelectInteractors.Add(variableSelectInteractor);
+            }
 
             if (_interactorsSelecting.Count == 1)
-                firstInteractorSelecting = args.interactorObject;
+            {
+                FirstInteractorSelecting = args.interactorObject;
+            }
 
             CaptureAttachPose(args.interactorObject);
         }
@@ -840,12 +702,14 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
-        protected virtual void OnSelectEntered(SelectEnterEventArgs args)
+        public virtual void OnSelectEntered(SelectEnterEventArgs args)
         {
             if (_interactorsSelecting.Count == 1)
-                _firstSelectEntered?.Invoke(args);
+            {
+                FirstSelectEntered?.Invoke(args);
+            }
 
-            _selectEntered?.Invoke(args);
+            SelectEntered?.Invoke(args);
         }
 
         /// <summary>
@@ -858,14 +722,14 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
-        protected virtual void OnSelectExiting(SelectExitEventArgs args)
+        public virtual void OnSelectExiting(SelectExitEventArgs args)
         {
             var removed = _interactorsSelecting.Remove(args.interactorObject);
             Debug.Assert(removed, "An Interactable received a Select Exit event for an Interactor that was not selecting it.", this);
 
             if (_variableSelectInteractors.Count > 0 &&
                 args.interactorObject is VXRInputInteractor variableSelectInteractor &&
-                !IsHovered(variableSelectInteractor))
+                !IsHoveredBy(variableSelectInteractor))
             {
                 _variableSelectInteractors.Remove(variableSelectInteractor);
             }
@@ -881,17 +745,19 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
-        protected virtual void OnSelectExited(SelectExitEventArgs args)
+        public virtual void OnSelectExited(SelectExitEventArgs args)
         {
             if (_interactorsSelecting.Count == 0)
-                _lastSelectExited?.Invoke(args);
+            {
+                LastSelectExited?.Invoke(args);
+            }
 
-            _selectExited?.Invoke(args);
+            SelectExited?.Invoke(args);
 
             // The dictionaries are pruned so that they don't infinitely grow in size as selections are made.
             if (_interactorsSelecting.Count == 0)
             {
-                firstInteractorSelecting = null;
+                FirstInteractorSelecting = null;
                 _attachPoseOnSelect.Clear();
                 _localAttachPoseOnSelect.Clear();
             }
@@ -912,19 +778,7 @@ namespace VaporXR
         }
         #endregion
 
-        #region - Focus -
-        /// <inheritdoc />
-        void IXRFocusInteractable.OnFocusEntering(FocusEnterEventArgs args) => OnFocusEntering(args);
-
-        /// <inheritdoc />
-        void IXRFocusInteractable.OnFocusEntered(FocusEnterEventArgs args) => OnFocusEntered(args);
-
-        /// <inheritdoc />
-        void IXRFocusInteractable.OnFocusExiting(FocusExitEventArgs args) => OnFocusExiting(args);
-
-        /// <inheritdoc />
-        void IXRFocusInteractable.OnFocusExited(FocusExitEventArgs args) => OnFocusExited(args);
-        
+        #region - Focus -       
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method right
         /// before the Interaction group first gains focus of an Interactable
@@ -935,13 +789,13 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnFocusEntered(FocusEnterEventArgs)"/>
-        protected virtual void OnFocusEntering(FocusEnterEventArgs args)
+        public virtual void OnFocusEntering(FocusEnterEventArgs args)
         {
             var added = _interactionGroupsFocusing.Add(args.interactionGroup);
             Debug.Assert(added, "An Interactable received a Focus Enter event for an Interaction group that was already focusing it.", this);
 
             if (_interactionGroupsFocusing.Count == 1)
-                firstInteractionGroupFocusing = args.interactionGroup;
+                FirstInteractionGroupFocusing = args.interactionGroup;
         }
 
         /// <summary>
@@ -954,12 +808,14 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnFocusExited(FocusExitEventArgs)"/>
-        protected virtual void OnFocusEntered(FocusEnterEventArgs args)
+        public virtual void OnFocusEntered(FocusEnterEventArgs args)
         {
             if (_interactionGroupsFocusing.Count == 1)
-                _firstFocusEntered?.Invoke(args);
+            {
+                FirstFocusEntered?.Invoke(args);
+            }
 
-            _focusEntered?.Invoke(args);
+            FocusEntered?.Invoke(args);
         }
 
         /// <summary>
@@ -972,7 +828,7 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnFocusExited(FocusExitEventArgs)"/>
-        protected virtual void OnFocusExiting(FocusExitEventArgs args)
+        public virtual void OnFocusExiting(FocusExitEventArgs args)
         {
             var removed = _interactionGroupsFocusing.Remove(args.interactionGroup);
             Debug.Assert(removed, "An Interactable received a Focus Exit event for an Interaction group that did not have focus of it.", this);
@@ -988,25 +844,23 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnFocusEntered(FocusEnterEventArgs)"/>
-        protected virtual void OnFocusExited(FocusExitEventArgs args)
+        public virtual void OnFocusExited(FocusExitEventArgs args)
         {
             if (_interactionGroupsFocusing.Count == 0)
-                _lastFocusExited?.Invoke(args);
+            {
+                LastFocusExited?.Invoke(args);
+            }
 
-            _focusExited?.Invoke(args);
+            FocusExited?.Invoke(args);
 
             if (_interactionGroupsFocusing.Count == 0)
-                firstInteractionGroupFocusing = null;
+            {
+                FirstInteractionGroupFocusing = null;
+            }
         }
         #endregion
 
         #region - Activate -
-        /// <inheritdoc />
-        void IXRActivateInteractable.OnActivated(ActivateEventArgs args) => OnActivated(args);
-
-        /// <inheritdoc />
-        void IXRActivateInteractable.OnDeactivated(DeactivateEventArgs args) => OnDeactivated(args);
-        
         /// <summary>
         /// <see cref="VXRInputInteractor"/> calls this method when the
         /// Interactor begins an activation event on this Interactable.
@@ -1016,9 +870,9 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnDeactivated"/>
-        protected virtual void OnActivated(ActivateEventArgs args)
+        public virtual void OnActivated(ActivateEventArgs args)
         {
-            _activated?.Invoke(args);
+            Activated?.Invoke(args);
         }
 
         /// <summary>
@@ -1030,9 +884,9 @@ namespace VaporXR
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="OnActivated"/>
-        protected virtual void OnDeactivated(DeactivateEventArgs args)
+        public virtual void OnDeactivated(DeactivateEventArgs args)
         {
-            _deactivated?.Invoke(args);
+            Deactivated?.Invoke(args);
         }
         #endregion
 
@@ -1077,7 +931,7 @@ namespace VaporXR
                 for (int i = 0, count = _interactorsHovering.Count; i < count; ++i)
                 {
                     var interactor = _interactorsHovering[i];
-                    if (interactor is VXRInputInteractor || IsSelected(interactor))
+                    if (interactor is VXRInputInteractor || IsSelectedBy(interactor))
                         continue;
 
                     var interactionStrength = ProcessInteractionStrengthFilters(interactor, InteractionStrengthHover);
@@ -1094,7 +948,7 @@ namespace VaporXR
                     // For interactors that use motion controller input, this is typically the analog trigger or grip press amount.
                     // Fall back to the default values for selected and hovered interactors in the case when the interactor
                     // is misconfigured and is missing the input wrapper or component reference.
-                    var interactionStrength = interactor.SelectInput != null ? interactor.SelectInput.CurrentValue : IsSelected(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
+                    var interactionStrength = interactor.SelectInput != null ? interactor.SelectInput.CurrentValue : IsSelectedBy(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
 
                     interactionStrength = ProcessInteractionStrengthFilters(interactor, interactionStrength);
                     _interactionStrengths[interactor] = interactionStrength;
@@ -1203,8 +1057,7 @@ namespace VaporXR
             var interactorTransform = interactor.transform;
 
             // Try and find any attached reticle and swap it
-            var reticleProvider = interactorTransform.GetComponent<IXRCustomReticleProvider>();
-            if (reticleProvider != null)
+            if (interactorTransform.TryGetComponent<IXRCustomReticleProvider>(out var reticleProvider))
             {
                 if (_reticleCache.TryGetValue(interactor, out var prevReticle))
                 {
@@ -1217,9 +1070,10 @@ namespace VaporXR
                     var reticleInstance = Instantiate(_customReticle);
                     _reticleCache.Add(interactor, reticleInstance);
                     reticleProvider.AttachCustomReticle(reticleInstance);
-                    var customReticleBehavior = reticleInstance.GetComponent<IXRInteractableCustomReticle>();
-                    if (customReticleBehavior != null)
+                    if (reticleInstance.TryGetComponent<IXRInteractableCustomReticle>(out var customReticleBehavior))
+                    {
                         customReticleBehavior.OnReticleAttached(this, reticleProvider);
+                    }
                 }
             }
         }
@@ -1243,8 +1097,7 @@ namespace VaporXR
             var interactorTransform = interactor.transform;
 
             // Try and find any attached reticle and swap it
-            var reticleProvider = interactorTransform.GetComponent<IXRCustomReticleProvider>();
-            if (reticleProvider == null)
+            if (!interactorTransform.TryGetComponent<IXRCustomReticleProvider>(out var reticleProvider))
             {
                 return;
             }
@@ -1254,8 +1107,7 @@ namespace VaporXR
                 return;
             }
 
-            var customReticleBehavior = reticleInstance.GetComponent<IXRInteractableCustomReticle>();
-            if (customReticleBehavior != null)
+            if (reticleInstance.TryGetComponent<IXRInteractableCustomReticle>(out var customReticleBehavior))
             {
                 customReticleBehavior.OnReticleDetaching();
             }
@@ -1267,7 +1119,6 @@ namespace VaporXR
         #endregion
 
         #region - Helper -
-        /// <inheritdoc />
         /// <remarks>
         /// This method calls the <see cref="GetDistance"/> method to perform the distance calculation.
         /// </remarks>

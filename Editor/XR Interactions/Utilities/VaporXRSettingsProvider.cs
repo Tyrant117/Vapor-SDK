@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.XR;
 using VaporEditor;
+using VaporEvents;
 using VaporKeys;
 using VaporXR;
 
@@ -42,9 +43,14 @@ namespace VaporXREditor
             {
                 text = "Generate Interaction Layers"
             };
+            var generateProviderKeys = new Button(CreateProviderKeys)
+            {
+                text = "Generate Provider Keys"
+            };
 
             header.Add(generateReaderButton);
             header.Add(generateInteractionLayers);
+            header.Add(generateProviderKeys);
             rootElement.Add(header);
             base.OnActivate(searchContext, rootElement);
         }
@@ -153,6 +159,30 @@ namespace VaporXREditor
             finally
             {
 
+            }
+        }
+
+        private static void CreateProviderKeys()
+        {
+            Debug.Log("<b>[VaporXR]</b> Creating Provider Keys");
+            try
+            {
+                FolderUtility.CreateFolderFromPath($"Assets/{FolderSetupUtility.ProviderKeysRelativePath}");
+                _CreateProviderKey("Right Hand");
+                _CreateProviderKey("Left Hand");
+
+                KeySo.GenerateKeysOfType<ProviderKeySo>();
+            }
+            finally
+            {
+
+            }
+
+            void _CreateProviderKey(string name)
+            {
+                var key = ScriptableObject.CreateInstance<ProviderKeySo>();
+                key.name = name;
+                AssetDatabase.CreateAsset(key, $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}/{key.name}.asset");
             }
         }
     }

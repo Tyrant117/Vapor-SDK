@@ -17,7 +17,7 @@ namespace VaporXR
         /// <summary>
         /// The largest interaction strength value of all interactors hovering or selecting this interactable.
         /// </summary>
-        IReadOnlyBindableVariable<float> largestInteractionStrength { get; }
+        IReadOnlyBindableVariable<float> LargestInteractionStrength { get; }
 
         /// <summary>
         /// Gets the interaction strength between the given interactor and this interactable.

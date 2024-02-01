@@ -183,7 +183,7 @@ namespace VaporXR.Locomotion.Teleportation
 
         protected virtual void Reset()
         {
-            selectMode = InteractableSelectMode.Multiple;
+            SelectMode = InteractableSelectMode.Multiple;
         }
 
         /// <summary>
@@ -280,17 +280,17 @@ namespace VaporXR.Locomotion.Teleportation
                 return;
 
             // Update the reticle direction for each interactor that is hovering or selecting this interactable.
-            for (int index = 0, count = interactorsHovering.Count; index < count; ++index)
+            for (int index = 0, count = InteractorsHovering.Count; index < count; ++index)
             {
-                var interactorHovering = interactorsHovering[index];
+                var interactorHovering = InteractorsHovering[index];
                 CalculateTeleportForward(interactorHovering);
             }
 
-            for (int index = 0, count = interactorsSelecting.Count; index < count; ++index)
+            for (int index = 0, count = InteractorsSelecting.Count; index < count; ++index)
             {
-                var interactorSelecting = interactorsSelecting[index];
+                var interactorSelecting = InteractorsSelecting[index];
                 // Skip if also hovered by the interactor since it would have already been computed above.
-                if (IsHovered(interactorSelecting))
+                if (IsHoveredBy(interactorSelecting))
                     continue;
 
                 CalculateTeleportForward(interactorSelecting);
@@ -313,7 +313,7 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnSelectEntered(SelectEnterEventArgs args)
+        public override void OnSelectEntered(SelectEnterEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnSelectEntered)
             {
@@ -324,7 +324,7 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnSelectExited(SelectExitEventArgs args)
+        public override void OnSelectExited(SelectExitEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnSelectExited && !args.isCanceled)
             {
@@ -335,7 +335,7 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnActivated(ActivateEventArgs args)
+        public override void OnActivated(ActivateEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnActivated)
             {
@@ -346,7 +346,7 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnDeactivated(DeactivateEventArgs args)
+        public override void OnDeactivated(DeactivateEventArgs args)
         {
             if (m_TeleportTrigger == TeleportTrigger.OnDeactivated)
             {

@@ -11,7 +11,7 @@ namespace VaporXR
     /// Filter component that allows for basic poke functionality
     /// and to define constraints for when the interactable will be selected.
     /// </summary>
-    public class XRPokeFilter : MonoBehaviour, IXRPokeFilter, IPokeStateDataProvider
+    public class VXRPokeFilter : MonoBehaviour, IXRPokeFilter, IPokeStateDataProvider
     {
         [SerializeField]
         [Tooltip("The interactable associated with this poke filter.")]
@@ -112,7 +112,7 @@ namespace VaporXR
                 if (m_Interactable == null)
                 {
                     Debug.LogWarning($"Could not find associated {nameof(VXRBaseInteractable)} in scene." +
-                        $"This {nameof(XRPokeFilter)} will be disabled.", this);
+                        $"This {nameof(VXRPokeFilter)} will be disabled.", this);
                     enabled = false;
                 }
             }
@@ -123,7 +123,7 @@ namespace VaporXR
                 if (m_PokeCollider == null)
                 {
                     Debug.LogWarning($"Could not find a {nameof(Collider)} associated with this filter in the scene." +
-                        $"This {nameof(XRPokeFilter)} will be disabled.", this);
+                        $"This {nameof(VXRPokeFilter)} will be disabled.", this);
                     enabled = false;
                 }
             }
@@ -186,8 +186,8 @@ namespace VaporXR
         {
             if (m_Interactable != null)
             {
-                m_Interactable.hoverEntered.AddListener(OnHoverEntered);
-                m_Interactable.hoverExited.AddListener(OnHoverExited);
+                m_Interactable.HoverEntered += OnHoverEntered;
+                m_Interactable.HoverExited += OnHoverExited;
             }
         }
 
@@ -197,8 +197,8 @@ namespace VaporXR
 
             if (m_Interactable != null)
             {
-                m_Interactable.hoverEntered.RemoveListener(OnHoverEntered);
-                m_Interactable.hoverExited.RemoveListener(OnHoverExited);
+                m_Interactable.HoverEntered -= OnHoverEntered;
+                m_Interactable.HoverExited -= OnHoverExited;
             }
         }
 

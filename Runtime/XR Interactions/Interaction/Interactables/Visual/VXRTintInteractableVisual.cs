@@ -86,14 +86,14 @@ namespace VaporXR
 
                 if (m_HoverInteractable != null)
                 {
-                    m_HoverInteractable.firstHoverEntered.AddListener(OnFirstHoverEntered);
-                    m_HoverInteractable.lastHoverExited.AddListener(OnLastHoverExited);
+                    m_HoverInteractable.FirstHoverEntered += OnFirstHoverEntered;
+                    m_HoverInteractable.LastHoverExited += OnLastHoverExited;
                 }
 
                 if (m_SelectInteractable != null)
                 {
-                    m_SelectInteractable.firstSelectEntered.AddListener(OnFirstSelectEntered);
-                    m_SelectInteractable.lastSelectExited.AddListener(OnLastSelectExited);
+                    m_SelectInteractable.FirstSelectEntered += OnFirstSelectEntered;
+                    m_SelectInteractable.LastSelectExited += OnLastSelectExited;
                 }
             }
             else
@@ -114,8 +114,8 @@ namespace VaporXR
             m_TintPropertyBlock = new MaterialPropertyBlock();
 
             // Set initial tint to on if already hovered or selected
-            if (m_TintOnHover && (m_HoverInteractable?.isHovered ?? false) ||
-                m_TintOnSelection && (m_SelectInteractable?.isSelected ?? false))
+            if (m_TintOnHover && (m_HoverInteractable?.IsHovered ?? false) ||
+                m_TintOnSelection && (m_SelectInteractable?.IsSelected ?? false))
             {
                 SetTint(true);
             }
@@ -130,14 +130,14 @@ namespace VaporXR
             {
                 if (m_HoverInteractable != null)
                 {
-                    m_HoverInteractable.firstHoverEntered.RemoveListener(OnFirstHoverEntered);
-                    m_HoverInteractable.lastHoverExited.RemoveListener(OnLastHoverExited);
+                    m_HoverInteractable.FirstHoverEntered -= OnFirstHoverEntered;
+                    m_HoverInteractable.LastHoverExited -= OnLastHoverExited;
                 }
 
                 if (m_SelectInteractable != null)
                 {
-                    m_SelectInteractable.firstSelectEntered.RemoveListener(OnFirstSelectEntered);
-                    m_SelectInteractable.lastSelectExited.RemoveListener(OnLastSelectExited);
+                    m_SelectInteractable.FirstSelectEntered -= OnFirstSelectEntered;
+                    m_SelectInteractable.LastSelectExited -= OnLastSelectExited;
                 }
             }
         }
@@ -216,7 +216,7 @@ namespace VaporXR
         void OnLastHoverExited(HoverExitEventArgs args)
         {
             if (m_TintOnHover)
-                SetTint(m_TintOnSelection && (m_SelectInteractable?.isSelected ?? false));
+                SetTint(m_TintOnSelection && (m_SelectInteractable?.IsSelected ?? false));
         }
 
         void OnFirstSelectEntered(SelectEnterEventArgs args)
@@ -228,7 +228,7 @@ namespace VaporXR
         void OnLastSelectExited(SelectExitEventArgs args)
         {
             if (m_TintOnSelection)
-                SetTint(m_TintOnHover && (m_HoverInteractable?.isHovered ?? false));
+                SetTint(m_TintOnHover && (m_HoverInteractable?.IsHovered ?? false));
         }
 
         struct ShaderPropertyLookup

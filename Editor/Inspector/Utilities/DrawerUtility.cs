@@ -435,6 +435,7 @@ namespace VaporInspectorEditor
             {
                 name = node.Path,
             };
+            list.RegisterCallback<GeometryChangedEvent>(OnNodeStyledNodeListBuilt);
             return list;
         }
 
@@ -1001,17 +1002,26 @@ namespace VaporInspectorEditor
             {
                 return;
             }
-            List<Action> resolvers = new();
             
             DrawDecorators(element, node);
-            DrawConditionals(element, node);
-            
-            if (resolvers.Count > 0)
-            {
-                element.schedule.Execute(() => Resolve(resolvers)).Every(VaporInspectorsSettingsProvider.VaporInspectorResolverUpdateRate);
-            }
+            DrawConditionals(element, node);           
         }
         
+        private static void OnNodeStyledNodeListBuilt(GeometryChangedEvent evt)
+        {
+            var list = (StyledNodeList)evt.target;
+            if(list == null || list.hierarchy.childCount == 0) { return; }
+
+            list.UnregisterCallback<GeometryChangedEvent>(OnNodeStyledNodeListBuilt);
+            OnNodeStyledNodeListBuilt(list);
+        }
+
+        private static void OnNodeStyledNodeListBuilt(StyledNodeList list)
+        {
+            DrawRichTooltip(list.Label, list.Node);
+            DrawConditionals(list, list.Node);
+        }
+
         public static void OnNodeListPropertyBuilt(PropertyField field, SerializedProperty prop, VaporInspectorNode node)
         {
             var list = field.Q<ListView>();
@@ -2036,11 +2046,11 @@ namespace VaporInspectorEditor
             }
         }
 
-        public static void DrawRichTooltip(PropertyField field, VaporInspectorNode drawer)
+        public static void DrawRichTooltip(VisualElement visualElement, VaporInspectorNode drawer)
         {
             if (!drawer.TryGetAttribute<RichTextTooltipAttribute>(out var rtAtr)) return;
 
-            var label = field.Q<Label>();
+            var label = visualElement.Q<Label>();
             label.tooltip = rtAtr.Tooltip;
         }
 

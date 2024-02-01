@@ -114,13 +114,19 @@ namespace VaporXR.Locomotion
                     {
                         args.interactorObject = this;
                         args.interactableObject = m_TargetTeleportVolume;
-                        (m_TargetTeleportVolume as IXRActivateInteractable).OnActivated(args);
+                        if (m_TargetTeleportVolume.CanActivate)
+                        {
+                            m_TargetTeleportVolume.OnActivated(args);
+                        }
                     }
                     using (m_DeactivateEventArgs.Get(out var args))
                     {
                         args.interactorObject = this;
                         args.interactableObject = m_TargetTeleportVolume;
-                        (m_TargetTeleportVolume as IXRActivateInteractable).OnDeactivated(args);
+                        if (m_TargetTeleportVolume.CanActivate)
+                        {
+                            m_TargetTeleportVolume.OnDeactivated(args);
+                        }
                     }
                     break;
                 default:

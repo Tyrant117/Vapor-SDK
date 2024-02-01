@@ -88,7 +88,7 @@ namespace VaporXR
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
-        /// <seealso cref="IXRInteractable.interactionLayers"/>
+        /// <seealso cref="IXRInteractable.InteractionLayers"/>
         public InteractionLayerMask InteractionLayers
         {
             get => _interactionLayers;
@@ -221,7 +221,7 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasHover"/>
-        /// <seealso cref="IXRHoverInteractable.interactorsHovering"/>
+        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
         public List<IXRHoverInteractable> InteractablesHovered => (List<IXRHoverInteractable>)_interactablesHovered.AsList();
         
         /// <summary>
@@ -234,7 +234,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        /// <seealso cref="IXRHoverInteractable.isHovered"/>
+        /// <seealso cref="IXRHoverInteractable.IsHovered"/>
         public bool HasHover => _interactablesHovered.Count > 0;
 
         private readonly HashSetList<IXRSelectInteractable> _interactablesSelected = new();
@@ -247,7 +247,7 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasSelection"/>
-        /// <seealso cref="IXRSelectInteractable.interactorsSelecting"/>
+        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
         public List<IXRSelectInteractable> InteractablesSelected => (List<IXRSelectInteractable>)_interactablesSelected.AsList();
         
         /// <summary>
@@ -255,7 +255,7 @@ namespace VaporXR
         /// This Interactor may not currently be selecting the Interactable, which would be the case
         /// when it was released while multiple Interactables were selected.
         /// </summary>
-        /// <seealso cref="IXRSelectInteractable.firstInteractorSelecting"/>
+        /// <seealso cref="IXRSelectInteractable.FirstInteractorSelecting"/>
         public IXRSelectInteractable FirstInteractableSelected { get; private set; }
         
         /// <summary>
@@ -268,7 +268,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        /// <seealso cref="IXRSelectInteractable.isSelected"/>
+        /// <seealso cref="IXRSelectInteractable.IsSelected"/>
         public bool HasSelection => _interactablesSelected.Count > 0;
         
         /// <summary>
@@ -681,7 +681,9 @@ namespace VaporXR
             Debug.Assert(added, "An Interactor received a Hover Enter event for an Interactable that it was already hovering over.", this);
 
             if (args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
+            {
                 _interactionStrengthInteractables.Add(interactionStrengthInteractable);
+            }
         }
 
         /// <summary>

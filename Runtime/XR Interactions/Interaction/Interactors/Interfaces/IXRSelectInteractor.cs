@@ -39,7 +39,7 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasSelection"/>
-        /// <seealso cref="IXRSelectInteractable.interactorsSelecting"/>
+        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
         List<IXRSelectInteractable> InteractablesSelected { get; }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace VaporXR
         /// This Interactor may not currently be selecting the Interactable, which would be the case
         /// when it was released while multiple Interactables were selected.
         /// </summary>
-        /// <seealso cref="IXRSelectInteractable.firstInteractorSelecting"/>
+        /// <seealso cref="IXRSelectInteractable.FirstInteractorSelecting"/>
         IXRSelectInteractable FirstInteractableSelected { get; }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        /// <seealso cref="IXRSelectInteractable.isSelected"/>
+        /// <seealso cref="IXRSelectInteractable.IsSelected"/>
         bool HasSelection { get; }
 
         /// <summary>

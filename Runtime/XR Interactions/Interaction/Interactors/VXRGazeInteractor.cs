@@ -262,16 +262,16 @@ namespace VaporXR
         #region - Selection -
         protected override float GetHoverTimeToSelect(IXRInteractable interactable)
         {
-            if (interactable is IXROverridesGazeAutoSelect { overrideGazeTimeToSelect: true } overrideProvider)
-                return overrideProvider.gazeTimeToSelect;
+            if (interactable is IXROverridesGazeAutoSelect { OverrideGazeTimeToSelect: true } overrideProvider)
+                return overrideProvider.GazeTimeToSelect;
 
             return base.GetHoverTimeToSelect(interactable);
         }
 
         protected override float GetTimeToAutoDeselect(IXRInteractable interactable)
         {
-            if (interactable is IXROverridesGazeAutoSelect { overrideTimeToAutoDeselectGaze: true } overrideProvider)
-                return overrideProvider.timeToAutoDeselectGaze;
+            if (interactable is IXROverridesGazeAutoSelect { OverrideTimeToAutoDeselectGaze: true } overrideProvider)
+                return overrideProvider.TimeToAutoDeselectGaze;
 
             return base.GetTimeToAutoDeselect(interactable);
         }

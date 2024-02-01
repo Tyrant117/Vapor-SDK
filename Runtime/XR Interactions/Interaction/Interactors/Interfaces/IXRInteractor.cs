@@ -44,7 +44,7 @@ namespace VaporXR
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
-        /// <seealso cref="IXRInteractable.interactionLayers"/>
+        /// <seealso cref="IXRInteractable.InteractionLayers"/>
         InteractionLayerMask InteractionLayers { get; }
 
         /// <summary>

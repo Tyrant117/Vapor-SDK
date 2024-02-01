@@ -11,7 +11,8 @@
         "Unity.Mathematics",
         "Unity.InputSystem",
         "CarbonFiberGames.Vapor.DataAssets",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "CarbonFiberGames.Vapor.StateMachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

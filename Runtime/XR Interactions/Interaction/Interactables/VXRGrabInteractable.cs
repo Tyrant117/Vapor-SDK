@@ -157,13 +157,13 @@ namespace VaporXR
         /// <summary>
         /// The attachment point Unity uses on this Interactable (will use this object's position if none set).
         /// </summary>
-        public Transform attachTransform { get => m_AttachTransform; set => m_AttachTransform = value; }
+        public Transform AttachTransform { get => m_AttachTransform; set => m_AttachTransform = value; }
 
         /// <summary>
         /// The secondary attachment point to use on this Interactable for multi-hand interaction (will use the second interactor's attach transform if none set).
         /// Used for multi-grab interactions.
         /// </summary>
-        public Transform secondaryAttachTransform { get => m_SecondaryAttachTransform; set => m_SecondaryAttachTransform = value; }
+        public Transform SecondaryAttachTransform { get => m_SecondaryAttachTransform; set => m_SecondaryAttachTransform = value; }
 
         /// <summary>
         /// The grab pose will be based on the pose of the Interactor when the selection is made.
@@ -176,41 +176,41 @@ namespace VaporXR
         /// you should typically not add any components to that GameObject unless you remove them after being released
         /// since it won't always be used by the same Interactable.
         /// </remarks>
-        /// <seealso cref="attachTransform"/>
+        /// <seealso cref="AttachTransform"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
-        public bool useDynamicAttach { get => m_UseDynamicAttach; set => m_UseDynamicAttach = value; }
+        public bool UseDynamicAttach { get => m_UseDynamicAttach; set => m_UseDynamicAttach = value; }
 
         /// <summary>
         /// Match the position of the Interactor's attachment point when initializing the grab.
-        /// This will override the position of <see cref="attachTransform"/>.
+        /// This will override the position of <see cref="AttachTransform"/>.
         /// </summary>
         /// <remarks>
         /// This will initialize the dynamic attachment point of this object using the position of the Interactor's attachment point.
         /// This value can be overridden for a specific interactor by overriding <see cref="ShouldMatchAttachPosition"/>.
         /// </remarks>
-        /// <seealso cref="useDynamicAttach"/>
-        /// <seealso cref="matchAttachRotation"/>
-        public bool matchAttachPosition { get => m_MatchAttachPosition; set => m_MatchAttachPosition = value; }
+        /// <seealso cref="UseDynamicAttach"/>
+        /// <seealso cref="MatchAttachRotation"/>
+        public bool MatchAttachPosition { get => m_MatchAttachPosition; set => m_MatchAttachPosition = value; }
 
         /// <summary>
         /// Match the rotation of the Interactor's attachment point when initializing the grab.
-        /// This will override the rotation of <see cref="attachTransform"/>.
+        /// This will override the rotation of <see cref="AttachTransform"/>.
         /// </summary>
         /// <remarks>
         /// This will initialize the dynamic attachment point of this object using the rotation of the Interactor's attachment point.
         /// This value can be overridden for a specific interactor by overriding <see cref="ShouldMatchAttachRotation"/>.
         /// </remarks>
-        /// <seealso cref="useDynamicAttach"/>
-        /// <seealso cref="matchAttachPosition"/>
-        public bool matchAttachRotation { get => m_MatchAttachRotation; set => m_MatchAttachRotation = value; }
+        /// <seealso cref="UseDynamicAttach"/>
+        /// <seealso cref="MatchAttachPosition"/>
+        public bool MatchAttachRotation { get => m_MatchAttachRotation; set => m_MatchAttachRotation = value; }
 
         /// <summary>
         /// Adjust the dynamic attachment point to keep it on or inside the Colliders that make up this object.
         /// </summary>
-        /// <seealso cref="useDynamicAttach"/>
+        /// <seealso cref="UseDynamicAttach"/>
         /// <seealso cref="ShouldSnapToColliderVolume"/>
         /// <seealso cref="Collider.ClosestPoint"/>
-        public bool snapToColliderVolume { get => m_SnapToColliderVolume; set => m_SnapToColliderVolume = value; }
+        public bool SnapToColliderVolume { get => m_SnapToColliderVolume; set => m_SnapToColliderVolume = value; }
 
         /// <summary>
         /// Re-initialize the dynamic attachment pose when changing from multiple grabs back to a single grab.
@@ -218,17 +218,17 @@ namespace VaporXR
         /// rather than reverting back to the attach pose from the original grab.
         /// </summary>
         /// <remarks>
-        /// <see cref="IXRSelectInteractable.selectMode"/> must be set to <see cref="InteractableSelectMode.Multiple"/> for
+        /// <see cref="IXRSelectInteractable.SelectMode"/> must be set to <see cref="InteractableSelectMode.Multiple"/> for
         /// this setting to take effect.
         /// </remarks>
-        /// <seealso cref="useDynamicAttach"/>
-        /// <seealso cref="IXRSelectInteractable.selectMode"/>
-        public bool reinitializeDynamicAttachEverySingleGrab { get => m_ReinitializeDynamicAttachEverySingleGrab; set => m_ReinitializeDynamicAttachEverySingleGrab = value; }
+        /// <seealso cref="UseDynamicAttach"/>
+        /// <seealso cref="IXRSelectInteractable.SelectMode"/>
+        public bool ReinitializeDynamicAttachEverySingleGrab { get => m_ReinitializeDynamicAttachEverySingleGrab; set => m_ReinitializeDynamicAttachEverySingleGrab = value; }
 
         /// <summary>
         /// Time in seconds Unity eases in the attach when selected (a value of 0 indicates no easing).
         /// </summary>
-        public float attachEaseInTime { get => m_AttachEaseInTime; set => m_AttachEaseInTime = value; }
+        public float AttachEaseInTime { get => m_AttachEaseInTime; set => m_AttachEaseInTime = value; }
 
         /// <summary>
         /// Specifies how this object moves when selected, either through setting the velocity of the <see cref="Rigidbody"/>,
@@ -242,7 +242,7 @@ namespace VaporXR
             {
                 m_MovementType = value;
 
-                if (isSelected)
+                if (IsSelected)
                 {
                     SetupRigidbodyDrop(m_Rigidbody);
                     UpdateCurrentMovementType();
@@ -653,13 +653,13 @@ namespace VaporXR
             {
                 // During Fixed update we want to apply any Rigidbody-based updates (e.g., Kinematic or VelocityTracking).
                 case XRInteractionUpdateOrder.UpdatePhase.Fixed:
-                    if (isSelected || isTransformDirty)
+                    if (IsSelected || isTransformDirty)
                     {
                         if (m_CurrentMovementType == MovementType.Kinematic ||
                             m_CurrentMovementType == MovementType.VelocityTracking)
                         {
                             // If we only updated the target scale externally, just update that.
-                            if (m_IsTargetLocalScaleDirty && !m_IsTargetPoseDirty && !isSelected)
+                            if (m_IsTargetLocalScaleDirty && !m_IsTargetPoseDirty && !IsSelected)
                                 ApplyTargetScale();
                             else if (m_CurrentMovementType == MovementType.Kinematic)
                                 PerformKinematicUpdate(updatePhase);
@@ -690,7 +690,7 @@ namespace VaporXR
                             PerformInstantaneousUpdate(updatePhase);
                     }
 
-                    if (isSelected || (m_GrabCountChanged && m_DropTransformersCount > 0))
+                    if (IsSelected || (m_GrabCountChanged && m_DropTransformersCount > 0))
                     {
                         UpdateTarget(updatePhase, Time.deltaTime);
 
@@ -704,7 +704,7 @@ namespace VaporXR
                 case XRInteractionUpdateOrder.UpdatePhase.Late:
                     if (m_DetachInLateUpdate)
                     {
-                        if (!isSelected)
+                        if (!IsSelected)
                             Detach();
                         m_DetachInLateUpdate = false;
                     }
@@ -802,10 +802,10 @@ namespace VaporXR
         void UpdateTarget(XRInteractionUpdateOrder.UpdatePhase updatePhase, float deltaTime)
         {
             // If the grab count changed to a lower number, and it is now 1, we need to recompute the dynamic attach transform for the interactor.
-            if (m_ReinitializeDynamicAttachEverySingleGrab && m_GrabCountChanged && m_GrabCountBeforeAndAfterChange.Item2 < m_GrabCountBeforeAndAfterChange.Item1 && interactorsSelecting.Count == 1 &&
-                m_DynamicAttachTransforms.Count > 0 && m_DynamicAttachTransforms.TryGetValue(interactorsSelecting[0], out var dynamicAttachTransform))
+            if (m_ReinitializeDynamicAttachEverySingleGrab && m_GrabCountChanged && m_GrabCountBeforeAndAfterChange.Item2 < m_GrabCountBeforeAndAfterChange.Item1 && InteractorsSelecting.Count == 1 &&
+                m_DynamicAttachTransforms.Count > 0 && m_DynamicAttachTransforms.TryGetValue(InteractorsSelecting[0], out var dynamicAttachTransform))
             {
-                InitializeDynamicAttachPoseInternal(interactorsSelecting[0], dynamicAttachTransform);
+                InitializeDynamicAttachPoseInternal(InteractorsSelecting[0], dynamicAttachTransform);
             }
 
             var rawTargetPose = m_TargetPose;
@@ -813,7 +813,7 @@ namespace VaporXR
 
             InvokeGrabTransformersProcess(updatePhase, ref rawTargetPose, ref rawTargetScale);
 
-            if (!isSelected)
+            if (!IsSelected)
             {
                 m_TargetPose = rawTargetPose;
                 m_TargetLocalScale = rawTargetScale;
@@ -856,7 +856,7 @@ namespace VaporXR
 
         #region - Select -
         /// <inheritdoc />
-        protected override void OnSelectEntering(SelectEnterEventArgs args)
+        public override void OnSelectEntering(SelectEnterEventArgs args)
         {
             // Setup the dynamic attach transform.
             // Done before calling the base method so the attach pose captured is the dynamic one.
@@ -864,9 +864,9 @@ namespace VaporXR
             InitializeDynamicAttachPoseInternal(args.interactorObject, dynamicAttachTransform);
 
             // Store the grab count change.
-            var grabCountBeforeChange = interactorsSelecting.Count;
+            var grabCountBeforeChange = InteractorsSelecting.Count;
             base.OnSelectEntering(args);
-            var grabCountAfterChange = interactorsSelecting.Count;
+            var grabCountAfterChange = InteractorsSelecting.Count;
 
             m_GrabCountChanged = true;
             m_GrabCountBeforeAndAfterChange = (grabCountBeforeChange, grabCountAfterChange);
@@ -895,7 +895,7 @@ namespace VaporXR
                 m_SelectingCharacterInteractors.Add(args.interactorObject);
             }
 
-            if (interactorsSelecting.Count == 1)
+            if (InteractorsSelecting.Count == 1)
             {
                 Grab();
                 InvokeGrabTransformersOnGrab();
@@ -905,18 +905,18 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override void OnSelectExiting(SelectExitEventArgs args)
+        public override void OnSelectExiting(SelectExitEventArgs args)
         {
             // Store the grab count change.
-            var grabCountBeforeChange = interactorsSelecting.Count;
+            var grabCountBeforeChange = InteractorsSelecting.Count;
             base.OnSelectExiting(args);
-            var grabCountAfterChange = interactorsSelecting.Count;
+            var grabCountAfterChange = InteractorsSelecting.Count;
 
             m_GrabCountChanged = true;
             m_GrabCountBeforeAndAfterChange = (grabCountBeforeChange, grabCountAfterChange);
             m_CurrentAttachEaseTime = 0f;
 
-            if (interactorsSelecting.Count == 0)
+            if (InteractorsSelecting.Count == 0)
             {
                 if (m_ThrowOnDetach)
                     m_ThrowAssist = args.interactorObject.transform.GetComponentInParent<IXRAimAssist>();
@@ -941,7 +941,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override void OnSelectExited(SelectExitEventArgs args)
+        public override void OnSelectExited(SelectExitEventArgs args)
         {
             base.OnSelectExited(args);
 
@@ -1110,7 +1110,7 @@ namespace VaporXR
             rigidbody.drag = m_OldDrag;
             rigidbody.angularDrag = m_OldAngularDrag;
 
-            if (!isSelected)
+            if (!IsSelected)
                 m_Rigidbody.useGravity |= m_ForceGravityOnDetach;
         }
 
@@ -1346,7 +1346,7 @@ namespace VaporXR
             {
                 // Cache some frequently evaluated properties to local variables.
                 // The registration lists are not flushed during this method, so these are invariant.
-                var grabbed = isSelected;
+                var grabbed = IsSelected;
                 var hasSingleGrabTransformer = m_SingleGrabTransformers.RegisteredSnapshot.Count > 0;
                 var hasMultipleGrabTransformer = m_MultipleGrabTransformers.RegisteredSnapshot.Count > 0;
 
@@ -1399,7 +1399,7 @@ namespace VaporXR
                     // Also let the Multiple Grab Transformers process if there aren't any Single Grab Transformers.
                     // An empty Single Grab Transformers list is treated the same as a populated list where none can process.
                     var processed = false;
-                    if (hasMultipleGrabTransformer && (interactorsSelecting.Count > 1 || !CanProcessAnySingleGrabTransformer()))
+                    if (hasMultipleGrabTransformer && (InteractorsSelecting.Count > 1 || !CanProcessAnySingleGrabTransformer()))
                     {
                         foreach (var transformer in m_MultipleGrabTransformers.RegisteredSnapshot)
                         {
@@ -1495,7 +1495,7 @@ namespace VaporXR
 
             transformer.OnLink(this);
 
-            if (interactorsSelecting.Count == 0)
+            if (InteractorsSelecting.Count == 0)
                 return;
 
             // OnGrab is invoked immediately, but OnGrabCountChanged is only invoked right before Process so
@@ -1528,7 +1528,7 @@ namespace VaporXR
                 AddDefaultSingleGrabTransformer();
 
             // Avoid adding the multiple grab transformer component unnecessarily since it may never be needed.
-            if (m_MultipleGrabTransformers.FlushedCount == 0 && selectMode == InteractableSelectMode.Multiple && interactorsSelecting.Count > 1)
+            if (m_MultipleGrabTransformers.FlushedCount == 0 && SelectMode == InteractableSelectMode.Multiple && InteractorsSelecting.Count > 1)
                 AddDefaultMultipleGrabTransformer();
         }
 
@@ -1648,7 +1648,7 @@ namespace VaporXR
         /// <inheritdoc />
         public override Transform GetAttachTransform(VXRBaseInteractor interactor)
         {
-            bool isFirst = interactorsSelecting.Count <= 1 || ReferenceEquals(interactor, interactorsSelecting[0]);
+            bool isFirst = InteractorsSelecting.Count <= 1 || ReferenceEquals(interactor, InteractorsSelecting[0]);
 
             // If first selector, do normal behavior.
             // If second, we ignore dynamic attach setting if there is no secondary attach transform.
@@ -1700,16 +1700,16 @@ namespace VaporXR
 
             // If there are no interactors selecting this object, we need to set the target pose dirty
             // so that the pose is applied in the next phase it is applied.
-            m_IsTargetPoseDirty = interactorsSelecting.Count == 0;
+            m_IsTargetPoseDirty = InteractorsSelecting.Count == 0;
         }
 
         /// <summary>
         /// Unity calls this method automatically when initializing the dynamic attach pose.
-        /// Used to override <see cref="snapToColliderVolume"/> for a specific interactor.
+        /// Used to override <see cref="SnapToColliderVolume"/> for a specific interactor.
         /// </summary>
         /// <param name="interactor">The interactor that is initiating the selection.</param>
         /// <returns>Returns whether to adjust the dynamic attachment point to keep it on or inside the Colliders that make up this object.</returns>
-        /// <seealso cref="snapToColliderVolume"/>
+        /// <seealso cref="SnapToColliderVolume"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
         protected virtual bool ShouldSnapToColliderVolume(VXRBaseInteractor interactor)
         {
@@ -1724,9 +1724,9 @@ namespace VaporXR
         /// <param name="interactor">The interactor that is initiating the selection.</param>
         /// <param name="dynamicAttachTransform">The dynamic attachment Transform that serves as the attachment point for the given interactor.</param>
         /// <remarks>
-        /// This method is only called when <see cref="useDynamicAttach"/> is enabled.
+        /// This method is only called when <see cref="UseDynamicAttach"/> is enabled.
         /// </remarks>
-        /// <seealso cref="useDynamicAttach"/>
+        /// <seealso cref="UseDynamicAttach"/>
         protected virtual void InitializeDynamicAttachPose(VXRBaseInteractor interactor, Transform dynamicAttachTransform)
         {
             var matchPosition = ShouldMatchAttachPosition(interactor);
@@ -1820,11 +1820,11 @@ namespace VaporXR
 
         /// <summary>
         /// Unity calls this method automatically when initializing the dynamic attach pose.
-        /// Used to override <see cref="matchAttachPosition"/> for a specific interactor.
+        /// Used to override <see cref="MatchAttachPosition"/> for a specific interactor.
         /// </summary>
         /// <param name="interactor">The interactor that is initiating the selection.</param>
         /// <returns>Returns whether to match the position of the interactor's attachment point when initializing the grab.</returns>
-        /// <seealso cref="matchAttachPosition"/>
+        /// <seealso cref="MatchAttachPosition"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
         protected virtual bool ShouldMatchAttachPosition(VXRBaseInteractor interactor)
         {
@@ -1844,11 +1844,11 @@ namespace VaporXR
 
         /// <summary>
         /// Unity calls this method automatically when initializing the dynamic attach pose.
-        /// Used to override <see cref="matchAttachRotation"/> for a specific interactor.
+        /// Used to override <see cref="MatchAttachRotation"/> for a specific interactor.
         /// </summary>
         /// <param name="interactor">The interactor that is initiating the selection.</param>
         /// <returns>Returns whether to match the rotation of the interactor's attachment point when initializing the grab.</returns>
-        /// <seealso cref="matchAttachRotation"/>
+        /// <seealso cref="MatchAttachRotation"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
         protected virtual bool ShouldMatchAttachRotation(VXRBaseInteractor interactor)
         {
@@ -1915,7 +1915,7 @@ namespace VaporXR
 
             // If there are no interactors selecting this object, we need to set the target local scale dirty
             // so that the pose is applied in the next phase it is applied.
-            m_IsTargetLocalScaleDirty = interactorsSelecting.Count == 0;
+            m_IsTargetLocalScaleDirty = InteractorsSelecting.Count == 0;
         }
 
         void InitializeTargetPoseAndScale(Transform thisTransform)
@@ -1992,9 +1992,9 @@ namespace VaporXR
             // Iterates in reverse order so the most recent interactor with an override will win since that seems like it would
             // be the strategy most users would want by default.
             MovementType? movementTypeOverride = null;
-            for (var index = interactorsSelecting.Count - 1; index >= 0; --index)
+            for (var index = InteractorsSelecting.Count - 1; index >= 0; --index)
             {
-                var baseInteractor = interactorsSelecting[index] as VXRBaseInteractor;
+                var baseInteractor = InteractorsSelecting[index] as VXRBaseInteractor;
                 if (baseInteractor != null && baseInteractor.SelectedInteractableMovementTypeOverride.HasValue)
                 {
                     if (movementTypeOverride.HasValue)

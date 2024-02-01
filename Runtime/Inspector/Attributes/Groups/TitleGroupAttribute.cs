@@ -15,12 +15,11 @@ namespace VaporInspector
 
         public TitleGroupAttribute(string groupName, string title = "", string subtitle = "", bool underline = true, int order = 0)
         {
-            GroupName = groupName;
-            Title = title;
+            GroupName = groupName.Replace(" ", "");
+            Title = string.Empty == title ? groupName : title;
             Subtitle = subtitle;
             Underline = underline;
             Order = order;
-            // Assert.IsFalse(Order == int.MaxValue, "Int.MaxValue is reserved");
 
             int last = GroupName.LastIndexOf('/');
             ParentName = last != -1 ? GroupName[..last] : "";

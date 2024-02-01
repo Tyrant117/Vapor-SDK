@@ -41,11 +41,11 @@ namespace VaporInspectorEditor
                     Debug.Log($"Generating Inspector Script: {script.name} - {type}");
                     if (type.IsSubclassOf(typeof(Object)))
                     {
-                        _CreateEditorClassFile(type.Name);
+                        _CreateEditorClassFile(type.Name, type.Namespace);
                     }
                     else
                     {
-                        _CreatePropertyDrawerClassFile(type.Name);
+                        _CreatePropertyDrawerClassFile(type.Name, type.Namespace);
                     }
                 }
             }
@@ -58,13 +58,14 @@ namespace VaporInspectorEditor
             
             return;
 
-            static void _CreateEditorClassFile(string className)
+            static void _CreateEditorClassFile(string className, string namespaceName)
             {
                 StringBuilder sb = new();
                 
                 sb.Append("//\t* THIS SCRIPT IS AUTO-GENERATED *\n");
                 sb.Append("using UnityEditor;\n");
                 sb.Append($"using {FolderSetupUtility.EditorNamespace};\n");
+                sb.Append($"using {namespaceName};\n");
 
                 sb.Append($"namespace {FolderSetupUtility.EditorNamespace}\n");
                 sb.Append("{\n");
@@ -81,13 +82,14 @@ namespace VaporInspectorEditor
                 System.IO.File.WriteAllText($"{Application.dataPath}/{FolderSetupUtility.EditorRelativePath}/{className}Editor.cs", sb.ToString());
             }
             
-            static void _CreatePropertyDrawerClassFile(string className)
+            static void _CreatePropertyDrawerClassFile(string className, string namespaceName)
             {
                 StringBuilder sb = new();
                 
                 sb.Append("//\t* THIS SCRIPT IS AUTO-GENERATED *\n");
                 sb.Append("using UnityEditor;\n");
                 sb.Append($"using {FolderSetupUtility.EditorNamespace};\n");
+                sb.Append($"using {namespaceName};\n");
 
                 sb.Append($"namespace {FolderSetupUtility.EditorNamespace}\n");
                 sb.Append("{\n");

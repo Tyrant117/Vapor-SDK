@@ -38,7 +38,7 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasHover"/>
-        /// <seealso cref="IXRHoverInteractable.interactorsHovering"/>
+        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
         List<IXRHoverInteractable> InteractablesHovered { get; }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        /// <seealso cref="IXRHoverInteractable.isHovered"/>
+        /// <seealso cref="IXRHoverInteractable.IsHovered"/>
         bool HasHover { get; }
 
         /// <summary>

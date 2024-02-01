@@ -119,12 +119,12 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnHoverEntered(HoverEnterEventArgs args)
+        public override void OnHoverEntered(HoverEnterEventArgs args)
         {
             base.OnHoverEntered(args);
 
             // Only evaluate destination upon first hover
-            if (interactorsHovering.Count != 1)
+            if (InteractorsHovering.Count != 1)
                 return;
 
             ClearDestinationAnchor();
@@ -140,10 +140,10 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        protected override void OnHoverExited(HoverExitEventArgs args)
+        public override void OnHoverExited(HoverExitEventArgs args)
         {
             base.OnHoverExited(args);
-            if (!isHovered)
+            if (!IsHovered)
             {
                 m_WaitingToEvaluateDestination = false;
                 ClearDestinationAnchor();
@@ -155,7 +155,7 @@ namespace VaporXR.Locomotion.Teleportation
         {
             base.ProcessInteractable(updatePhase);
 
-            if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic || !isHovered)
+            if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic || !IsHovered)
                 return;
 
             var settings = m_DestinationEvaluationSettings.Value;

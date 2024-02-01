@@ -9,7 +9,7 @@ using VaporXR.UI;
 
 namespace VaporXR
 {
-    public class VXRTouchScreenInteractor : VXRBaseInteractor, IUIHoverInteractor, IPokeStateDataProvider, IAttachPointVelocityProvider
+    public class VXRTouchScreenInteractor : VXRBaseInteractor, IUIHoverInteractor, IPokeStateDataProvider, IAttachPointVelocityProvider, IPoseSource
     {
         private readonly struct PokeCollision
         {
@@ -33,6 +33,9 @@ namespace VaporXR
         private static readonly List<IXRInteractable> s_Results = new();
 
         #region Inspector
+        [BoxGroup("Components"), SerializeField]
+        private VXRHand _hand;
+
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("The depth threshold within which an interaction can begin to be evaluated as a poke.")]
         private float _pokeDepth = 0.1f;
@@ -59,10 +62,19 @@ namespace VaporXR
         [RichTextTooltip("Determines whether the poke sphere overlap will hit triggers.")]
         private QueryTriggerInteraction _physicsTriggerInteraction = QueryTriggerInteraction.Ignore;
 
-        [SerializeField, FoldoutGroup("Events")]
-        private UIHoverEnterEvent _uiHoverEntered = new();
-        [SerializeField, FoldoutGroup("Events")]
-        private UIHoverExitEvent _uiHoverExited = new();
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_enablePhysicsTouch")]
+        private bool _hoverPoseEnabled = false;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_enablePhysicsTouch")]
+        private HandPoseDatum _hoverPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_enablePhysicsTouch")]
+        private float _hoverPoseDuration;
+
+        [FoldoutGroup("Posing"), SerializeField]
+        private bool _uiHoverPoseEnabled = true;
+        [FoldoutGroup("Posing"), SerializeField]
+        private HandPoseDatum _uiHoverPose;
+        [FoldoutGroup("Posing"), SerializeField]
+        private float _uiHoverPoseDuration;
 
         [FoldoutGroup("Debug", order: 1000), SerializeField]
         [RichTextTooltip("Denotes whether or not debug visuals are enabled for this poke interactor.")]
@@ -104,11 +116,8 @@ namespace VaporXR
         #endregion
 
         #region Events
-        /// <inheritdoc />
-        public UIHoverEnterEvent UiHoverEntered { get => _uiHoverEntered; set => _uiHoverEntered = value; }
-
-        /// <inheritdoc />
-        public UIHoverExitEvent UiHoverExited { get => _uiHoverExited; set => _uiHoverExited = value; }
+        public event Action<UIHoverEventArgs> UiHoverEntered;
+        public event Action<UIHoverEventArgs> UiHoverExited;
 
         // Used to avoid GC Alloc each frame in UpdateUIModel
         private Func<Vector3> _positionGetter;
@@ -131,6 +140,12 @@ namespace VaporXR
             _firstFrame = true;
 
             _registeredUIInteractorCache.RegisterWithXRUIInputModule();
+
+            if(_enablePhysicsTouch && _hoverPoseEnabled)
+            {
+                HoverEntered.AddListener(OnHoverPoseEntered);
+                HoverExited.AddListener(OnHoverPoseExited);
+            }
         }
 
         protected override void OnDisable()
@@ -139,7 +154,13 @@ namespace VaporXR
             SetDebugObjectVisibility(false);
 
             _registeredUIInteractorCache.UnregisterFromXRUIInputModule();
-        }
+
+            if (_enablePhysicsTouch && _hoverPoseEnabled)
+            {
+                HoverEntered.RemoveListener(OnHoverPoseEntered);
+                HoverExited.RemoveListener(OnHoverPoseExited);
+            }
+        }        
         #endregion
 
         #region - Processing -
@@ -429,6 +450,7 @@ namespace VaporXR
         public virtual void OnUIHoverEntered(UIHoverEventArgs args)
         {
             UiHoverEntered?.Invoke(args);
+            OnUIHoverPoseEntered(args);
         }
 
         /// <summary>
@@ -442,6 +464,41 @@ namespace VaporXR
         public virtual void OnUIHoverExited(UIHoverEventArgs args)
         {
             UiHoverExited?.Invoke(args);
+            OnUIHoverPoseExited(args);
+        }
+        #endregion
+
+        #region - Posing -
+        private void OnHoverPoseEntered(HoverEnterEventArgs args)
+        {
+            if (_hoverPoseEnabled)
+            {
+                _hand.RequestHandPose(HandPoseType.Hover, this, _hoverPose.Value, duration: _hoverPoseDuration);
+            }
+        }
+
+        private void OnHoverPoseExited(HoverExitEventArgs args)
+        {
+            if (_hoverPoseEnabled)
+            {
+                _hand.RequestReturnToIdle(this, _hoverPoseDuration);
+            }
+        }
+
+        protected virtual void OnUIHoverPoseEntered(UIHoverEventArgs args)
+        {
+            if (_uiHoverPoseEnabled)
+            {
+                _hand.RequestHandPose(HandPoseType.Hover, this, _uiHoverPose.Value, duration: _uiHoverPoseDuration);
+            }
+        }
+
+        protected virtual void OnUIHoverPoseExited(UIHoverEventArgs args)
+        {
+            if (_uiHoverPoseEnabled)
+            {
+                _hand.RequestReturnToIdle(this, _uiHoverPoseDuration);
+            }
         }
         #endregion
 

@@ -464,7 +464,7 @@ namespace VaporXR
         {
             foreach (var interactable in targets)
             {
-                if (interactable == null || interactable as Object == null)
+                if (interactable == null || interactable as Object == null || !interactable.CanActivate)
                 {
                     continue;
                 }
@@ -482,7 +482,7 @@ namespace VaporXR
         {
             foreach (var interactable in targets)
             {
-                if (interactable == null || interactable as Object == null)
+                if (interactable == null || interactable as Object == null || !interactable.CanActivate)
                 {
                     continue;
                 }

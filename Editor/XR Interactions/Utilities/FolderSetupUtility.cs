@@ -12,6 +12,7 @@ namespace VaporXREditor
     {
         public const string FolderRelativePath = "Vapor/XR";
         public const string ReadersRelativePath = "Vapor/XR/Readers";
+        public const string ProviderKeysRelativePath = "Vapor/Keys/XR";
         
         private const string VaporXRReadersCreated = "_vaporXRReadersCreated";
         private const string VaporXRInteractionLayersCreated = "_vaporXRInteractionLayersCreated";

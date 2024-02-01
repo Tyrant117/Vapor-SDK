@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace VaporXR
 {
@@ -19,9 +20,9 @@ namespace VaporXR
         /// The <see cref="HoverEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="lastHoverExited"/>
-        /// <seealso cref="hoverEntered"/>
-        HoverEnterEvent firstHoverEntered { get; }
+        /// <seealso cref="LastHoverExited"/>
+        /// <seealso cref="HoverEntered"/>
+        event Action<HoverEnterEventArgs> FirstHoverEntered;
 
         /// <summary>
         /// The event that is called only when the last remaining hovering Interactor
@@ -31,9 +32,9 @@ namespace VaporXR
         /// The <see cref="HoverExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="firstHoverEntered"/>
-        /// <seealso cref="hoverExited"/>
-        HoverExitEvent lastHoverExited { get; }
+        /// <seealso cref="FirstHoverEntered"/>
+        /// <seealso cref="HoverExited"/>
+        event Action<HoverExitEventArgs> LastHoverExited;
 
         /// <summary>
         /// The event that is called when an Interactor begins hovering over this Interactable.
@@ -42,8 +43,8 @@ namespace VaporXR
         /// The <see cref="HoverEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="hoverExited"/>
-        HoverEnterEvent hoverEntered { get; }
+        /// <seealso cref="HoverExited"/>
+        event Action<HoverEnterEventArgs> HoverEntered;
 
         /// <summary>
         /// The event that is called when an Interactor ends hovering over this Interactable.
@@ -52,8 +53,8 @@ namespace VaporXR
         /// The <see cref="HoverExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="hoverEntered"/>
-        HoverExitEvent hoverExited { get; }
+        /// <seealso cref="HoverEntered"/>
+        event Action<HoverExitEventArgs> HoverExited;
 
         /// <summary>
         /// (Read Only) The list of Interactors that are hovering on this Interactable (may by empty).
@@ -63,22 +64,27 @@ namespace VaporXR
         /// Unity exposes this as a <see cref="List{T}"/> rather than an <see cref="IReadOnlyList{T}"/> to avoid
         /// GC Allocations when enumerating the list.
         /// </remarks>
-        /// <seealso cref="isHovered"/>
+        /// <seealso cref="IsHovered"/>
         /// <seealso cref="VXRBaseInteractor.InteractablesHovered"/>
-        List<VXRBaseInteractor> interactorsHovering { get; }
+        List<VXRBaseInteractor> InteractorsHovering { get; }
+
+        /// <summary>
+        /// Indicates whether this interactable can be hovered by interactors.
+        /// </summary>
+        bool CanHover { get; set; }
 
         /// <summary>
         /// (Read Only) Indicates whether an Interactor currently hovers over this Interactable.
         /// </summary>
         /// <remarks>
-        /// In other words, returns whether <see cref="interactorsHovering"/> contains any interactors.
+        /// In other words, returns whether <see cref="InteractorsHovering"/> contains any interactors.
         /// <example>
         /// <code>interactorsHovering.Count > 0</code>
         /// </example>
         /// </remarks>
-        /// <seealso cref="interactorsHovering"/>
+        /// <seealso cref="InteractorsHovering"/>
         /// <seealso cref="VXRBaseInteractor.HasHover"/>
-        bool isHovered { get; }
+        bool IsHovered { get; }
 
         /// <summary>
         /// Determines if a given Interactor can hover over this Interactable.
@@ -152,9 +158,9 @@ namespace VaporXR
         /// <remarks>
         /// Equivalent to <code>interactorsHovering.Count > 0 ? interactorsHovering[0] : null</code>
         /// </remarks>
-        /// <seealso cref="IXRHoverInteractable.interactorsHovering"/>
+        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
         public static VXRBaseInteractor GetOldestInteractorHovering(this IXRHoverInteractable interactable) =>
-            interactable?.interactorsHovering.Count > 0 ? interactable.interactorsHovering[0] : null;
+            interactable?.InteractorsHovering.Count > 0 ? interactable.InteractorsHovering[0] : null;
 
         /// <summary>
         /// Gets whether the interactable is currently being hovered by an interactor associated with the left hand or controller.
@@ -186,9 +192,9 @@ namespace VaporXR
         public static bool IsHoveredByRight(this IXRHoverInteractable interactable) =>
             IsHoveredBy(interactable, InteractorHandedness.Right);
 
-        static bool IsHoveredBy(IXRHoverInteractable interactable, InteractorHandedness handedness)
+        private static bool IsHoveredBy(IXRHoverInteractable interactable, InteractorHandedness handedness)
         {
-            var interactorsHovering = interactable.interactorsHovering;
+            var interactorsHovering = interactable.InteractorsHovering;
             for (var i = 0; i < interactorsHovering.Count; ++i)
             {
                 if (interactorsHovering[i].Handedness == handedness)

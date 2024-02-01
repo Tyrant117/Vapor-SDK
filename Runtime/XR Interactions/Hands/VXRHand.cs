@@ -5,11 +5,13 @@ using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.XR;
+using VaporEvents;
 using VaporInspector;
+using VaporStateMachine;
 
 namespace VaporXR
 {
-    public class VXRHand : MonoBehaviour, IPoseSource
+    public class VXRHand : ProvidedMonoBehaviour, IPoseSource
     {
         #region Inspector
         [FoldoutGroup("Physics"), SerializeField]
@@ -101,6 +103,19 @@ namespace VaporXR
         private HandPose _currentPose;
         private HandPose _interpolatedPose;
         private HandPose _dynamicPose;
+
+
+        // Posing State Machine
+        private IPoseSource _currentSource;
+        private IPoseSource _pendingSource;
+        private HandPose _pendingPose;
+        private Transform _pendingPoseTransform;
+        private float _pendingPoseDuration;
+        private bool _isPosing;
+        private StateMachine _fsm;
+        private State _idleState;
+        private State _hoverState;
+        private State _grabState;
         #endregion
 
         #region Events
@@ -140,20 +155,51 @@ namespace VaporXR
             }
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             _thumbTouchInput.BindToUpdateEvent(_updateProvider);
             _thumbDownInput.BindToUpdateEvent(_updateProvider);
             _indexInput.BindToUpdateEvent(_updateProvider);
             _gripInput.BindToUpdateEvent(_updateProvider);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
             _thumbTouchInput.UnbindUpdateEvent();
             _thumbDownInput.UnbindUpdateEvent();
             _indexInput.UnbindUpdateEvent();
             _gripInput.UnbindUpdateEvent();
+        }
+
+        private void SetupStateMachine()
+        {
+            _fsm = new StateMachine("Hand");
+
+            _idleState = new State("Idle", false);
+            _hoverState = new State("Hover", false);
+            _grabState = new State("Grab", false);
+
+            _idleState.InitEvents(OnIdleEntered, OnIdleUpdated);
+            _hoverState.InitEvents(OnPoseEntered, null, OnPoseExited);
+            _grabState.InitEvents(OnPoseEntered, null, OnPoseExited);
+
+            _fsm.AddState(_idleState);
+            _fsm.AddState(_hoverState);
+            _fsm.AddState(_grabState);            
+
+            _fsm.AddTriggerTransition((int)HandPoseType.Grab, new Transition(_idleState, _grabState, 2, CanTransition));
+            _fsm.AddTriggerTransition((int)HandPoseType.Hover, new Transition(_idleState, _hoverState, 1, CanTransition));
+
+            _fsm.AddTriggerTransition((int)HandPoseType.Grab, new Transition(_hoverState, _grabState, 3, CanTransition));
+            _fsm.AddTriggerTransition((int)HandPoseType.Hover, new Transition(_hoverState, _hoverState, 2, CanTransition));
+            _fsm.AddTriggerTransition((int)HandPoseType.Idle, new Transition(_hoverState, _idleState, 1, CanReturnToIdle));
+
+            _fsm.AddTriggerTransition((int)HandPoseType.Grab, new Transition(_grabState, _grabState, 2, CanTransition));
+            _fsm.AddTriggerTransition((int)HandPoseType.Idle, new Transition(_grabState, _idleState, 1, CanReturnToIdle));
+
+            _fsm.Init();
         }
 
         private void SetFingerPoses()
@@ -184,7 +230,7 @@ namespace VaporXR
 
         private void Start()
         {
-            FallbackToIdle();
+            SetupStateMachine();
         }
 
         private void Update()
@@ -210,6 +256,9 @@ namespace VaporXR
 
         private void LateUpdate()
         {
+            _fsm.OnUpdate();
+            return;
+
             if (!_idlePosing) return;
 
             foreach (var finger in Fingers)
@@ -266,21 +315,21 @@ namespace VaporXR
         }
 
         #region - Trigger Contacts -
-        private void OnTriggerEnter(Collider other)
-        {
-            if(other.TryGetComponent<TriggerPoseZone>(out var poseZone))
-            {
-                SetHandPose(poseZone.Pose, duration: poseZone.Duration);
-            }
-        }
+        //private void OnTriggerEnter(Collider other)
+        //{
+        //    if(other.TryGetComponent<TriggerPoseZone>(out var poseZone))
+        //    {
+        //        SetHandPose(poseZone.Pose, duration: poseZone.Duration);
+        //    }
+        //}
 
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.TryGetComponent<TriggerPoseZone>(out var poseZone))
-            {
-                FallbackToIdle(poseZone.Duration);
-            }
-        }
+        //private void OnTriggerExit(Collider other)
+        //{
+        //    if (other.TryGetComponent<TriggerPoseZone>(out var poseZone))
+        //    {
+        //        FallbackToIdle(poseZone.Duration);
+        //    }
+        //}
         #endregion
 
         #region - Tracking -
@@ -332,30 +381,61 @@ namespace VaporXR
         #endregion
 
         #region - Posing -
-        public void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
+        public void RequestHandPose(HandPoseType poseType, IPoseSource source, HandPose pose, Transform relativeTo = null, float duration = 0)
         {
-            _idlePosing = false;
-            if (duration > 0)
-            {
-                if(_handPoseRoutine != null)
-                {
-                    PosingComplete = null;
-                    _returningToIdle = false;
-                    StopCoroutine(_handPoseRoutine);
-                }
+            _pendingSource = source;
+            _pendingPose = pose;
+            _pendingPoseTransform = relativeTo;
+            _pendingPoseDuration = duration;
 
-                _handPoseRoutine = StartCoroutine(PoseHandOverTime(_currentPose, pose, relativeTo, duration));
-            }
-            else
-            {
-                this.SetPose(pose, relativeTo);
-                _currentPose = pose;
-            }
+            _fsm.Trigger((int)poseType);
         }
+
+        public void RequestReturnToIdle(IPoseSource source, float duration = 0)
+        {
+            _pendingSource = source;
+            _pendingPose = null;
+            _pendingPoseTransform = null;
+            _pendingPoseDuration = duration;
+
+            _fsm.Trigger((int)HandPoseType.Idle);
+        }
+
+        private bool CanTransition(Transition t)
+        {
+            return _pendingSource != null && _pendingSource != _currentSource;
+        }
+
+        private bool CanReturnToIdle(Transition t)
+        {
+            return _pendingSource == _currentSource;
+        }
+
+        //public void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
+        //{
+        //    _idlePosing = false;
+        //    if (duration > 0)
+        //    {
+        //        if(_handPoseRoutine != null)
+        //        {
+        //            PosingComplete = null;
+        //            _returningToIdle = false;
+        //            StopCoroutine(_handPoseRoutine);
+        //        }
+
+        //        _handPoseRoutine = StartCoroutine(PoseHandOverTime(_currentPose, pose, relativeTo, duration));
+        //    }
+        //    else
+        //    {
+        //        this.SetPose(pose, relativeTo);
+        //        _currentPose = pose;
+        //    }
+        //}
 
         private IEnumerator PoseHandOverTime(HandPose from, HandPose to, Transform relativeTo, float duration)
         {
             float deltaTime = 0;
+            _isPosing = true;
             while (deltaTime < duration)
             {
                 // Smooth Lerp
@@ -368,32 +448,136 @@ namespace VaporXR
             this.SetPose(to, relativeTo);
             _currentPose = to;
             _handPoseRoutine = null;
+            _isPosing = false;
             PosingComplete?.Invoke(this);
         }
 
-        public void FallbackToIdle(float duration = 0)
+        //public void FallbackToIdle(float duration = 0)
+        //{
+        //    if (duration > 0)
+        //    {
+        //        if (!_returningToIdle)
+        //        {
+        //            _returningToIdle = true;
+        //            PosingComplete += OnIdlePosingComplete;
+        //            SetHandPose(_idlePoseDatum.Value, duration: duration);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        SetHandPose(_idlePoseDatum.Value);
+        //        _idlePosing = true;
+        //    }
+        //}
+
+        //private void OnIdlePosingComplete(VXRHand hand)
+        //{
+        //    PosingComplete -= OnIdlePosingComplete;
+        //    _idlePosing = true;
+        //    _returningToIdle = false;
+        //}
+
+        private void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
         {
             if (duration > 0)
             {
-                if (!_returningToIdle)
-                {
-                    _returningToIdle = true;
-                    PosingComplete += OnIdlePosingComplete;
-                    SetHandPose(_idlePoseDatum.Value, duration: duration);
-                }
+                _handPoseRoutine = StartCoroutine(PoseHandOverTime(_currentPose, pose, relativeTo, duration));
             }
             else
             {
-                SetHandPose(_idlePoseDatum.Value);
-                _idlePosing = true;
+                this.SetPose(pose, relativeTo);
+                _currentPose = pose;
+                _isPosing = false;
             }
         }
 
-        private void OnIdlePosingComplete(VXRHand hand)
+        private void OnIdleEntered(State s)
         {
-            PosingComplete -= OnIdlePosingComplete;
-            _idlePosing = true;
-            _returningToIdle = false;
+            _currentSource = this;
+            SetHandPose(_idlePoseDatum.Value, duration: _pendingPoseDuration);
+            ClearPendingPoseData();
+        }
+
+        private void OnIdleUpdated(State s)
+        {
+            if (_isPosing) { return; }
+
+            foreach (var finger in Fingers)
+            {
+                switch (finger.Finger)
+                {
+                    case HandFinger.Thumb:
+                        if (_thumbDownInput.IsHeld)
+                        {
+                            finger.SmoothBend(1);
+                        }
+                        else if (_thumbTouchInput.IsHeld)
+                        {
+                            finger.SmoothBend(0.5f);
+                        }
+                        else
+                        {
+                            finger.Breathe();
+                        }
+
+                        break;
+                    case HandFinger.Index:
+                        var indexBend = _indexInput.CurrentValue;
+                        var indexBreathe = indexBend <= 0.1f;
+                        if (indexBreathe)
+                        {
+                            finger.Breathe();
+                        }
+                        else
+                        {
+                            finger.SmoothBend(indexBend);
+                        }
+
+                        break;
+                    case HandFinger.Middle:
+                    case HandFinger.Ring:
+                    case HandFinger.Pinky:
+                        var gripBend = _gripInput.CurrentValue;
+                        var gripBreathe = gripBend <= 0.1f;
+                        if (gripBreathe)
+                        {
+                            finger.Breathe();
+                        }
+                        else
+                        {
+                            finger.SmoothBend(gripBend);
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        private void OnPoseEntered(State s)
+        {
+            _currentSource = _pendingSource;
+            SetHandPose(_pendingPose, _pendingPoseTransform, _pendingPoseDuration);
+            ClearPendingPoseData();
+        }
+
+        private void OnPoseExited(State s, Transition t)
+        {
+            if (_handPoseRoutine != null)
+            {
+                StopCoroutine(_handPoseRoutine);
+                _handPoseRoutine = null;
+                _isPosing = false;
+            }
+        }
+
+        private void ClearPendingPoseData()
+        {
+            _pendingSource = null;
+            _pendingPose = null;
+            _pendingPoseTransform = null;
+            _pendingPoseDuration = 0;
         }
         #endregion
     }

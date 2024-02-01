@@ -9,24 +9,24 @@ namespace VaporEvents
 {
     public abstract class ProvidedMonoBehaviour : MonoBehaviour
     {
-        [SerializeField, ValueDropdown("@GetAllProviderKeyValues", searchable: true), IgnoreCustomDrawer]
+        [BoxGroup("Provided Key", order: -10000), SerializeField, ValueDropdown("@GetAllProviderKeyValues", searchable: true), IgnoreCustomDrawer]
         protected KeyDropdownValue Key;
         
         protected virtual void OnEnable()
         {
             if (Key.IsNone) return;
             
-            ProviderBus.Get<ProviderData<ProvidedMonoBehaviour>>(Key).Subscribe(OnComponentRequested);
+            ProviderBus.Get<ProviderData<Component>>(Key).Subscribe(OnComponentRequested);
         }
 
-        protected virtual  void OnDisable()
+        protected virtual void OnDisable()
         {
             if (Key.IsNone) return;
             
-            ProviderBus.Get<ProviderData<ProvidedMonoBehaviour>>(Key).Unsubscribe(OnComponentRequested);
+            ProviderBus.Get<ProviderData<Component>>(Key).Unsubscribe(OnComponentRequested);
         }
 
-        protected ProvidedMonoBehaviour OnComponentRequested()
+        protected Component OnComponentRequested()
         {
             return this;
         }

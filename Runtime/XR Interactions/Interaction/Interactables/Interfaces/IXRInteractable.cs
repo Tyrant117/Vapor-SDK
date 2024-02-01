@@ -28,7 +28,7 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="VXRInteractionManager.interactableRegistered"/>
-        event Action<InteractableRegisteredEventArgs> registered;
+        event Action<InteractableRegisteredEventArgs> Registered;
 
         /// <summary>
         /// Calls the methods in its invocation list when this Interactable is unregistered from an <see cref="VXRInteractionManager"/>.
@@ -38,18 +38,18 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="VXRInteractionManager.interactableUnregistered"/>
-        event Action<InteractableUnregisteredEventArgs> unregistered;
+        event Action<InteractableUnregisteredEventArgs> Unregistered;
 
         /// <summary>
         /// (Read Only) Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
         /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
-        InteractionLayerMask interactionLayers { get; }
+        InteractionLayerMask InteractionLayers { get; }
 
         /// <summary>
         /// (Read Only) Colliders to use for interaction with this Interactable.
         /// </summary>
-        List<Collider> colliders { get; }
+        List<Collider> Colliders { get; }
 
         /// <summary>
         /// (Read Only) The <see cref="Transform"/> associated with the Interactable.
@@ -57,7 +57,9 @@ namespace VaporXR
         /// <remarks>
         /// When this Interactable is a component, this property is the Transform of the GameObject the component is attached to.
         /// </remarks>
+#pragma warning disable IDE1006 // Naming Styles
         Transform transform { get; }
+#pragma warning restore IDE1006 // Naming Styles
 
         /// <summary>
         /// Gets the <see cref="Transform"/> that serves as the attachment point for a given Interactor.

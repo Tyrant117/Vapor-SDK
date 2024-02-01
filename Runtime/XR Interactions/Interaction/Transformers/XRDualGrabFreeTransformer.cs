@@ -84,7 +84,7 @@ namespace VaporXR
         public override void OnGrabCountChanged(VXRGrabInteractable grabInteractable, Pose targetPose, Vector3 localScale)
         {
             base.OnGrabCountChanged(grabInteractable, targetPose, localScale);
-            if (grabInteractable.interactorsSelecting.Count == 2)
+            if (grabInteractable.InteractorsSelecting.Count == 2)
                 m_LastUp = grabInteractable.transform.up;
         }
 
@@ -105,7 +105,7 @@ namespace VaporXR
 
         void UpdateTarget(VXRGrabInteractable grabInteractable, ref Pose targetPose)
         {
-            if (grabInteractable.interactorsSelecting.Count == 1)
+            if (grabInteractable.InteractorsSelecting.Count == 1)
                 XRSingleGrabFreeTransformer.UpdateTarget(grabInteractable, ref targetPose);
             else
                 UpdateTargetMulti(grabInteractable, ref targetPose);
@@ -113,10 +113,10 @@ namespace VaporXR
 
         void UpdateTargetMulti(VXRGrabInteractable grabInteractable, ref Pose targetPose)
         {
-            Debug.Assert(grabInteractable.interactorsSelecting.Count > 1, this);
+            Debug.Assert(grabInteractable.InteractorsSelecting.Count > 1, this);
 
-            var primaryAttachPose = grabInteractable.interactorsSelecting[0].GetAttachTransform(grabInteractable).GetWorldPose();
-            var secondaryAttachPose = grabInteractable.interactorsSelecting[1].GetAttachTransform(grabInteractable).GetWorldPose();
+            var primaryAttachPose = grabInteractable.InteractorsSelecting[0].GetAttachTransform(grabInteractable).GetWorldPose();
+            var secondaryAttachPose = grabInteractable.InteractorsSelecting[1].GetAttachTransform(grabInteractable).GetWorldPose();
 
             // When multi-selecting, adjust the effective interactorAttachPose with our default 2-hand algorithm.
             // Default to the primary interactor.
@@ -202,7 +202,7 @@ namespace VaporXR
             if (m_MultiSelectRotation == PoseContributor.First || m_MultiSelectRotation == PoseContributor.Second)
             {
                 var controllerIndex = m_MultiSelectRotation == PoseContributor.First ? 0 : 1;
-                var thisAttachTransform = grabInteractable.GetAttachTransform(grabInteractable.interactorsSelecting[controllerIndex]);
+                var thisAttachTransform = grabInteractable.GetAttachTransform(grabInteractable.InteractorsSelecting[controllerIndex]);
                 var thisTransformPose = grabInteractable.transform.GetWorldPose();
 
                 // Calculate offset of the grab interactable's position relative to its attach transform.

@@ -67,7 +67,7 @@ namespace VaporXR.Utilities
             Collider closestCollider = null;
             var hasCollider = false;
             
-            foreach (var col in interactable.colliders)
+            foreach (var col in interactable.Colliders)
             {
                 if (col == null || !col.gameObject.activeInHierarchy || !col.enabled || (col.isTrigger && !allowTriggerColliders))
                     continue;
@@ -121,7 +121,7 @@ namespace VaporXR.Utilities
             var minPointDistanceSqr = float.MaxValue;
             var hasCollider = false;
 
-            foreach (var col in interactable.colliders)
+            foreach (var col in interactable.Colliders)
             {
                 if (col == null || !col.gameObject.activeInHierarchy || !col.enabled || (col.isTrigger && !allowTriggerColliders))
                     continue;

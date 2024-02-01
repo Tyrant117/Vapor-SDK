@@ -1,4 +1,6 @@
-﻿namespace VaporXR
+﻿using System;
+
+namespace VaporXR
 {
     /// <summary>
     /// An interface that represents an Interactable component which Interactor
@@ -20,8 +22,8 @@
         /// The <see cref="ActivateEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="deactivated"/>
-        ActivateEvent activated { get; }
+        /// <seealso cref="Deactivated"/>
+        event Action<ActivateEventArgs> Activated;
 
         /// <summary>
         /// The event that is called when an Interactor deactivates this Interactable.
@@ -34,8 +36,13 @@
         /// The <see cref="DeactivateEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="activated"/>
-        DeactivateEvent deactivated { get; }
+        /// <seealso cref="Activated"/>
+        event Action<DeactivateEventArgs> Deactivated;
+
+        /// <summary>
+        /// Indicates whether this interactable can be activated by an interactor.
+        /// </summary>
+        bool CanActivate { get; set; }
 
         /// <summary>
         /// This method is called when the Interactor begins an activation event on this Interactable.

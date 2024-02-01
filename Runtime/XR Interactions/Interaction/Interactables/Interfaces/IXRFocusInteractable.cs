@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace VaporXR
 {
@@ -17,9 +18,9 @@ namespace VaporXR
         /// The <see cref="FocusEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="lastFocusExited"/>
-        /// <seealso cref="focusEntered"/>
-        FocusEnterEvent firstFocusEntered { get; }
+        /// <seealso cref="LastFocusExited"/>
+        /// <seealso cref="FocusEntered"/>
+        event Action<FocusEnterEventArgs> FirstFocusEntered;
 
         /// <summary>
         /// The event that is called only when the last remaining focused Interaction group
@@ -29,9 +30,9 @@ namespace VaporXR
         /// The <see cref="FocusExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="firstFocusEntered"/>
-        /// <seealso cref="focusExited"/>
-        FocusExitEvent lastFocusExited { get; }
+        /// <seealso cref="FirstFocusEntered"/>
+        /// <seealso cref="FocusExited"/>
+        event Action<FocusExitEventArgs> LastFocusExited;
 
         /// <summary>
         /// The event that is called when an Interaction group gains focus on this Interactable.
@@ -40,8 +41,8 @@ namespace VaporXR
         /// The <see cref="FocusEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="focusExited"/>
-        FocusEnterEvent focusEntered { get; }
+        /// <seealso cref="FocusExited"/>
+        event Action<FocusEnterEventArgs> FocusEntered;
 
         /// <summary>
         /// The event that is called when an Interaction group loses focus on this Interactable.
@@ -50,8 +51,8 @@ namespace VaporXR
         /// The <see cref="FocusExitEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="focusEntered"/>
-        FocusExitEvent focusExited { get; }
+        /// <seealso cref="FocusEntered"/>
+        event Action<FocusExitEventArgs> FocusExited;
 
         /// <summary>
         /// (Read Only) The list of Interaction groups currently focusing on this Interactable (may by empty).
@@ -61,38 +62,38 @@ namespace VaporXR
         /// It is exposed as a <see cref="List{T}"/> rather than an <see cref="IReadOnlyList{T}"/> to avoid GC Allocations
         /// when enumerating the list.
         /// </remarks>
-        /// <seealso cref="isFocused"/>
-        List<IXRInteractionGroup> interactionGroupsFocusing { get; }
+        /// <seealso cref="IsFocused"/>
+        List<IXRInteractionGroup> InteractionGroupsFocusing { get; }
 
         /// <summary>
         /// (Read Only) The first interaction group that is focused on this interactable since not being focused.
         /// The group may not currently be focusing this interactable, which would be the case
         /// when it released while multiple groups were focusing this interactable.
         /// </summary>
-        IXRInteractionGroup firstInteractionGroupFocusing { get; }
+        IXRInteractionGroup FirstInteractionGroupFocusing { get; }
 
         /// <summary>
         /// (Read Only) Indicates whether this interactable is currently being focused by any interaction group.
         /// </summary>
         /// <remarks>
-        /// In other words, returns whether <see cref="interactionGroupsFocusing"/> contains any interaction groups.
+        /// In other words, returns whether <see cref="InteractionGroupsFocusing"/> contains any interaction groups.
         /// <example>
         /// <code>interactionGroupsFocusing.Count > 0</code>
         /// </example>
         /// </remarks>
-        /// <seealso cref="interactionGroupsFocusing"/>
-        bool isFocused { get; }
+        /// <seealso cref="InteractionGroupsFocusing"/>
+        bool IsFocused { get; }
 
         /// <summary>
         /// Indicates the focus policy of an Interactable.
         /// </summary>
         /// <seealso cref="InteractableFocusMode"/>
-        InteractableFocusMode focusMode { get; }
+        InteractableFocusMode FocusMode { get; }
 
         /// <summary>
         /// Indicates whether this Interactable can be focused.
         /// </summary>
-        bool canFocus { get; }
+        bool CanFocus { get; }
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -159,13 +160,13 @@ namespace VaporXR
         /// Equivalent to <code>interactionGroupsFocusing.Count > 0 ? interactionGroupsFocusing[0] : null</code>
         /// </remarks>
         public static IXRInteractionGroup GetOldestInteractorFocusing(this IXRFocusInteractable interactable) =>
-            interactable?.interactionGroupsFocusing.Count > 0 ? interactable.interactionGroupsFocusing[0] : null;
+            interactable?.InteractionGroupsFocusing.Count > 0 ? interactable.InteractionGroupsFocusing[0] : null;
     }
 
     /// <summary>
     /// Options for the focus policy of an Interactable.
     /// </summary>
-    /// <seealso cref="IXRFocusInteractable.focusMode"/>
+    /// <seealso cref="IXRFocusInteractable.FocusMode"/>
     public enum InteractableFocusMode
     {
         /// <summary>
