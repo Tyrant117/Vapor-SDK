@@ -144,6 +144,16 @@ namespace VaporXR
             }
         }
 
+        public void SetLocalPose(HandPose pose, ref int flatIndex)
+        {
+            _isBreathing = false;
+            for (var i = 0; i < Joints.Count; i++)
+            {
+                Joints[i].SetLocalPose(pose.FingerPoses[flatIndex]);
+                flatIndex++;
+            }
+        }
+
         public void Breathe()
         {
             if (_isBreathing)

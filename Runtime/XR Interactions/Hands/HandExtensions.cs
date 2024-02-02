@@ -72,11 +72,12 @@ namespace VaporXR
             var flatIndex = 0;
             foreach (var finger in hand.GetFingers())
             {
-                for (var i = 0; i < finger.Joints.Count; i++)
-                {
-                    finger.Joints[i].SetLocalPose(pose.FingerPoses[flatIndex]);
-                    flatIndex++;
-                }
+                finger.SetLocalPose(pose, ref flatIndex);
+                //for (var i = 0; i < finger.Joints.Count; i++)
+                //{
+                //    finger.Joints[i].SetLocalPose(pose.FingerPoses[flatIndex]);
+                //    flatIndex++;
+                //}
             }
         }
 
