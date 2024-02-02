@@ -548,13 +548,17 @@ namespace VaporXR
         public virtual void OnHoverEntering(HoverEnterEventArgs args)
         {
             if (_customReticle != null)
+            {
                 AttachCustomReticle(args.interactorObject);
+            }
 
             var added = _interactorsHovering.Add(args.interactorObject);
             Debug.Assert(added, "An Interactable received a Hover Enter event for an Interactor that was already hovering over it.", this);
 
             if (args.interactorObject is VXRInputInteractor variableSelectInteractor)
+            {
                 _variableSelectInteractors.Add(variableSelectInteractor);
+            }
         }
 
         /// <summary>

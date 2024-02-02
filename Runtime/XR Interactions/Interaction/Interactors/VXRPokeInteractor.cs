@@ -247,10 +247,14 @@ namespace VaporXR
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
                 if (TryGetXROrigin(out var origin))
+                {
                     AttachPointVelocityTracker.UpdateAttachPointVelocityData(GetAttachTransform(null), origin);
+                }
                 else
+                {
                     AttachPointVelocityTracker.UpdateAttachPointVelocityData(GetAttachTransform(null));
-                
+                }
+
                 IsInteractingWithUI = TrackedDeviceGraphicRaycaster.IsPokeInteractingWithUI(this);
                 _pokeCanSelect = EvaluatePokeInteraction(out _currentPokeTarget, out _currentPokeFilter);
                 ProcessPokeStateData();
