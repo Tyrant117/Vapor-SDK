@@ -45,13 +45,6 @@ namespace VaporXR
         [FoldoutGroup("Poses"), SerializeField] 
         private HandPoseDatumProperty _closedPoseDatum;
 
-        [FoldoutGroup("Hover Posing"), SerializeField]
-        private Collider _hoverPoseCollider;
-        [FoldoutGroup("Hover Posing"), SerializeField]
-        private Collider _otherHoverPoseCollider;
-        [FoldoutGroup("Hover Posing"), SerializeField]
-        private List<Collider> _ignoreTriggerPoseZoneColliders;
-
         [FoldoutGroup("Input"), SerializeField, AutoReference] private VXRInputDeviceUpdateProvider _updateProvider;
         [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbTouchInput;
         [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbDownInput;
@@ -131,12 +124,6 @@ namespace VaporXR
         {
             _hasRigidbody = _rigidbody != null;
             Assert.IsTrue(!_usePhysicsHand || _hasRigidbody, $"Attempting to use a physics hand without a rigidbody. A rigibody must be added to {name}.");
-
-            Physics.IgnoreCollision(_hoverPoseCollider, _otherHoverPoseCollider, true);
-            foreach (var col in _ignoreTriggerPoseZoneColliders)
-            {
-                Physics.IgnoreCollision(_hoverPoseCollider, col, true);
-            }
 
             _PopulateFingers();
             _interpolatedPose = _flexedPoseDatum.Value.Copy();
