@@ -10,7 +10,9 @@ namespace VaporXR
         #region Inspector
         [FoldoutGroup("Posing"), SerializeField]
         private bool _overrideHoverPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideHoverPose")]
         private HandPoseDatum _hoverPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideHoverPose")]
         private float _hoverPoseDuration;
         #endregion
 
