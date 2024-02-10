@@ -204,7 +204,14 @@ namespace VaporXR
         {
             if (_hoverPoseEnabled)
             {
-                _hand.RequestHandPose(HandPoseType.Hover, this, _hoverPose.Value, duration: _hoverPoseDuration);
+                if (args.interactableObject is VXRHoverInteractable interactable && interactable.TryGetOverrideHoverPose(out var pose, out var duration))
+                {
+                    _hand.RequestHandPose(HandPoseType.Hover, this, pose.Value, duration: duration);
+                }
+                else
+                {
+                    _hand.RequestHandPose(HandPoseType.Hover, this, _hoverPose.Value, duration: _hoverPoseDuration);
+                }
             }
         }
 
