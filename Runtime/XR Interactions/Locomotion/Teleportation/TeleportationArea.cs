@@ -1,4 +1,5 @@
 using UnityEngine;
+using VaporXR.Interactors;
 
 namespace VaporXR.Locomotion.Teleportation
 {
@@ -10,7 +11,7 @@ namespace VaporXR.Locomotion.Teleportation
     public class TeleportationArea : BaseTeleportationInteractable
     {
         /// <inheritdoc />
-        protected override bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
+        protected override bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (raycastHit.collider == null)
             {

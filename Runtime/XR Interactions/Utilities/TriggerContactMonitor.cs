@@ -13,7 +13,7 @@ namespace VaporXR.Utilities
     /// it is coming in contact with. For Interactables with multiple Colliders, this will help handle the
     /// bookkeeping to know if any of the colliders are still being touched.
     /// </remarks>
-    class TriggerContactMonitor
+    public class TriggerContactMonitor
     {
         /// <summary>
         /// Calls the methods in its invocation list when an Interactable is being touched.

@@ -755,10 +755,10 @@ namespace VaporXR
         protected IXRInteractable CurrentNearestValidTarget { get; private set; }
 
         /// <inheritdoc />
-        public Vector3 rayEndPoint { get; private set; }
+        public Vector3 RayEndPoint { get; private set; }
 
         /// <inheritdoc />
-        public Transform rayEndTransform { get; private set; }
+        public Transform RayEndTransform { get; private set; }
 
         /// <inheritdoc />
         public float ScaleValue { get; protected set; }
@@ -1795,7 +1795,7 @@ namespace VaporXR
             _isUIHitClosest = default;
 
             _raycastHitOccurred = false;
-            rayEndTransform = null;
+            RayEndTransform = null;
             _raycastInteractable = null;
 
             var hitIndex = int.MaxValue;
@@ -1847,8 +1847,8 @@ namespace VaporXR
             {
                 if (_isUIHitClosest)
                 {
-                    rayEndPoint = _uiRaycastHit.worldPosition;
-                    rayEndTransform = _uiRaycastHit.gameObject.transform;
+                    RayEndPoint = _uiRaycastHit.worldPosition;
+                    RayEndTransform = _uiRaycastHit.gameObject.transform;
                 }
  #if AR_FOUNDATION_PRESENT
                 else if (m_IsARHitClosest)
@@ -1858,8 +1858,8 @@ namespace VaporXR
 #endif
                 else
                 {
-                    rayEndPoint = _raycastHit.point;
-                    rayEndTransform = InteractionManager.TryGetInteractableForCollider(_raycastHit.collider, out _raycastInteractable)
+                    RayEndPoint = _raycastHit.point;
+                    RayEndTransform = InteractionManager.TryGetInteractableForCollider(_raycastHit.collider, out _raycastInteractable)
                         ? _raycastInteractable.GetAttachTransform(this)
                         : _raycastHit.transform;
                 }
@@ -1867,7 +1867,7 @@ namespace VaporXR
             else
             {
                 UpdateSamplePointsIfNecessary();
-                rayEndPoint = _samplePoints[_samplePoints.Count - 1].Position;
+                RayEndPoint = _samplePoints[_samplePoints.Count - 1].Position;
             }
         }
 
@@ -2112,7 +2112,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, targets, s_Results);
 

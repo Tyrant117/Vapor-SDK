@@ -2,6 +2,7 @@
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using Vapor.Utilities;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -68,7 +69,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(VXRBaseInteractor interactor, IXRInteractable target)
+        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IXRInteractable target)
         {
             var cachedGazeTransform = gazeTransform;
             if (cachedGazeTransform == null || m_MaxAngle <= 0f)

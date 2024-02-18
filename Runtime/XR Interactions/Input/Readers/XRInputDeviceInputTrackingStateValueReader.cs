@@ -14,6 +14,8 @@ namespace VaporXR
         /// <inheritdoc />
         public override InputTrackingState ReadValue() => ReadInputTrackingStateValue();
 
+        public override float ReadValueAsFloat() => (int)ReadInputTrackingStateValue();
+
         /// <inheritdoc />
         public override bool TryReadValue(out InputTrackingState value) => TryReadInputTrackingStateValue(out value);
     }

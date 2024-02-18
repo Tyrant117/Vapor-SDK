@@ -11,7 +11,7 @@ namespace VaporXR
     {
         // Inspector
         [SerializeField]
-        private XRInputDeviceVector2ValueReader _reader;
+        private XRInputVector2Reader _reader;
         
         // Properties
         /// <summary>
@@ -29,7 +29,7 @@ namespace VaporXR
         
         public void BindToUpdateEvent(IInputDeviceUpdateProvider sourceUpdate)
         {
-            if (_reader == null)
+            if (!_reader.IsValid)
             {
                 return;
             }
@@ -40,7 +40,7 @@ namespace VaporXR
 
         public void UnbindUpdateEvent()
         {
-            if (_reader == null)
+            if (!_reader.IsValid)
             {
                 return;
             }

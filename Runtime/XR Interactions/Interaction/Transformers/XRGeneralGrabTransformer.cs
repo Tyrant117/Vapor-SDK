@@ -4,6 +4,7 @@ using Unity.Burst;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using Vapor.Utilities;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -265,7 +266,7 @@ namespace VaporXR
         Pose m_OriginalInteractorPose;
         Vector3 m_InteractorLocalGrabPoint;
         Vector3 m_ObjectLocalGrabPoint;
-        VXRBaseInteractor m_OriginalInteractor;
+        IVXRInteractor m_OriginalInteractor;
         
         // Two handed grab start cached values
         int m_LastGrabCount;

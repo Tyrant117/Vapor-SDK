@@ -58,9 +58,6 @@ namespace VaporXR
             }
         }
 
-        /// <summary>
-        /// See <see cref="MonoBehaviour"/>.
-        /// </summary>
         private void Update()
         {
             var prevPerformed = _isPerformed;
@@ -69,7 +66,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool ReadIsPerformed()
+        public bool IsPressed()
         {
             return _isPerformed;
         }
@@ -101,5 +98,10 @@ namespace VaporXR
         private bool TryGetBoolValueReader(out XRInputDeviceBoolValueReader reference) => _boolValueReaderCache.TryGet(_boolValueReader, out reference);
 
         private bool TryGetFloatValueReader(out XRInputDeviceFloatValueReader reference) => _floatValueReaderCache.TryGet(_floatValueReader, out reference);
+
+        public float ReadValueAsFloat()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

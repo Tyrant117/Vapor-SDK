@@ -1,4 +1,5 @@
 ﻿using System;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -39,7 +40,7 @@ namespace VaporXR
         /// It's recommended to return <see cref="Behaviour.isActiveAndEnabled"/> when implementing this interface
         /// in a <see cref="MonoBehaviour"/>.
         /// </remarks>
-        bool canProcess { get; }
+        bool CanProcess { get; }
 
         /// <summary>
         /// Called by the host object (<see cref="VXRInteractionManager"/>, <see cref="XRBaseInteractor"/> or
@@ -52,11 +53,11 @@ namespace VaporXR
         /// Returns <see langword="true"/> when the given Interactor can hover the given Interactable. Otherwise,
         /// returns <see langword="false"/>.
         /// </returns>
-        bool Process(VXRBaseInteractor interactor, IXRHoverInteractable interactable);
+        bool Process(IVXRHoverInteractor interactor, IXRHoverInteractable interactable);
     }
 
     /// <summary>
-    /// A hover filter that forwards its processing to a delegate (<see cref="delegateToProcess"/>).
+    /// A hover filter that forwards its processing to a delegate (<see cref="DelegateToProcess"/>).
     /// Useful to create custom filters by code without needing to create new classes.
     /// </summary>
     /// <seealso cref="XRSelectFilterDelegate"/>
@@ -65,27 +66,27 @@ namespace VaporXR
         /// <summary>
         /// The delegate to be invoked when processing this filter.
         /// </summary>
-        public Func<VXRBaseInteractor, IXRHoverInteractable, bool> delegateToProcess { get; set; }
+        public Func<IVXRHoverInteractor, IXRHoverInteractable, bool> DelegateToProcess { get; set; }
 
         /// <inheritdoc />
-        public bool canProcess { get; set; } = true;
+        public bool CanProcess { get; set; } = true;
 
         /// <summary>
         /// Creates a new hover filter delegate.
         /// </summary>
         /// <param name="delegateToProcess">The delegate to be invoked when processing this filter.</param>
-        public XRHoverFilterDelegate(Func<VXRBaseInteractor, IXRHoverInteractable, bool> delegateToProcess)
+        public XRHoverFilterDelegate(Func<IVXRHoverInteractor, IXRHoverInteractable, bool> delegateToProcess)
         {
             if (delegateToProcess == null)
                 throw new ArgumentException(nameof(delegateToProcess));
 
-            this.delegateToProcess = delegateToProcess;
+            this.DelegateToProcess = delegateToProcess;
         }
 
         /// <inheritdoc />
-        public bool Process(VXRBaseInteractor interactor, IXRHoverInteractable interactable)
+        public bool Process(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
         {
-            return delegateToProcess.Invoke(interactor, interactable);
+            return DelegateToProcess.Invoke(interactor, interactable);
         }
     }
 }

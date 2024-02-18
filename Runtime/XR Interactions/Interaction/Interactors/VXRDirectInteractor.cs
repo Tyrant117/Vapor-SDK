@@ -382,7 +382,7 @@ namespace VaporXR
                 return;
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
                 filter.Process(this, UnsortedValidTargets, targets);
             else
             {

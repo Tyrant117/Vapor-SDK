@@ -1,4 +1,5 @@
 using UnityEngine;
+using VaporXR.Interactors;
 using VaporXR.Utilities;
 
 namespace VaporXR.Locomotion.Teleportation
@@ -55,13 +56,13 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        public override Transform GetAttachTransform(VXRBaseInteractor interactor)
+        public override Transform GetAttachTransform(IAttachPoint attachPoint)
         {
             return m_TeleportAnchorTransform;
         }
 
         /// <inheritdoc />
-        protected override bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
+        protected override bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (m_TeleportAnchorTransform == null)
             {

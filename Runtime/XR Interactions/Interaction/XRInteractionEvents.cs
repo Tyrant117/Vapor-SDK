@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
+using VaporXR.Interactors;
 using VaporXR.Locomotion.Teleportation;
 
 namespace VaporXR
@@ -13,7 +14,7 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public VXRBaseInteractor interactorObject { get; set; }
+        public IVXRInteractor interactorObject { get; set; }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
@@ -65,9 +66,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRHoverInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRHoverInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -102,9 +103,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRHoverInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRHoverInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -150,9 +151,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRSelectInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRSelectInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -187,9 +188,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRSelectInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRSelectInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -317,9 +318,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -354,9 +355,9 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new VXRBaseInteractor interactorObject
+        public new IVXRInteractor interactorObject
         {
-            get => (VXRBaseInteractor)base.interactorObject;
+            get => (IVXRInteractor)base.interactorObject;
             set => base.interactorObject = value;
         }
 
@@ -409,7 +410,7 @@ namespace VaporXR
         /// <summary>
         /// The Interactor that was registered.
         /// </summary>
-        public VXRBaseInteractor interactorObject { get; set; }
+        public IVXRInteractor interactorObject { get; set; }
 
         /// <summary>
         /// The Interaction Group that contains the registered Interactor. Will be <see langword="null"/> if there is no containing Group.
@@ -447,7 +448,7 @@ namespace VaporXR
         /// <summary>
         /// The Interactor that was unregistered.
         /// </summary>
-        public VXRBaseInteractor interactorObject { get; set; }
+        public IVXRInteractor interactorObject { get; set; }
     }
 
     /// <summary>

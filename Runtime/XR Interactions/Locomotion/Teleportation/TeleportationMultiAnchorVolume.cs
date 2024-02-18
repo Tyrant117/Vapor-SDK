@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VaporXR.Interactors;
 using VaporXR.Utilities;
 
 namespace VaporXR.Locomotion.Teleportation
@@ -220,13 +221,13 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        public override Transform GetAttachTransform(VXRBaseInteractor interactor)
+        public override Transform GetAttachTransform(IAttachPoint attachPoint)
         {
-            return destinationAnchor != null ? destinationAnchor : base.GetAttachTransform(interactor);
+            return destinationAnchor != null ? destinationAnchor : base.GetAttachTransform(attachPoint);
         }
 
         /// <inheritdoc />
-        protected override bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
+        protected override bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (destinationAnchor == null)
                 return false;

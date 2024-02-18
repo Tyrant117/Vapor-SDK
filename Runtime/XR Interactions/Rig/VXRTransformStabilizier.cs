@@ -167,7 +167,7 @@ namespace VaporXR
 
                 // Use that to come up with the rotation that would put the endpoint of the ray at it's last position
                 // Stabilize rotation to whatever value is closer - keeping the endpoint stable or the ray itself stable
-                CalculateRotationParams(currentPosition, resultPosition, toStabilize.forward, toStabilize.up, aimTarget.rayEndPoint, invScale, angleStabilization, 
+                CalculateRotationParams(currentPosition, resultPosition, toStabilize.forward, toStabilize.up, aimTarget.RayEndPoint, invScale, angleStabilization, 
                     out var antiRotation, out var scaleFactor, out var targetAngleScale);
 
                 StabilizeOptimalRotation(currentRotation, targetRotation, antiRotation, deltaTime, angleStabilization, targetAngleScale, scaleFactor, out resultRotation);

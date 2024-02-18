@@ -1,4 +1,5 @@
 ﻿using Vapor.Utilities;
+using VaporXR.Interactors;
 
 namespace VaporXR.Utilities
 {
@@ -22,7 +23,7 @@ namespace VaporXR.Utilities
         /// This method will ensure that all changes are buffered when processing, the buffered changes are applied
         /// when the processing is finished.
         /// </remarks>
-        public static bool Process(SmallRegistrationList<IXRHoverFilter> filters, VXRBaseInteractor interactor, IXRHoverInteractable interactable)
+        public static bool Process(SmallRegistrationList<IXRHoverFilter> filters, IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
         {
             if (filters.RegisteredSnapshot.Count == 0)
             {
@@ -36,7 +37,7 @@ namespace VaporXR.Utilities
             {
                 foreach (var filter in filters.RegisteredSnapshot)
                 {
-                    if (!filter.canProcess || filter.Process(interactor, interactable))
+                    if (!filter.CanProcess || filter.Process(interactor, interactable))
                     {
                         continue;
                     }
@@ -69,7 +70,7 @@ namespace VaporXR.Utilities
         /// This method will ensure that all changes are buffered when processing, the buffered changes are applied
         /// when the processing is finished.
         /// </remarks>
-        public static bool Process(SmallRegistrationList<IXRSelectFilter> filters, VXRBaseInteractor interactor, IXRSelectInteractable interactable)
+        public static bool Process(SmallRegistrationList<IXRSelectFilter> filters, IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
         {
             if (filters.RegisteredSnapshot.Count == 0)
             {
@@ -83,7 +84,7 @@ namespace VaporXR.Utilities
             {
                 foreach (var filter in filters.RegisteredSnapshot)
                 {
-                    if (!filter.canProcess || filter.Process(interactor, interactable))
+                    if (!filter.CanProcess || filter.Process(interactor, interactable))
                     {
                         continue;
                     }
@@ -114,7 +115,7 @@ namespace VaporXR.Utilities
         /// This method will ensure that all changes are buffered when processing, the buffered changes are applied
         /// when the processing is finished.
         /// </remarks>
-        public static float Process(SmallRegistrationList<IXRInteractionStrengthFilter> filters, VXRBaseInteractor interactor, IXRInteractable interactable, float interactionStrength)
+        public static float Process(SmallRegistrationList<IXRInteractionStrengthFilter> filters, IVXRSelectInteractor interactor, IXRInteractable interactable, float interactionStrength)
         {
             if (filters.RegisteredSnapshot.Count == 0)
                 return interactionStrength;
@@ -125,7 +126,7 @@ namespace VaporXR.Utilities
             {
                 foreach (var filter in filters.RegisteredSnapshot)
                 {
-                    if (filter.canProcess)
+                    if (filter.CanProcess)
                     {
                         interactionStrength = filter.Process(interactor, interactable, interactionStrength);
                     }

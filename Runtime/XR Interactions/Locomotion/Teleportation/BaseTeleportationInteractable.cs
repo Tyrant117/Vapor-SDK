@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using Vapor.Utilities;
+using VaporXR.Interactors;
 
 namespace VaporXR.Locomotion.Teleportation
 {
@@ -169,9 +170,9 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         // Reusable event args
-        readonly LinkedPool<TeleportingEventArgs> m_TeleportingEventArgs = new LinkedPool<TeleportingEventArgs>(() => new TeleportingEventArgs(), collectionCheck: false);
+        readonly LinkedPool<TeleportingEventArgs> m_TeleportingEventArgs = new(() => new TeleportingEventArgs(), collectionCheck: false);
 
-        readonly Dictionary<VXRBaseInteractor, Vector3> m_TeleportForwardPerInteractor = new Dictionary<VXRBaseInteractor, Vector3>();
+        readonly Dictionary<IVXRInteractor, Vector3> m_TeleportForwardPerInteractor = new();
 
         /// <inheritdoc />
         protected override void Awake()
@@ -195,9 +196,9 @@ namespace VaporXR.Locomotion.Teleportation
         /// <param name="teleportRequest">The teleport request that should be filled out during this method call.</param>
         /// <returns>Returns <see langword="true"/> if the teleport request was successfully updated and should be queued. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="TeleportationProvider.QueueTeleportRequest"/>
-        protected virtual bool GenerateTeleportRequest(VXRBaseInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest) => false;
+        protected virtual bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest) => false;
 
-        private void SendTeleportRequest(VXRBaseInteractor interactor)
+        private void SendTeleportRequest(IVXRInteractor interactor)
         {
             if (interactor == null)
             {
@@ -210,7 +211,7 @@ namespace VaporXR.Locomotion.Teleportation
             }
 
             RaycastHit raycastHit = default;
-            if (interactor is IXRRayProvider rayInteractor && rayInteractor != null)
+            if (interactor.Composite is IXRRayProvider rayInteractor && rayInteractor != null)
             {
                 // Are we still selecting this object and within the tolerated normal threshold?
                 if (!rayInteractor.TryGetCurrent3DRaycastHit(out raycastHit) ||
@@ -248,7 +249,7 @@ namespace VaporXR.Locomotion.Teleportation
             }
         }
 
-        void UpdateTeleportRequestRotation(VXRBaseInteractor interactor, ref TeleportRequest teleportRequest)
+        void UpdateTeleportRequestRotation(IVXRInteractor interactor, ref TeleportRequest teleportRequest)
         {
             if (!m_MatchDirectionalInput || !m_TeleportForwardPerInteractor.TryGetValue(interactor, out var forward))
                 return;
@@ -290,13 +291,15 @@ namespace VaporXR.Locomotion.Teleportation
             {
                 var interactorSelecting = InteractorsSelecting[index];
                 // Skip if also hovered by the interactor since it would have already been computed above.
-                if (IsHoveredBy(interactorSelecting))
+                if (interactorSelecting.TryGetHoverInteractor(out var hoverInteractor) && IsHoveredBy(hoverInteractor))
+                {
                     continue;
+                }
 
                 CalculateTeleportForward(interactorSelecting);
             }
 
-            void CalculateTeleportForward(VXRBaseInteractor interactor)
+            void CalculateTeleportForward(IVXRInteractor interactor)
             {
                 var attachTransform = interactor.GetAttachTransform(this);
                 switch (matchOrientation)
@@ -357,11 +360,11 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        public override bool IsSelectableBy(VXRBaseInteractor interactor)
+        public override bool IsSelectableBy(IVXRSelectInteractor interactor)
         {
             var isSelectable = base.IsSelectableBy(interactor);
             if (isSelectable && m_FilterSelectionByHitNormal &&
-                interactor is VXRRayInteractor rayInteractor && rayInteractor != null &&
+                interactor.Composite is VXRRayCompositeInteractor rayInteractor && rayInteractor != null &&
                 rayInteractor.TryGetCurrent3DRaycastHit(out var raycastHit) &&
                 InteractionManager.TryGetInteractableForCollider(raycastHit.collider, out var hitInteractable) &&
                 hitInteractable == (IXRInteractable)this)
@@ -375,7 +378,7 @@ namespace VaporXR.Locomotion.Teleportation
         }
 
         /// <inheritdoc />
-        public void GetReticleDirection(VXRBaseInteractor interactor, Vector3 hitNormal, out Vector3 reticleUp, out Vector3? optionalReticleForward)
+        public void GetReticleDirection(VXRInteractor interactor, Vector3 hitNormal, out Vector3 reticleUp, out Vector3? optionalReticleForward)
         {
             optionalReticleForward = null;
             reticleUp = hitNormal;

@@ -143,8 +143,8 @@ namespace VaporXR
 
             if(_enablePhysicsTouch && _hoverPoseEnabled)
             {
-                HoverEntered.AddListener(OnHoverPoseEntered);
-                HoverExited.AddListener(OnHoverPoseExited);
+                HoverEntered += (OnHoverPoseEntered);
+                HoverExited += (OnHoverPoseExited);
             }
         }
 
@@ -157,8 +157,8 @@ namespace VaporXR
 
             if (_enablePhysicsTouch && _hoverPoseEnabled)
             {
-                HoverEntered.RemoveListener(OnHoverPoseEntered);
-                HoverExited.RemoveListener(OnHoverPoseExited);
+                HoverEntered -= (OnHoverPoseEntered);
+                HoverExited -= (OnHoverPoseExited);
             }
         }        
         #endregion
@@ -224,7 +224,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, targets, s_Results);
 
@@ -359,7 +359,7 @@ namespace VaporXR
                 if (interactable is VXRTouchScreenInteractable tsInteractable)
                 {
                     var filter = tsInteractable.PokeFilter;
-                    if (filter.canProcess)
+                    if (filter.CanProcess)
                     {
                         newPokeCollision = new PokeCollision(hitCollider, interactable, filter);
                         return true;

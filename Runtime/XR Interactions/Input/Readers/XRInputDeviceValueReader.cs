@@ -66,6 +66,8 @@ namespace VaporXR
         /// <inheritdoc />
         public abstract TValue ReadValue();
 
+        public abstract float ReadValueAsFloat();
+
         /// <inheritdoc />
         public abstract bool TryReadValue(out TValue value);
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -68,13 +69,13 @@ namespace VaporXR
         }
 
 #if UNITY_EDITOR
-        internal static readonly List<XRTargetFilter> enabledFilters = new List<XRTargetFilter>();
+        internal static readonly List<XRTargetFilter> enabledFilters = new();
 
-        internal event Action<VXRBaseInteractor, List<IXRInteractable>, List<IXRInteractable>, Dictionary<IXRInteractable, float>,
+        internal event Action<IVXRInteractor, List<IXRInteractable>, List<IXRInteractable>, Dictionary<IXRInteractable, float>,
             Dictionary<IXRInteractable, List<float>>> processingCompleted;
 #endif
 
-        List<VXRBaseInteractor> m_LinkedInteractors = new List<VXRBaseInteractor>();
+        List<IVXRInteractor> m_LinkedInteractors = new();
 
         /// <summary>
         /// (Read Only) List of linked Interactors.
@@ -82,10 +83,10 @@ namespace VaporXR
         /// <remarks>
         /// Intended to be used by editors, debuggers and test classes.
         /// </remarks>
-        internal List<VXRBaseInteractor> linkedInteractors => m_LinkedInteractors;
+        internal List<IVXRInteractor> linkedInteractors => m_LinkedInteractors;
 
         [SerializeReference]
-        List<XRTargetEvaluator> m_Evaluators = new List<XRTargetEvaluator>();
+        List<XRTargetEvaluator> m_Evaluators = new();
 
         /// <summary>
         /// (Read Only) List of evaluators.
@@ -111,16 +112,16 @@ namespace VaporXR
         /// Calls the methods in this invocation when this filter is linked to an Interactor.
         /// </summary>
         /// <seealso cref="Link"/>
-        public event Action<VXRBaseInteractor> interactorLinked;
+        public event Action<IVXRInteractor> interactorLinked;
 
         /// <summary>
         /// Calls the methods in this invocation when this filter is unlinked from an Interactor.
         /// </summary>
         /// <seealso cref="Unlink"/>
-        public event Action<VXRBaseInteractor> interactorUnlinked;
+        public event Action<IVXRInteractor> interactorUnlinked;
 
         /// <inheritdoc />
-        public override bool canProcess => !isProcessing && base.canProcess;
+        public override bool CanProcess => !isProcessing && base.CanProcess;
 
         /// <summary>
         /// See <see cref="MonoBehaviour"/>.
@@ -241,7 +242,7 @@ namespace VaporXR
         /// <remarks>
         /// Clears <paramref name="results"/> before adding to it.
         /// </remarks>
-        public void GetLinkedInteractors(List<VXRBaseInteractor> results)
+        public void GetLinkedInteractors(List<IVXRInteractor> results)
         {
             if (results == null)
                 throw new ArgumentNullException(nameof(results));
@@ -454,7 +455,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void Link(VXRBaseInteractor interactor)
+        public override void Link(IVXRInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));
@@ -471,7 +472,7 @@ namespace VaporXR
         /// You cannot call this method while the filter is processing.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Throws when this filter is currently processing and filtering Interactables.</exception>
-        public override void Unlink(VXRBaseInteractor interactor)
+        public override void Unlink(IVXRInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));
@@ -495,7 +496,7 @@ namespace VaporXR
         /// This final score is then used to sort (in descending order) the Interactables in the results list.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Throws when this filter is currently processing and filtering Interactables.</exception>
-        public override void Process(VXRBaseInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results)
+        public override void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results)
         {
 #if UNITY_EDITOR
             Debug.Assert(s_InteractableScoreListMap.Count == 0, this);

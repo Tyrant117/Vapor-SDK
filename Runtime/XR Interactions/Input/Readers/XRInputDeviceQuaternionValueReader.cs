@@ -13,6 +13,11 @@ namespace VaporXR
         /// <inheritdoc />
         public override Quaternion ReadValue() => ReadQuaternionValue();
 
+        public override float ReadValueAsFloat()
+        {
+            return Quaternion.Angle(ReadQuaternionValue(), Quaternion.identity);
+        }
+
         /// <inheritdoc />
         public override bool TryReadValue(out Quaternion value) => TryReadQuaternionValue(out value);
     }

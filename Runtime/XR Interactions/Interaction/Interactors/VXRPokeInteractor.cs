@@ -410,7 +410,7 @@ namespace VaporXR
                         baseInteractable.SelectFilters.GetAll(_interactableSelectFilters);
                         foreach (var filter in _interactableSelectFilters)
                         {
-                            if (filter is VXRPokeFilter pokeFilter && filter.canProcess)
+                            if (filter is VXRPokeFilter pokeFilter && filter.CanProcess)
                             {
                                 newPokeCollision = new PokeCollision(hitCollider, interactable, pokeFilter);
                                 return true;
@@ -542,7 +542,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, targets, s_Results);
 

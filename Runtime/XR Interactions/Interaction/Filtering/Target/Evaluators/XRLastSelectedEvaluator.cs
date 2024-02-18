@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -36,17 +37,17 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public virtual void OnLink(VXRBaseInteractor interactor)
+        public virtual void OnLink(IVXRInteractor interactor)
         {
-            if (interactor is IXRSelectInteractor selectInteractor)
-                selectInteractor.SelectEntered.AddListener(OnSelect);
+            if (interactor is IVXRSelectInteractor selectInteractor)
+                selectInteractor.SelectEntered += (OnSelect);
         }
 
         /// <inheritdoc />
-        public virtual void OnUnlink(VXRBaseInteractor interactor)
+        public virtual void OnUnlink(IVXRInteractor interactor)
         {
-            if (interactor is IXRSelectInteractor selectInteractor)
-                selectInteractor.SelectEntered.RemoveListener(OnSelect);
+            if (interactor is IVXRSelectInteractor selectInteractor)
+                selectInteractor.SelectEntered -= (OnSelect);
         }
 
         /// <inheritdoc />
@@ -57,7 +58,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(VXRBaseInteractor interactor, IXRInteractable target)
+        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IXRInteractable target)
         {
             // We return .5 as the lowest value - zeroing out the score will flatten out the value, messing with other evaluators
             if (!m_InteractableSelectionTimeMap.TryGetValue(target, out var time) || m_MaxTime <= 0f)

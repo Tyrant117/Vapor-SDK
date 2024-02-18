@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -15,19 +16,19 @@ namespace VaporXR
     public abstract class XRBaseTargetFilter : MonoBehaviour, IXRTargetFilter
     {
         /// <inheritdoc />
-        public virtual bool canProcess => isActiveAndEnabled;
+        public virtual bool CanProcess => isActiveAndEnabled;
 
         /// <inheritdoc />
-        public virtual void Link(VXRBaseInteractor interactor)
+        public virtual void Link(IVXRInteractor interactor)
         {
         }
 
         /// <inheritdoc />
-        public virtual void Unlink(VXRBaseInteractor interactor)
+        public virtual void Unlink(IVXRInteractor interactor)
         {
         }
 
         /// <inheritdoc />
-        public abstract void Process(VXRBaseInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
+        public abstract void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
     }
 }

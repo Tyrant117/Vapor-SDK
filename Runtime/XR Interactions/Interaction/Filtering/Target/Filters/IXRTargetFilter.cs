@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -24,21 +25,21 @@ namespace VaporXR
         /// Whether this Target Filter can process and filter targets.
         /// Filters that can process targets receive calls to <see cref="Process"/>, filters that cannot process do not.
         /// </summary>
-        bool canProcess { get; }
+        bool CanProcess { get; }
 
         /// <summary>
         /// Called by Unity when the given Interactor links to this filter.
         /// Use this to do any code initialization for the given Interactor.
         /// </summary>
         /// <param name="interactor">The Interactor being linked to this filter.</param>
-        void Link(VXRBaseInteractor interactor);
+        void Link(IVXRInteractor interactor);
 
         /// <summary>
         /// Called by Unity when the given Interactor unlinks from this filter.
         /// Use this to do any code cleanup for the given Interactor.
         /// </summary>
         /// <param name="interactor">The Interactor being unlinked from this filter.</param>
-        void Unlink(VXRBaseInteractor interactor);
+        void Unlink(IVXRInteractor interactor);
 
         /// <summary>
         /// Called by the linked Interactor to filter the Interactables that it could possibly interact with this frame.
@@ -50,6 +51,6 @@ namespace VaporXR
         /// <remarks>
         /// It's recommended to call this from an implementation of <see cref="IXRInteractor.GetValidTargets"/>.
         /// </remarks>>
-        void Process(VXRBaseInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
+        void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
     }
 }

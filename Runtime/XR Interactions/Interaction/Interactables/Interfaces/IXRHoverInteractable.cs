@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -66,7 +67,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsHovered"/>
         /// <seealso cref="VXRBaseInteractor.InteractablesHovered"/>
-        List<VXRBaseInteractor> InteractorsHovering { get; }
+        List<IVXRHoverInteractor> InteractorsHovering { get; }
 
         /// <summary>
         /// Indicates whether this interactable can be hovered by interactors.
@@ -83,7 +84,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractorsHovering"/>
-        /// <seealso cref="VXRBaseInteractor.HasHover"/>
+        /// <seealso cref="IVXRHoverInteractor.HasHover"/>
         bool IsHovered { get; }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace VaporXR
         /// <param name="interactor">Interactor to check for a valid hover state with.</param>
         /// <returns>Returns <see langword="true"/> if hovering is valid this frame. Returns <see langword="false"/> if not.</returns>
         /// <seealso cref="VXRBaseInteractor.CanHover"/>
-        bool IsHoverableBy(VXRBaseInteractor interactor);
+        bool IsHoverableBy(IVXRHoverInteractor interactor);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method right
@@ -159,7 +160,7 @@ namespace VaporXR
         /// Equivalent to <code>interactorsHovering.Count > 0 ? interactorsHovering[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
-        public static VXRBaseInteractor GetOldestInteractorHovering(this IXRHoverInteractable interactable) =>
+        public static IVXRHoverInteractor GetOldestInteractorHovering(this IXRHoverInteractable interactable) =>
             interactable?.InteractorsHovering.Count > 0 ? interactable.InteractorsHovering[0] : null;
 
         /// <summary>

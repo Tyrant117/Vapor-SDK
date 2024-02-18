@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Vapor.Utilities;
+using VaporXR.Interactors;
 using VaporXR.Locomotion.Teleportation;
 
 namespace VaporXR.Locomotion
@@ -133,14 +134,14 @@ namespace VaporXR.Locomotion
         }
 
         /// <inheritdoc />
-        public override bool IsHoverableBy(VXRBaseInteractor interactor)
+        public override bool IsHoverableBy(IVXRHoverInteractor interactor)
         {
             return base.IsHoverableBy(interactor) && (!m_FilterInteractionByDistance ||
                 GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
         }
 
         /// <inheritdoc />
-        public override bool IsSelectableBy(VXRBaseInteractor interactor)
+        public override bool IsSelectableBy(IVXRSelectInteractor interactor)
         {
             return base.IsSelectableBy(interactor) && (IsSelectedBy(interactor) || !m_FilterInteractionByDistance ||
                 GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);

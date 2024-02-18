@@ -2,6 +2,7 @@
 using UnityEditor;
 using VaporInspectorEditor;
 using VaporXR;
+using VaporXR.Interactors;
 namespace VaporXREditor
 {
 #if VAPOR_INSPECTOR

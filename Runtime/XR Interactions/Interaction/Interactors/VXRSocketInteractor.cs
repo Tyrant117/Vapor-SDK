@@ -122,7 +122,7 @@ namespace VaporXR
             set
             {
                 _socketSnappingRadius = value;
-                m_SocketGrabTransformer.socketSnappingRadius = value;
+                m_SocketGrabTransformer.SocketSnappingRadius = value;
             }
         }
 
@@ -136,7 +136,7 @@ namespace VaporXR
             set
             {
                 _socketScaleMode = value;
-                m_SocketGrabTransformer.scaleMode = value;
+                m_SocketGrabTransformer.ScaleMode = value;
             }
         }
 
@@ -150,7 +150,7 @@ namespace VaporXR
             set
             {
                 _fixedScale = value;
-                m_SocketGrabTransformer.fixedScale = value;
+                m_SocketGrabTransformer.FixedScale = value;
             }
         }
 
@@ -164,7 +164,7 @@ namespace VaporXR
             set
             {
                 _targetBoundsSize = value;
-                m_SocketGrabTransformer.targetBoundsSize = value;
+                m_SocketGrabTransformer.TargetBoundsSize = value;
             }
         }
 
@@ -281,11 +281,11 @@ namespace VaporXR
 
         private void SyncTransformerParams()
         {
-            m_SocketGrabTransformer.socketInteractor = this;
-            m_SocketGrabTransformer.socketSnappingRadius = socketSnappingRadius;
-            m_SocketGrabTransformer.scaleMode = socketScaleMode;
-            m_SocketGrabTransformer.fixedScale = fixedScale;
-            m_SocketGrabTransformer.targetBoundsSize = targetBoundsSize;
+            m_SocketGrabTransformer.SocketInteractor = this;
+            m_SocketGrabTransformer.SocketSnappingRadius = socketSnappingRadius;
+            m_SocketGrabTransformer.ScaleMode = socketScaleMode;
+            m_SocketGrabTransformer.FixedScale = fixedScale;
+            m_SocketGrabTransformer.TargetBoundsSize = targetBoundsSize;
         }
 
         public override void OnRegistered(InteractorRegisteredEventArgs args)
@@ -419,7 +419,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, unsortedValidTargets, targets);
             }

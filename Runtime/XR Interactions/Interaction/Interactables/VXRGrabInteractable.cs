@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Vapor.Utilities;
 using VaporInspector;
+using VaporXR.Interactors;
 using VaporXR.Locomotion.Teleportation;
 using VaporXR.Utilities;
 
@@ -552,16 +553,16 @@ namespace VaporXR
         private bool m_IgnoringCharacterCollision;
         private bool m_StopIgnoringCollisionInLateUpdate;
         private CharacterController m_SelectingCharacterController;
-        private readonly HashSet<VXRBaseInteractor> m_SelectingCharacterInteractors = new HashSet<VXRBaseInteractor>();
+        private readonly HashSet<IVXRSelectInteractor> m_SelectingCharacterInteractors = new();
         private readonly List<Collider> m_RigidbodyColliders = new List<Collider>();
-        private readonly HashSet<Collider> m_CollidersThatAllowedCharacterCollision = new HashSet<Collider>();
+        private readonly HashSet<Collider> m_CollidersThatAllowedCharacterCollision = new();
 
         private Transform m_OriginalSceneParent;
 
         // Account for teleportation to avoid throws with unintentionally high energy
         private TeleportationMonitor m_TeleportationMonitor;
 
-        private readonly Dictionary<VXRBaseInteractor, Transform> m_DynamicAttachTransforms = new Dictionary<VXRBaseInteractor, Transform>();
+        private readonly Dictionary<IVXRSelectInteractor, Transform> m_DynamicAttachTransforms = new();
         #endregion
 
         #region - Initialization -
@@ -1646,22 +1647,22 @@ namespace VaporXR
 
         #region - Posing -
         /// <inheritdoc />
-        public override Transform GetAttachTransform(VXRBaseInteractor interactor)
+        public override Transform GetAttachTransform(IAttachPoint attachPoint)
         {
-            bool isFirst = InteractorsSelecting.Count <= 1 || ReferenceEquals(interactor, InteractorsSelecting[0]);
+            bool isFirst = InteractorsSelecting.Count <= 1 || ReferenceEquals(attachPoint, InteractorsSelecting[0]);
 
             // If first selector, do normal behavior.
             // If second, we ignore dynamic attach setting if there is no secondary attach transform.
             var shouldUseDynamicAttach = m_UseDynamicAttach || (!isFirst && m_SecondaryAttachTransform == null);
 
-            if (shouldUseDynamicAttach && interactor is VXRBaseInteractor selectInteractor &&
+            if (shouldUseDynamicAttach && attachPoint is IVXRSelectInteractor selectInteractor &&
                 m_DynamicAttachTransforms.TryGetValue(selectInteractor, out var dynamicAttachTransform))
             {
                 if (dynamicAttachTransform != null)
                     return dynamicAttachTransform;
 
                 m_DynamicAttachTransforms.Remove(selectInteractor);
-                Debug.LogWarning($"Dynamic Attach Transform created by {this} for {interactor} was destroyed after being created." +
+                Debug.LogWarning($"Dynamic Attach Transform created by {this} for {attachPoint} was destroyed after being created." +
                                  " Continuing as if Use Dynamic Attach was disabled for this pair.", this);
             }
 
@@ -1671,7 +1672,7 @@ namespace VaporXR
                 return m_SecondaryAttachTransform;
             }
 
-            return m_AttachTransform != null ? m_AttachTransform : base.GetAttachTransform(interactor);
+            return m_AttachTransform != null ? m_AttachTransform : base.GetAttachTransform(attachPoint);
         }
 
         /// <summary>
@@ -1711,7 +1712,7 @@ namespace VaporXR
         /// <returns>Returns whether to adjust the dynamic attachment point to keep it on or inside the Colliders that make up this object.</returns>
         /// <seealso cref="SnapToColliderVolume"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
-        protected virtual bool ShouldSnapToColliderVolume(VXRBaseInteractor interactor)
+        protected virtual bool ShouldSnapToColliderVolume(IVXRSelectInteractor interactor)
         {
             return m_SnapToColliderVolume;
         }
@@ -1727,7 +1728,7 @@ namespace VaporXR
         /// This method is only called when <see cref="UseDynamicAttach"/> is enabled.
         /// </remarks>
         /// <seealso cref="UseDynamicAttach"/>
-        protected virtual void InitializeDynamicAttachPose(VXRBaseInteractor interactor, Transform dynamicAttachTransform)
+        protected virtual void InitializeDynamicAttachPose(IVXRSelectInteractor interactor, Transform dynamicAttachTransform)
         {
             var matchPosition = ShouldMatchAttachPosition(interactor);
             var matchRotation = ShouldMatchAttachRotation(interactor);
@@ -1754,7 +1755,7 @@ namespace VaporXR
                 dynamicAttachTransform.rotation = rotation;
         }
 
-        Transform CreateDynamicAttachTransform(VXRBaseInteractor interactor)
+        Transform CreateDynamicAttachTransform(IVXRInteractor interactor)
         {
             Transform dynamicAttachTransform;
 
@@ -1771,14 +1772,14 @@ namespace VaporXR
             return dynamicAttachTransform;
         }
 
-        void InitializeDynamicAttachPoseInternal(VXRBaseInteractor interactor, Transform dynamicAttachTransform)
+        void InitializeDynamicAttachPoseInternal(IVXRSelectInteractor interactor, Transform dynamicAttachTransform)
         {
             // InitializeDynamicAttachPose expects it to be initialized with the static pose first
             InitializeDynamicAttachPoseWithStatic(interactor, dynamicAttachTransform);
             InitializeDynamicAttachPose(interactor, dynamicAttachTransform);
         }
 
-        void InitializeDynamicAttachPoseWithStatic(VXRBaseInteractor interactor, Transform dynamicAttachTransform)
+        void InitializeDynamicAttachPoseWithStatic(IVXRSelectInteractor interactor, Transform dynamicAttachTransform)
         {
             m_DynamicAttachTransforms.Remove(interactor);
             var staticAttachTransform = GetAttachTransform(interactor);
@@ -1804,7 +1805,7 @@ namespace VaporXR
             }
         }
 
-        void ReleaseDynamicAttachTransform(VXRBaseInteractor interactor)
+        void ReleaseDynamicAttachTransform(IVXRSelectInteractor interactor)
         {
             // Skip checking m_UseDynamicAttach since it may have changed after being grabbed,
             // and we should ensure it is released. We instead check Count first as a faster way to avoid hashing
@@ -1826,7 +1827,7 @@ namespace VaporXR
         /// <returns>Returns whether to match the position of the interactor's attachment point when initializing the grab.</returns>
         /// <seealso cref="MatchAttachPosition"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
-        protected virtual bool ShouldMatchAttachPosition(VXRBaseInteractor interactor)
+        protected virtual bool ShouldMatchAttachPosition(IVXRSelectInteractor interactor)
         {
             if (!m_MatchAttachPosition)
                 return false;
@@ -1835,8 +1836,8 @@ namespace VaporXR
             // For Ray Interactors that bring the object to hand (Force Grab enabled), we assume that property
             // takes precedence since otherwise this interactable wouldn't move if we copied the interactor's attach position,
             // which would violate the interactor's expected behavior.
-            if (interactor is VXRSocketInteractor ||
-                interactor is VXRRayInteractor rayInteractor && rayInteractor.UseForceGrab)
+            if (interactor.Composite is VXRSocketCompositeInteractor ||
+                interactor.Composite is VXRGrabCompositeInteractor grabInteractor && grabInteractor.DistantGrabActive)
                 return false;
 
             return true;
@@ -1850,22 +1851,22 @@ namespace VaporXR
         /// <returns>Returns whether to match the rotation of the interactor's attachment point when initializing the grab.</returns>
         /// <seealso cref="MatchAttachRotation"/>
         /// <seealso cref="InitializeDynamicAttachPose"/>
-        protected virtual bool ShouldMatchAttachRotation(VXRBaseInteractor interactor)
+        protected virtual bool ShouldMatchAttachRotation(IVXRSelectInteractor interactor)
         {
             // We assume the static pose should always be used for sockets.
             // Unlike for position, we allow a Ray Interactor with Force Grab enabled to match the rotation
             // based on the property in this behavior.
-            return m_MatchAttachRotation && !(interactor is VXRSocketInteractor);
+            return m_MatchAttachRotation && !(interactor.Composite is VXRSocketCompositeInteractor);
         }
         #endregion
 
         #region - Teleporting -
-        void SubscribeTeleportationProvider(VXRBaseInteractor interactor)
+        void SubscribeTeleportationProvider(IVXRSelectInteractor interactor)
         {
             m_TeleportationMonitor.AddInteractor(interactor);
         }
 
-        void UnsubscribeTeleportationProvider(VXRBaseInteractor interactor)
+        void UnsubscribeTeleportationProvider(IVXRSelectInteractor interactor)
         {
             m_TeleportationMonitor.RemoveInteractor(interactor);
         }
@@ -1994,8 +1995,8 @@ namespace VaporXR
             MovementType? movementTypeOverride = null;
             for (var index = InteractorsSelecting.Count - 1; index >= 0; --index)
             {
-                var baseInteractor = InteractorsSelecting[index] as VXRBaseInteractor;
-                if (baseInteractor != null && baseInteractor.SelectedInteractableMovementTypeOverride.HasValue)
+                var baseInteractor = InteractorsSelecting[index];
+                if (baseInteractor != null && baseInteractor.SelectedInteractableMovementTypeOverride != null)
                 {
                     if (movementTypeOverride.HasValue)
                     {
@@ -2005,7 +2006,7 @@ namespace VaporXR
                         break;
                     }
 
-                    movementTypeOverride = baseInteractor.SelectedInteractableMovementTypeOverride.Value;
+                    movementTypeOverride = baseInteractor.SelectedInteractableMovementTypeOverride.Invoke();
                 }
             }
 

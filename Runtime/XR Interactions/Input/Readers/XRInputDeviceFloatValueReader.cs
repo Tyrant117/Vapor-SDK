@@ -14,6 +14,8 @@ namespace VaporXR
         /// <inheritdoc />
         public override float ReadValue() => ReadFloatValue();
 
+        public override float ReadValueAsFloat() => ReadFloatValue();
+
         /// <inheritdoc />
         public override bool TryReadValue(out float value) => TryReadFloatValue(out value);
     }

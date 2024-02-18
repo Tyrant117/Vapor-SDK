@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using VaporInspector;
+using VaporXR.Interactors;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -182,13 +183,13 @@ namespace VaporXR
             set => m_AllowHoverAudioWhileSelecting = value;
         }
 
-        readonly UnityObjectReferenceCache<VXRBaseInteractor, Object> m_InteractorSource = new();
+        readonly UnityObjectReferenceCache<VXRInteractor, Object> m_InteractorSource = new();
 
         [Conditional("UNITY_EDITOR")]
         protected void Reset()
         {
 #if UNITY_EDITOR
-            m_InteractorSourceObject = GetComponentInParent<VXRBaseInteractor>(true) as Object;
+            m_InteractorSourceObject = GetComponentInParent<VXRInteractor>(true) as Object;
             m_AudioSource = GetComponent<AudioSource>();
 #endif
         }
@@ -196,7 +197,7 @@ namespace VaporXR
         protected void Awake()
         {
             if (m_InteractorSourceObject == null)
-                m_InteractorSourceObject = GetComponentInParent<VXRBaseInteractor>(true) as Object;
+                m_InteractorSourceObject = GetComponentInParent<VXRInteractor>(true) as Object;
 
             if (m_PlaySelectEntered || m_PlaySelectExited || m_PlaySelectCanceled ||
                 m_PlayHoverEntered || m_PlayHoverExited || m_PlayHoverCanceled)
@@ -220,7 +221,7 @@ namespace VaporXR
         /// </summary>
         /// <returns>Returns the interactor this behavior should subscribe to for events.</returns>
         /// <seealso cref="SetInteractorSource"/>
-        public VXRBaseInteractor GetInteractorSource()
+        public VXRInteractor GetInteractorSource()
         {
             return m_InteractorSource.Get(m_InteractorSourceObject);
         }
@@ -233,15 +234,19 @@ namespace VaporXR
         /// This also sets the serialized field to the given interactor as a Unity Object.
         /// </remarks>
         /// <seealso cref="GetInteractorSource"/>
-        public void SetInteractorSource(VXRBaseInteractor interactor)
+        public void SetInteractorSource(VXRInteractor interactor)
         {
             if (Application.isPlaying && isActiveAndEnabled)
+            {
                 Unsubscribe(m_InteractorSource.Get(m_InteractorSourceObject));
+            }
 
             m_InteractorSource.Set(ref m_InteractorSourceObject, interactor);
 
             if (Application.isPlaying && isActiveAndEnabled)
+            {
                 Subscribe(interactor);
+            }
         }
 
         /// <summary>
@@ -274,39 +279,39 @@ namespace VaporXR
             m_AudioSource.playOnAwake = false;
         }
 
-        private void Subscribe(VXRBaseInteractor interactor)
+        private void Subscribe(VXRInteractor interactor)
         {
             if (interactor == null || (interactor is Object interactorObject && interactorObject == null))
                 return;
 
-            if (interactor is IXRSelectInteractor selectInteractor)
+            if (interactor is IVXRSelectInteractor selectInteractor)
             {
-                selectInteractor.SelectEntered.AddListener(OnSelectEntered);
-                selectInteractor.SelectExited.AddListener(OnSelectExited);
+                selectInteractor.SelectEntered += (OnSelectEntered);
+                selectInteractor.SelectExited += (OnSelectExited);
             }
 
-            if (interactor is IXRHoverInteractor hoverInteractor)
+            if (interactor is VXRHoverInteractor hoverInteractor)
             {
-                hoverInteractor.HoverEntered.AddListener(OnHoverEntered);
-                hoverInteractor.HoverExited.AddListener(OnHoverExited);
+                hoverInteractor.HoverEntered += (OnHoverEntered);
+                hoverInteractor.HoverExited += (OnHoverExited);
             }
         }
 
-        private void Unsubscribe(VXRBaseInteractor interactor)
+        private void Unsubscribe(VXRInteractor interactor)
         {
             if (interactor == null || (interactor is Object interactorObject && interactorObject == null))
                 return;
 
-            if (interactor is IXRSelectInteractor selectInteractor)
+            if (interactor is IVXRSelectInteractor selectInteractor)
             {
-                selectInteractor.SelectEntered.RemoveListener(OnSelectEntered);
-                selectInteractor.SelectExited.RemoveListener(OnSelectExited);
+                selectInteractor.SelectEntered -= (OnSelectEntered);
+                selectInteractor.SelectExited -= (OnSelectExited);
             }
 
-            if (interactor is IXRHoverInteractor hoverInteractor)
+            if (interactor is VXRHoverInteractor hoverInteractor)
             {
-                hoverInteractor.HoverEntered.RemoveListener(OnHoverEntered);
-                hoverInteractor.HoverExited.RemoveListener(OnHoverExited);
+                hoverInteractor.HoverEntered -= (OnHoverEntered);
+                hoverInteractor.HoverExited -= (OnHoverExited);
             }
         }
 
@@ -343,16 +348,16 @@ namespace VaporXR
                 PlayAudio(m_HoverExitedClip);
         }
 
-        private bool IsHoverAudioAllowed(VXRBaseInteractor interactor, IXRInteractable interactable)
+        private bool IsHoverAudioAllowed(IVXRHoverInteractor interactor, IXRInteractable interactable)
         {
             return m_AllowHoverAudioWhileSelecting || !IsSelecting(interactor, interactable);
         }
 
-        private static bool IsSelecting(VXRBaseInteractor interactor, IXRInteractable interactable)
+        private static bool IsSelecting(IVXRHoverInteractor interactor, IXRInteractable interactable)
         {
-            return interactor is IXRSelectInteractor selectInteractor &&
+            return interactor.Composite != null &&
                 interactable is IXRSelectInteractable selectable &&
-                selectInteractor.IsSelecting(selectable);
+                interactor.Composite.IsSelecting(selectable);
         }
     }
 }

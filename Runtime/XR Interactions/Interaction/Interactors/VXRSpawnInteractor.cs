@@ -96,7 +96,7 @@ namespace VaporXR
             set
             {
                 _socketScaleMode = value;
-                m_SocketGrabTransformer.scaleMode = value;
+                m_SocketGrabTransformer.ScaleMode = value;
             }
         }
 
@@ -110,7 +110,7 @@ namespace VaporXR
             set
             {
                 _fixedScale = value;
-                m_SocketGrabTransformer.fixedScale = value;
+                m_SocketGrabTransformer.FixedScale = value;
             }
         }
 
@@ -124,7 +124,7 @@ namespace VaporXR
             set
             {
                 _targetBoundsSize = value;
-                m_SocketGrabTransformer.targetBoundsSize = value;
+                m_SocketGrabTransformer.TargetBoundsSize = value;
             }
         }
 
@@ -193,11 +193,11 @@ namespace VaporXR
 
         private void SyncTransformerParams()
         {
-            m_SocketGrabTransformer.socketInteractor = this;
-            m_SocketGrabTransformer.socketSnappingRadius = 0.1f;
-            m_SocketGrabTransformer.scaleMode = SocketScaleMode;
-            m_SocketGrabTransformer.fixedScale = FixedScale;
-            m_SocketGrabTransformer.targetBoundsSize = TargetBoundsSize;
+            m_SocketGrabTransformer.SocketInteractor = this;
+            m_SocketGrabTransformer.SocketSnappingRadius = 0.1f;
+            m_SocketGrabTransformer.ScaleMode = SocketScaleMode;
+            m_SocketGrabTransformer.FixedScale = FixedScale;
+            m_SocketGrabTransformer.TargetBoundsSize = TargetBoundsSize;
         }
 
         public override void OnRegistered(InteractorRegisteredEventArgs args)
@@ -267,7 +267,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, UnsortedValidTargets, targets);
             }

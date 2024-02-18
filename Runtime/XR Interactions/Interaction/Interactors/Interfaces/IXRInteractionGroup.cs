@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -34,22 +35,22 @@ namespace VaporXR
         /// <summary>
         /// The name of the interaction group, which can be used to retrieve it from the Interaction Manager.
         /// </summary>
-        string groupName { get; }
+        string GroupName { get; }
 
         /// <summary>
         /// The Interactor in this Interaction Group or any of its member Groups that is currently performing interaction.
         /// </summary>
-        VXRBaseInteractor activeInteractor { get; }
+        IVXRInteractor ActiveInteractor { get; }
 
         /// <summary>
         /// The Interactor in this Interaction Group or any of its member Groups that initiated the last focus event.
         /// </summary>
-        VXRBaseInteractor focusInteractor { get; }
+        IVXRInteractor FocusInteractor { get; }
 
         /// <summary>
         /// The Interactable that is currently being focused by an Interactor in this Interaction Group or any of its member Groups.
         /// </summary>
-        IXRFocusInteractable focusInteractable { get; }
+        IXRFocusInteractable FocusInteractable { get; }
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method when this Interaction Group is registered with it.
@@ -194,10 +195,10 @@ namespace VaporXR
         /// Interactor performed interaction.</param>
         /// <remarks>
         /// The implementation of this method should call this method on each member that is an <see cref="IXRInteractionGroup"/>.
-        /// After this method is called, <see cref="activeInteractor"/> should return the same reference as
+        /// After this method is called, <see cref="ActiveInteractor"/> should return the same reference as
         /// <paramref name="interactorThatPerformedInteraction"/>.
         /// </remarks>
-        void UpdateGroupMemberInteractions(VXRBaseInteractor prePrioritizedInteractor, out VXRBaseInteractor interactorThatPerformedInteraction);
+        void UpdateGroupMemberInteractions(IVXRInteractor prePrioritizedInteractor, out IVXRInteractor interactorThatPerformedInteraction);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method

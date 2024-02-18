@@ -15,79 +15,7 @@ namespace VaporXR
     /// and optionally fallback to the raycast volume.
     /// </summary>
     public class VXRGrabInteractor : VXRInputInteractor
-    {
-        /// <summary>
-        /// Sets which shape of physics cast to use for the cast when detecting collisions.
-        /// </summary>
-        public enum OverlapDetectionModeType
-        {
-            /// <summary>
-            /// Uses <see cref="OverlapSphereCommand"/> to detect collisions.
-            /// </summary>
-            Sphere,
-
-            /// <summary>
-            /// Uses <see cref="OverlapBoxCommand"/> to detect collisions.
-            /// </summary>
-            Box,
-        }
-
-        /// <summary>
-        /// Sets which shape of physics cast to use for the cast when detecting collisions.
-        /// </summary>
-        public enum HitDetectionModeType
-        {
-            /// <summary>
-            /// Uses <see cref="Physics.Raycast"/> Ray cast to detect collisions.
-            /// </summary>
-            Raycast,
-
-            /// <summary>
-            /// Uses <see cref="Physics.SphereCast"/> Sphere Cast to detect collisions.
-            /// </summary>
-            SphereCast,
-
-            /// <summary>
-            /// Uses cone casting to detect collisions.
-            /// </summary>
-            ConeCast,
-        }
-
-        /// <summary>
-        /// Sets whether ray cast queries hit Trigger colliders and include or ignore snap volume trigger colliders.
-        /// </summary>
-        public enum QuerySnapVolumeInteraction
-        {
-            /// <summary>
-            /// Queries never report Trigger hits that are registered with a snap volume.
-            /// </summary>
-            Ignore,
-
-            /// <summary>
-            /// Queries always report Trigger hits that are registered with a snap volume.
-            /// </summary>
-            Collide,
-        }
-
-        /// <summary>
-        /// Compares ray cast hits by distance, to sort in ascending order.
-        /// </summary>
-        protected sealed class RaycastHitComparer : IComparer<RaycastHit>
-        {
-            /// <summary>
-            /// Compares ray cast hits by distance in ascending order.
-            /// </summary>
-            /// <param name="a">The first ray cast hit to compare.</param>
-            /// <param name="b">The second ray cast hit to compare.</param>
-            /// <returns>Returns less than 0 if a is closer than b. 0 if a and b are equal. Greater than 0 if b is closer than a.</returns>
-            public int Compare(RaycastHit a, RaycastHit b)
-            {
-                var aDistance = a.collider != null ? a.distance : float.MaxValue;
-                var bDistance = b.collider != null ? b.distance : float.MaxValue;
-                return aDistance.CompareTo(bDistance);
-            }
-        }
-
+    {              
         #region Inspector
         private bool IsOverlapModeSphere => _overlapMode == OverlapDetectionModeType.Sphere;
         private bool IsOverlapModeBox => _overlapMode == OverlapDetectionModeType.Box;
@@ -661,7 +589,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 if (UnsortedOverlapTargets.Count > 0)
                 {

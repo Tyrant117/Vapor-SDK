@@ -5,6 +5,7 @@ using UnityEngine;
 using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
+using VaporXR.Interactors;
 using Debug = UnityEngine.Debug;
 
 namespace VaporXR
@@ -342,13 +343,13 @@ namespace VaporXR
         /// attach transform position of the associated <see cref="interactable"/>. If <see cref="interactable"/> is
         /// also null in that case, it will return the transform position of this GameObject.
         /// </summary>
-        /// <param name="interactor">The <see cref="VXRBaseInteractor"/> interacting with the <see cref="XRInteractableSnapVolume"/> used to get the attach transform.</param>
+        /// <param name="attachPoint">The <see cref="VXRInteractor"/> interacting with the <see cref="XRInteractableSnapVolume"/> used to get the attach transform.</param>
         /// <returns>The closest point on the <see cref="snapToCollider"/> if possible. Defaults to the <see cref="interactable"/>
-        /// attach transform position of the associated <paramref name="interactor"/> if available, or the transform position of this GameObject.</returns>
-        public Vector3 GetClosestPointOfAttachTransform(VXRBaseInteractor interactor)
+        /// attach transform position of the associated <paramref name="attachPoint"/> if available, or the transform position of this GameObject.</returns>
+        public Vector3 GetClosestPointOfAttachTransform(IAttachPoint attachPoint)
         {
             var interactableValid = m_Interactable != null && (!(m_Interactable is Object unityObject) || unityObject != null);
-            var point = interactableValid ? m_Interactable.GetAttachTransform(interactor).position : transform.position;
+            var point = interactableValid ? m_Interactable.GetAttachTransform(attachPoint).position : transform.position;
 
             if (m_SnapToCollider == null || !m_SnapToCollider.gameObject.activeInHierarchy || !m_SnapToCollider.enabled)
                 return point;

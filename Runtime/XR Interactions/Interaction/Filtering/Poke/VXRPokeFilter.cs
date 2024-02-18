@@ -3,6 +3,7 @@ using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings;
 using Unity.XR.CoreUtils.Bindings.Variables;
 using UnityEngine;
+using VaporXR.Interactors;
 using Debug = UnityEngine.Debug;
 
 namespace VaporXR
@@ -70,9 +71,9 @@ namespace VaporXR
         /// <summary>
         /// Whether this poke filter can process interactions.
         /// </summary>
-        /// <seealso cref="IXRSelectFilter.canProcess"/>
-        /// <seealso cref="IXRInteractionStrengthFilter.canProcess"/>
-        public virtual bool canProcess => isActiveAndEnabled && m_PokeLogic != null;
+        /// <seealso cref="IXRSelectFilter.CanProcess"/>
+        /// <seealso cref="IXRInteractionStrengthFilter.CanProcess"/>
+        public virtual bool CanProcess => isActiveAndEnabled && m_PokeLogic != null;
 
         XRPokeLogic m_PokeLogic = new XRPokeLogic();
 
@@ -203,11 +204,11 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool Process(VXRBaseInteractor interactor, IXRSelectInteractable interactable)
+        public bool Process(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
         {
-            if (interactor is VXRPokeInteractor pokeInteractor)
+            if (interactor.Composite is VXRPokeCompositeInteractor pokeInteractor)
             {
-                var pokeTransform = interactable.GetAttachTransform(interactor);
+                var pokeTransform = interactable.GetAttachTransform(pokeInteractor);
                 return m_PokeLogic.MeetsRequirementsForSelectAction(
                     pokeInteractor,
                     pokeTransform.position,
@@ -220,10 +221,10 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public float Process(VXRBaseInteractor interactor, IXRInteractable interactable, float interactionStrength)
+        public float Process(IVXRSelectInteractor interactor, IXRInteractable interactable, float interactionStrength)
         {
             var pokeAmount = 0f;
-            if (interactor is VXRPokeInteractor)
+            if (interactor.Composite is VXRPokeCompositeInteractor)
             {
                 pokeAmount = PokeStateData?.Value.interactionStrength ?? 0f;
             }
@@ -236,7 +237,7 @@ namespace VaporXR
             if (m_PokeLogic == null)
                 return;
 
-            var interactor = (VXRBaseInteractor)args.interactorObject;
+            var interactor = (VXRInteractor)args.interactorObject;
             var interactorAttachTransform = interactor.GetAttachTransform(m_Interactable);
             var interactableAttachTransform = m_Interactable.GetAttachTransform(interactor);
             m_PokeLogic.OnHoverEntered(interactor, interactorAttachTransform.GetWorldPose(), interactableAttachTransform);

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using VaporInspector;
 
 namespace VaporXR
@@ -9,8 +10,8 @@ namespace VaporXR
     {
         // Inspector
         [SerializeField]
-        private XRInputDeviceFloatValueReader _reader;
-        
+        private XRInputFloatReader _reader;
+
         // Properties
         /// <summary>
         /// The current value of the assigned axis.
@@ -27,7 +28,7 @@ namespace VaporXR
 
         public void BindToUpdateEvent(IInputDeviceUpdateProvider sourceUpdate)
         {
-            if (_reader == null)
+            if (!_reader.IsValid)
             {
                 return;
             }
@@ -38,16 +39,16 @@ namespace VaporXR
 
         public void UnbindUpdateEvent()
         {
-            if (_reader == null)
+            if (!_reader.IsValid)
             {
                 return;
             }
-            
+
             if (_updateProvider == null)
             {
                 return;
             }
-            
+
             _updateProvider.UnRegisterForInputUpdate(UpdateInput);
             _updateProvider = null;
         }
@@ -59,7 +60,7 @@ namespace VaporXR
 
             FireEvents();
         }
-        
+
         public void FireEvents()
         {
             if (!Mathf.Approximately(_lastValue, CurrentValue))

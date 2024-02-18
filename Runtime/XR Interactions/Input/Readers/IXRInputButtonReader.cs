@@ -14,7 +14,7 @@ namespace VaporXR
         /// For input actions, this depends directly on the interaction(s) driving the action (including the
         /// default interaction if no specific interaction has been added to the action or binding).
         /// </remarks>
-        bool ReadIsPerformed();
+        bool IsPressed();
 
         /// <summary>
         /// Read whether the button performed this frame, which typically means whether the button started being pressed during this frame.

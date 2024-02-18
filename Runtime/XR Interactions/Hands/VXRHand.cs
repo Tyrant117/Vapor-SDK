@@ -123,6 +123,10 @@ namespace VaporXR
         private void Awake()
         {
             _hasRigidbody = _rigidbody != null;
+            if (_hasRigidbody && !_usePhysicsHand)
+            {
+                _rigidbody.isKinematic = true;
+            }
             Assert.IsTrue(!_usePhysicsHand || _hasRigidbody, $"Attempting to use a physics hand without a rigidbody. A rigibody must be added to {name}.");
 
             _PopulateFingers();
@@ -234,8 +238,8 @@ namespace VaporXR
         private void Update()
         {
             if(_usePhysicsHand) return;
-            
-            TrackPosition();
+
+            transform.SetWorldPose(_trackedHand.GetWorldPose());
         }
 
         private void FixedUpdate()
@@ -244,7 +248,8 @@ namespace VaporXR
 
             if (_rigidbody.isKinematic)
             {
-                TrackPosition();
+                _trackedHand.GetPositionAndRotation(out var pos, out var rot);
+                _rigidbody.Move(pos, rot);
             }
             else
             {
@@ -255,61 +260,6 @@ namespace VaporXR
         private void LateUpdate()
         {
             _fsm.OnUpdate();
-            return;
-
-            if (!_idlePosing) return;
-
-            foreach (var finger in Fingers)
-            {
-                switch (finger.Finger)
-                {
-                    case HandFinger.Thumb:
-                        if (_thumbDownInput.IsHeld)
-                        {
-                            finger.SmoothBend(1);
-                        }
-                        else if (_thumbTouchInput.IsHeld)
-                        {
-                            finger.SmoothBend(0.5f);
-                        }
-                        else
-                        {
-                            finger.Breathe();
-                        }
-
-                        break;
-                    case HandFinger.Index:
-                        var indexBend = _indexInput.CurrentValue;
-                        var indexBreathe = indexBend <= 0.1f;
-                        if (indexBreathe)
-                        {
-                            finger.Breathe();
-                        }
-                        else
-                        {
-                            finger.SmoothBend(indexBend);
-                        }
-
-                        break;
-                    case HandFinger.Middle:
-                    case HandFinger.Ring:
-                    case HandFinger.Pinky:
-                        var gripBend = _gripInput.CurrentValue;
-                        var gripBreathe = gripBend <= 0.1f;
-                        if (gripBreathe)
-                        {
-                            finger.Breathe();
-                        }
-                        else
-                        {
-                            finger.SmoothBend(gripBend);
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
         }
 
         #region - Trigger Contacts -
@@ -331,19 +281,6 @@ namespace VaporXR
         #endregion
 
         #region - Tracking -
-        private void TrackPosition()
-        {
-            if (_hasRigidbody)
-            {
-                _trackedHand.GetPositionAndRotation(out var pos, out var rot);
-                _rigidbody.Move(pos, rot);
-            }
-            else
-            {
-                transform.SetWorldPose(_trackedHand.GetWorldPose());
-            }
-        }
-
         private void TrackVelocity()
         {
             _rigidbody.velocity *= 0.05f; // Dampen previous velocity.

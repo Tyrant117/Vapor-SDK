@@ -9,7 +9,7 @@ namespace VaporXR
     /// toggling a flashlight on and off.
     /// </summary>
     /// <seealso cref="IXRActivateInteractable"/>
-    public interface IXRActivateInteractor : IXRInteractor
+    public interface IXRActivateInteractor /*: IXRInteractor*/
     {
         /// <summary>
         /// (Read Only) Indicates whether this interactor is in a state where it should send the activate event this frame.

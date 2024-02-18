@@ -3,6 +3,7 @@ using UnityEngine.XR.Interaction.Toolkit.AR.Inputs;
 #endif
 using UnityEngine;
 using UnityEngine.Serialization;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -26,10 +27,10 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool canProcess => isActiveAndEnabled;
+        public bool CanProcess => isActiveAndEnabled;
 
         /// <inheritdoc />
-        public bool Process(VXRBaseInteractor interactor, IXRHoverInteractable interactable)
+        public bool Process(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
         {
             return _screenTouchCountInput.ReadValue();
         }

@@ -37,11 +37,11 @@ namespace VaporXR
         /// <summary>
         /// The last endpoint of this ray, either its maximum distance or a collision point.
         /// </summary>
-        Vector3 rayEndPoint { get; }
+        Vector3 RayEndPoint { get; }
 
         /// <summary>
         /// The <see cref="Transform"/> of the object this ray has collided with, if any.
         /// </summary>
-        Transform rayEndTransform { get; }
+        Transform RayEndTransform { get; }
     }
 }

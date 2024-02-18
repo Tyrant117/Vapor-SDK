@@ -27,6 +27,8 @@ namespace VaporXR
         /// <returns>Returns the current value from the input source. May return <c>default(TValue)</c> if unused or no source is set.</returns>
         TValue ReadValue();
 
+        float ReadValueAsFloat();
+
         /// <summary>
         /// Try to read the current value from the input source.
         /// </summary>

@@ -6,6 +6,7 @@ using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
+using VaporXR.Interactors;
 using VaporXR.Utilities;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -221,8 +222,8 @@ namespace VaporXR
         /// Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
         /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
-        /// <seealso cref="IsHoverableBy(VXRBaseInteractor)"/>
-        /// <seealso cref="IsSelectableBy(VXRBaseInteractor)"/>
+        /// <seealso cref="IsHoverableBy(IVXRHoverInteractor)"/>
+        /// <seealso cref="IsSelectableBy(IVXRSelectInteractor)"/>
         /// <inheritdoc />
         public InteractionLayerMask InteractionLayers { get => _interactionLayers; set => _interactionLayers = value; }
 
@@ -274,16 +275,16 @@ namespace VaporXR
         // ***** Hovering *****
         public bool CanHover { get => _canHover; set => _canHover = value; }
         public bool IsHovered => _interactorsHovering.Count > 0;
-        private readonly HashSetList<VXRBaseInteractor> _interactorsHovering = new();
-        public List<VXRBaseInteractor> InteractorsHovering => (List<VXRBaseInteractor>)_interactorsHovering.AsList();
+        private readonly HashSetList<IVXRHoverInteractor> _interactorsHovering = new();
+        public List<IVXRHoverInteractor> InteractorsHovering => (List<IVXRHoverInteractor>)_interactorsHovering.AsList();
 
 
         // ***** Selecting *****
         public bool CanSelect { get => _canSelect; set => _canSelect = value; }
         public bool IsSelected => _interactorsSelecting.Count > 0;
-        private readonly HashSetList<VXRBaseInteractor> _interactorsSelecting = new();
-        public List<VXRBaseInteractor> InteractorsSelecting => (List<VXRBaseInteractor>)_interactorsSelecting.AsList();
-        public VXRBaseInteractor FirstInteractorSelecting { get; private set; }
+        private readonly HashSetList<IVXRSelectInteractor> _interactorsSelecting = new();
+        public List<IVXRSelectInteractor> InteractorsSelecting => (List<IVXRSelectInteractor>)_interactorsSelecting.AsList();
+        public IVXRSelectInteractor FirstInteractorSelecting { get; private set; }
 
         // ***** Focusing *****
         public bool IsFocused => _interactionGroupsFocusing.Count > 0;
@@ -346,9 +347,9 @@ namespace VaporXR
         #endregion
 
         #region Fields
-        private readonly Dictionary<VXRBaseInteractor, Pose> _attachPoseOnSelect = new();
-        private readonly Dictionary<VXRBaseInteractor, Pose> _localAttachPoseOnSelect = new();
-        private readonly Dictionary<VXRBaseInteractor, GameObject> _reticleCache = new();
+        private readonly Dictionary<IVXRInteractor, Pose> _attachPoseOnSelect = new();
+        private readonly Dictionary<IVXRInteractor, Pose> _localAttachPoseOnSelect = new();
+        private readonly Dictionary<IVXRInteractor, GameObject> _reticleCache = new();
 
         /// <summary>
         /// The set of hovered and/or selected interactors that supports returning a variable select input value,
@@ -358,9 +359,9 @@ namespace VaporXR
         /// Uses <see cref="VXRInputInteractor"/> as the type to get the select input value to use as the pre-filtered
         /// interaction strength.
         /// </remarks>
-        private readonly HashSetList<VXRInputInteractor> _variableSelectInteractors = new();
+        private readonly HashSetList<IVXRSelectInteractor> _variableSelectInteractors = new();
 
-        private readonly Dictionary<VXRBaseInteractor, float> _interactionStrengths = new();
+        private readonly Dictionary<IVXRSelectInteractor, float> _interactionStrengths = new();
 
         private VXRInteractionManager _registeredInteractionManager;
         #endregion
@@ -518,7 +519,7 @@ namespace VaporXR
         /// <param name="interactor">Interactor to check for a valid hover state with.</param>
         /// <returns>Returns <see langword="true"/> if hovering is valid this frame. Returns <see langword="false"/> if not.</returns>
         /// <seealso cref="VXRBaseInteractor.CanHover"/>
-        public virtual bool IsHoverableBy(VXRBaseInteractor interactor)
+        public virtual bool IsHoverableBy(IVXRHoverInteractor interactor)
         {
             return (_allowGazeInteraction || !(interactor is VXRGazeInteractor)) && ProcessHoverFilters(interactor);
         }
@@ -533,7 +534,7 @@ namespace VaporXR
         /// In other words, returns whether <see cref="InteractorsHovering"/> contains <paramref name="interactor"/>.
         /// </remarks>
         /// <seealso cref="InteractorsHovering"/>
-        public bool IsHoveredBy(VXRBaseInteractor interactor) => _interactorsHovering.Contains(interactor);
+        public bool IsHoveredBy(IVXRHoverInteractor interactor) => _interactorsHovering.Contains(interactor);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -555,9 +556,9 @@ namespace VaporXR
             var added = _interactorsHovering.Add(args.interactorObject);
             Debug.Assert(added, "An Interactable received a Hover Enter event for an Interactor that was already hovering over it.", this);
 
-            if (args.interactorObject is VXRInputInteractor variableSelectInteractor)
+            if (args.interactorObject.TryGetSelectInteractor(out var selectInteractor))
             {
-                _variableSelectInteractors.Add(variableSelectInteractor);
+                _variableSelectInteractors.Add(selectInteractor);
             }
         }
 
@@ -602,7 +603,7 @@ namespace VaporXR
             Debug.Assert(removed, "An Interactable received a Hover Exit event for an Interactor that was not hovering over it.", this);
 
             if (_variableSelectInteractors.Count > 0 &&
-                args.interactorObject is VXRInputInteractor variableSelectInteractor &&
+                args.interactorObject.TryGetSelectInteractor(out var variableSelectInteractor) &&
                 !IsSelectedBy(variableSelectInteractor))
             {
                 _variableSelectInteractors.Remove(variableSelectInteractor);
@@ -638,7 +639,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="HoverFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessHoverFilters(VXRBaseInteractor interactor)
+        protected bool ProcessHoverFilters(IVXRHoverInteractor interactor)
         {
             return XRFilterUtility.Process(_hoverFilters, interactor, this);
         }
@@ -651,7 +652,7 @@ namespace VaporXR
         /// <param name="interactor">Interactor to check for a valid selection with.</param>
         /// <returns>Returns <see langword="true"/> if selection is valid this frame. Returns <see langword="false"/> if not.</returns>
         /// <seealso cref="VXRBaseInteractor.CanSelect"/>
-        public virtual bool IsSelectableBy(VXRBaseInteractor interactor)
+        public virtual bool IsSelectableBy(IVXRSelectInteractor interactor)
         {
             return ((_allowGazeInteraction && _allowGazeSelect) || !(interactor is VXRGazeInteractor)) && ProcessSelectFilters(interactor);
         }
@@ -666,7 +667,7 @@ namespace VaporXR
         /// In other words, returns whether <see cref="InteractorsSelecting"/> contains <paramref name="interactor"/>.
         /// </remarks>
         /// <seealso cref="InteractorsSelecting"/>
-        public bool IsSelectedBy(VXRBaseInteractor interactor) => _interactorsSelecting.Contains(interactor);
+        public bool IsSelectedBy(IVXRSelectInteractor interactor) => _interactorsSelecting.Contains(interactor);
         
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method right
@@ -683,7 +684,7 @@ namespace VaporXR
             var added = _interactorsSelecting.Add(args.interactorObject);
             Debug.Assert(added, "An Interactable received a Select Enter event for an Interactor that was already selecting it.", this);
 
-            if (args.interactorObject is VXRInputInteractor variableSelectInteractor)
+            if (args.interactorObject.TryGetSelectInteractor(out var variableSelectInteractor))
             {
                 _variableSelectInteractors.Add(variableSelectInteractor);
             }
@@ -732,10 +733,10 @@ namespace VaporXR
             Debug.Assert(removed, "An Interactable received a Select Exit event for an Interactor that was not selecting it.", this);
 
             if (_variableSelectInteractors.Count > 0 &&
-                args.interactorObject is VXRInputInteractor variableSelectInteractor &&
-                !IsHoveredBy(variableSelectInteractor))
+                args.interactorObject.TryGetHoverInteractor(out var hoverInteractor) &&
+                !IsHoveredBy(hoverInteractor))
             {
-                _variableSelectInteractors.Remove(variableSelectInteractor);
+                _variableSelectInteractors.Remove(args.interactorObject);
             }
         }
 
@@ -776,7 +777,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="SelectFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessSelectFilters(VXRBaseInteractor interactor)
+        protected bool ProcessSelectFilters(IVXRSelectInteractor interactor)
         {
             return XRFilterUtility.Process(_selectFilters, interactor, this);
         }
@@ -896,7 +897,7 @@ namespace VaporXR
 
         #region - Interaction -
         /// <inheritdoc />
-        public float GetInteractionStrength(VXRBaseInteractor interactor)
+        public float GetInteractionStrength(IVXRSelectInteractor interactor)
         {
             if (_interactionStrengths.TryGetValue(interactor, out var interactionStrength))
                 return interactionStrength;
@@ -920,29 +921,29 @@ namespace VaporXR
 
                 // Select is checked before Hover to allow process to only be called once per interactor hovering and selecting
                 // using the largest initial interaction strength.
-                for (int i = 0, count = _interactorsSelecting.Count; i < count; ++i)
-                {
-                    var interactor = _interactorsSelecting[i];
-                    if (interactor is VXRInputInteractor)
-                        continue;
+                //for (int i = 0, count = _interactorsSelecting.Count; i < count; ++i)
+                //{
+                //    var interactor = _interactorsSelecting[i];
+                //    if (interactor is VXRInputInteractor)
+                //        continue;
 
-                    var interactionStrength = ProcessInteractionStrengthFilters(interactor, InteractionStrengthSelect);
-                    _interactionStrengths[interactor] = interactionStrength;
+                //    var interactionStrength = ProcessInteractionStrengthFilters(interactor, InteractionStrengthSelect);
+                //    _interactionStrengths[interactor] = interactionStrength;
 
-                    maxInteractionStrength = Mathf.Max(maxInteractionStrength, interactionStrength);
-                }
+                //    maxInteractionStrength = Mathf.Max(maxInteractionStrength, interactionStrength);
+                //}
 
-                for (int i = 0, count = _interactorsHovering.Count; i < count; ++i)
-                {
-                    var interactor = _interactorsHovering[i];
-                    if (interactor is VXRInputInteractor || IsSelectedBy(interactor))
-                        continue;
+                //for (int i = 0, count = _interactorsHovering.Count; i < count; ++i)
+                //{
+                //    var interactor = _interactorsHovering[i];
+                //    if (interactor is VXRInputInteractor || IsSelectedBy(interactor))
+                //        continue;
 
-                    var interactionStrength = ProcessInteractionStrengthFilters(interactor, InteractionStrengthHover);
-                    _interactionStrengths[interactor] = interactionStrength;
+                //    var interactionStrength = ProcessInteractionStrengthFilters(interactor, InteractionStrengthHover);
+                //    _interactionStrengths[interactor] = interactionStrength;
 
-                    maxInteractionStrength = Mathf.Max(maxInteractionStrength, interactionStrength);
-                }
+                //    maxInteractionStrength = Mathf.Max(maxInteractionStrength, interactionStrength);
+                //}
 
                 for (int i = 0, count = _variableSelectInteractors.Count; i < count; ++i)
                 {
@@ -952,7 +953,7 @@ namespace VaporXR
                     // For interactors that use motion controller input, this is typically the analog trigger or grip press amount.
                     // Fall back to the default values for selected and hovered interactors in the case when the interactor
                     // is misconfigured and is missing the input wrapper or component reference.
-                    var interactionStrength = interactor.SelectInput != null ? interactor.SelectInput.CurrentValue : IsSelectedBy(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
+                    var interactionStrength = interactor.LogicalSelectState != null ? interactor.LogicalSelectState.CurrentValue : IsSelectedBy(interactor) ? InteractionStrengthSelect : InteractionStrengthHover;
 
                     interactionStrength = ProcessInteractionStrengthFilters(interactor, interactionStrength);
                     _interactionStrengths[interactor] = interactionStrength;
@@ -972,7 +973,7 @@ namespace VaporXR
         /// <param name="interactor">The Interactor to process by the interaction strength filters.</param>
         /// <param name="interactionStrength">The interaction strength before processing.</param>
         /// <returns>Returns the modified interaction strength that is the result of passing the interaction strength through each filter.</returns>
-        protected float ProcessInteractionStrengthFilters(VXRBaseInteractor interactor, float interactionStrength)
+        protected float ProcessInteractionStrengthFilters(IVXRSelectInteractor interactor, float interactionStrength)
         {
             return XRFilterUtility.Process(_interactionStrengthFilters, interactor, this, interactionStrength);
         }
@@ -980,19 +981,19 @@ namespace VaporXR
 
         #region - Posing -
         /// <inheritdoc />
-        public virtual Transform GetAttachTransform(VXRBaseInteractor interactor)
+        public virtual Transform GetAttachTransform(IAttachPoint attachPoint)
         {
             return transform;
         }
 
         /// <inheritdoc />
-        public Pose GetAttachPoseOnSelect(VXRBaseInteractor interactor)
+        public Pose GetAttachPoseOnSelect(IVXRInteractor interactor)
         {
             return _attachPoseOnSelect.TryGetValue(interactor, out var pose) ? pose : Pose.identity;
         }
 
         /// <inheritdoc />
-        public Pose GetLocalAttachPoseOnSelect(VXRBaseInteractor interactor)
+        public Pose GetLocalAttachPoseOnSelect(IVXRInteractor interactor)
         {
             return _localAttachPoseOnSelect.TryGetValue(interactor, out var pose) ? pose : Pose.identity;
         }
@@ -1009,7 +1010,7 @@ namespace VaporXR
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="VXRBaseInteractor.CaptureAttachPose"/>
-        protected void CaptureAttachPose(VXRBaseInteractor interactor)
+        protected void CaptureAttachPose(IVXRInteractor interactor)
         {
             var thisAttachTransform = GetAttachTransform(interactor);
             if (thisAttachTransform != null)
@@ -1034,7 +1035,7 @@ namespace VaporXR
         /// <param name="interactor">Interactor that is interacting with this Interactable.</param>
         /// <returns>Returns <see cref="GameObject"/> that represents the attached custom reticle.</returns>
         /// <seealso cref="AttachCustomReticle(VXRBaseInteractor)"/>
-        public virtual GameObject GetCustomReticle(VXRBaseInteractor interactor)
+        public virtual GameObject GetCustomReticle(IVXRInteractor interactor)
         {
             if (_reticleCache.TryGetValue(interactor, out var reticle))
             {
@@ -1052,8 +1053,8 @@ namespace VaporXR
         /// If the custom reticle has an <see cref="IXRInteractableCustomReticle"/> component, this will call
         /// <see cref="IXRInteractableCustomReticle.OnReticleAttached"/> on it.
         /// </remarks>
-        /// <seealso cref="RemoveCustomReticle(VXRBaseInteractor)"/>
-        public virtual void AttachCustomReticle(VXRBaseInteractor interactor)
+        /// <seealso cref="RemoveCustomReticle(IVXRInteractor)"/>
+        public virtual void AttachCustomReticle(IVXRInteractor interactor)
         {
             if (interactor == null)
                 return;
@@ -1090,8 +1091,8 @@ namespace VaporXR
         /// If the custom reticle has an <see cref="IXRInteractableCustomReticle"/> component, this will call
         /// <see cref="IXRInteractableCustomReticle.OnReticleDetaching"/> on it.
         /// </remarks>
-        /// <seealso cref="AttachCustomReticle(VXRBaseInteractor)"/>
-        public virtual void RemoveCustomReticle(VXRBaseInteractor interactor)
+        /// <seealso cref="AttachCustomReticle(IVXRInteractor)"/>
+        public virtual void RemoveCustomReticle(IVXRInteractor interactor)
         {
             if (interactor == null)
             {
@@ -1126,14 +1127,14 @@ namespace VaporXR
         /// <remarks>
         /// This method calls the <see cref="GetDistance"/> method to perform the distance calculation.
         /// </remarks>
-        public virtual float GetDistanceSqrToInteractor(VXRBaseInteractor interactor)
+        public virtual float GetDistanceSqrToInteractor(IAttachPoint attachPoint)
         {
-            if (interactor == null)
+            if (attachPoint == null)
             {
                 return float.MaxValue;
             }
             
-            var interactorAttachTransform = interactor.GetAttachTransform(this);
+            var interactorAttachTransform = attachPoint.GetAttachTransform(this);
             if (interactorAttachTransform == null)
             {
                 return float.MaxValue;

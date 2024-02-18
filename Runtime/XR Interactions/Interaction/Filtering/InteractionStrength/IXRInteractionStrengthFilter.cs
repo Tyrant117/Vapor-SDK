@@ -1,4 +1,5 @@
 using System;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -26,7 +27,7 @@ namespace VaporXR
         /// It's recommended to return <see cref="Behaviour.isActiveAndEnabled"/> when implementing this interface
         /// in a <see cref="MonoBehaviour"/>.
         /// </remarks>
-        bool canProcess { get; }
+        bool CanProcess { get; }
 
         /// <summary>
         /// Called by the host object (<see cref="XRBaseInteractable"/>) to calculate the interaction strength
@@ -36,7 +37,7 @@ namespace VaporXR
         /// <param name="interactable">The Interactable interacting with the interactor.</param>
         /// <param name="interactionStrength">The input interaction strength.</param>
         /// <returns>Returns the modified interaction strength that is the result of passing the interaction strength through the filter.</returns>
-        float Process(VXRBaseInteractor interactor, IXRInteractable interactable, float interactionStrength);
+        float Process(IVXRSelectInteractor interactor, IXRInteractable interactable, float interactionStrength);
     }
 
     /// <summary>
@@ -49,16 +50,16 @@ namespace VaporXR
         /// <summary>
         /// The delegate to be invoked when processing this filter.
         /// </summary>
-        public Func<VXRBaseInteractor, IXRInteractable, float, float> delegateToProcess { get; set; }
+        public Func<IVXRSelectInteractor, IXRInteractable, float, float> delegateToProcess { get; set; }
 
         /// <inheritdoc />
-        public bool canProcess { get; set; } = true;
+        public bool CanProcess { get; set; } = true;
 
         /// <summary>
         /// Creates a new interaction strength filter delegate.
         /// </summary>
         /// <param name="delegateToProcess">The delegate to be invoked when processing this filter.</param>
-        public XRInteractionStrengthFilterDelegate(Func<VXRBaseInteractor, IXRInteractable, float, float> delegateToProcess)
+        public XRInteractionStrengthFilterDelegate(Func<IVXRSelectInteractor, IXRInteractable, float, float> delegateToProcess)
         {
             if (delegateToProcess == null)
                 throw new ArgumentException(nameof(delegateToProcess));
@@ -67,7 +68,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public float Process(VXRBaseInteractor interactor, IXRInteractable interactable, float interactionStrength)
+        public float Process(IVXRSelectInteractor interactor, IXRInteractable interactable, float interactionStrength)
         {
             return delegateToProcess.Invoke(interactor, interactable, interactionStrength);
         }

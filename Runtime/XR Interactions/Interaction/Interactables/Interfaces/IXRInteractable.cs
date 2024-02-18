@@ -64,13 +64,13 @@ namespace VaporXR
         /// <summary>
         /// Gets the <see cref="Transform"/> that serves as the attachment point for a given Interactor.
         /// </summary>
-        /// <param name="interactor">The specific Interactor as context to get the attachment point for.</param>
+        /// <param name="attachPoint">The specific attachment point for.</param>
         /// <returns>Returns the attachment point <see cref="Transform"/>.</returns>
         /// <seealso cref="VXRBaseInteractor.GetAttachTransform"/>
         /// <remarks>
         /// This should typically return the Transform of a child GameObject or the <see cref="transform"/> itself.
         /// </remarks>
-        Transform GetAttachTransform(VXRBaseInteractor interactor);
+        Transform GetAttachTransform(IAttachPoint attachPoint);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -109,8 +109,8 @@ namespace VaporXR
         /// <summary>
         /// Calculates squared distance to an Interactor (based on colliders).
         /// </summary>
-        /// <param name="interactor">Interactor to calculate distance against.</param>
+        /// <param name="attachPoint">AttachPoint to calculate distance against.</param>
         /// <returns>Returns the minimum squared distance between the Interactor and this Interactable's colliders.</returns>
-        float GetDistanceSqrToInteractor(VXRBaseInteractor interactor);
+        float GetDistanceSqrToInteractor(IAttachPoint attachPoint);
     }
 }

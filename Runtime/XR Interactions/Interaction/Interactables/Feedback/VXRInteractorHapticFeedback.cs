@@ -1,5 +1,6 @@
 using UnityEngine;
 using VaporInspector;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -160,11 +161,11 @@ namespace VaporXR
                 return;
             }
 
-            interactor.HoverEntered.AddListener(OnHoverEntered);
-            interactor.HoverExited.AddListener(OnHoverExited);
+            interactor.HoverEntered += (OnHoverEntered);
+            interactor.HoverExited += (OnHoverExited);
 
-            interactor.SelectEntered.AddListener(OnSelectEntered);
-            interactor.SelectExited.AddListener(OnSelectExited);
+            interactor.SelectEntered += (OnSelectEntered);
+            interactor.SelectExited += (OnSelectExited);
         }
 
         private void Unsubscribe(VXRBaseInteractor interactor)
@@ -174,11 +175,11 @@ namespace VaporXR
                 return;
             }
 
-            interactor.HoverEntered.RemoveListener(OnHoverEntered);
-            interactor.HoverExited.RemoveListener(OnHoverExited);
+            interactor.HoverEntered -= (OnHoverEntered);
+            interactor.HoverExited -= (OnHoverExited);
 
-            interactor.SelectEntered.RemoveListener(OnSelectEntered);
-            interactor.SelectExited.RemoveListener(OnSelectExited);
+            interactor.SelectEntered -= (OnSelectEntered);
+            interactor.SelectExited -= (OnSelectExited);
         }
         #endregion
 
@@ -224,7 +225,7 @@ namespace VaporXR
         #endregion
 
         #region - Hover -
-        private bool IsHoverHapticsAllowed(VXRBaseInteractor interactor, IXRInteractable interactable)
+        private bool IsHoverHapticsAllowed(IVXRHoverInteractor interactor, IXRInteractable interactable)
         {
             return _allowHoverHapticsWhileSelecting || !IsSelecting(interactor, interactable);
         }
@@ -278,11 +279,12 @@ namespace VaporXR
             }
         }
 
-        private static bool IsSelecting(VXRBaseInteractor interactor, IXRInteractable interactable)
+        private static bool IsSelecting(IVXRHoverInteractor interactor, IXRInteractable interactable)
         {
-            return interactor is not null &&
+            return interactor != null &&
+                   interactor.Composite != null &&
                    interactable is IXRSelectInteractable selectable &&
-                   interactor.IsSelecting(selectable);
+                   interactor.Composite.IsSelecting(selectable);
         }
         #endregion
         

@@ -3,6 +3,7 @@ using Unity.XR.CoreUtils;
 using Unity.Collections;
 using UnityEngine;
 using Vapor.Utilities;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -146,7 +147,7 @@ namespace VaporXR
 
         VXROrigin m_XROrigin;
         GameObject m_ReticleInstance;
-        VXRBaseInteractor m_Interactor;
+        IVXRSelectInteractor m_Interactor;
         Vector3 m_TargetEndPoint;
         Vector3 m_TargetEndNormal;
         PhysicsScene m_LocalPhysicsScene;
@@ -166,7 +167,7 @@ namespace VaporXR
 
             if (TryGetComponent(out m_Interactor))
             {
-                m_Interactor.SelectEntered.AddListener(OnSelectEntered);
+                m_Interactor.SelectEntered += (OnSelectEntered);
             }
 
             FindXROrigin();
@@ -205,7 +206,7 @@ namespace VaporXR
 
             if (m_Interactor != null)
             {
-                m_Interactor.SelectEntered.RemoveListener(OnSelectEntered);
+                m_Interactor.SelectEntered -= (OnSelectEntered);
             }
         }
         
@@ -245,7 +246,7 @@ namespace VaporXR
             var raycastHit = false;
 
             // Raycast against physics
-            var hitCount = m_LocalPhysicsScene.Raycast(m_Interactor.AttachTransform.position, m_Interactor.AttachTransform.forward,
+            var hitCount = m_LocalPhysicsScene.Raycast(m_Interactor.AttachPoint.position, m_Interactor.AttachPoint.forward,
                 m_RaycastHits, m_MaxRaycastDistance, m_RaycastMask);
             if (hitCount != 0)
             {
@@ -263,14 +264,14 @@ namespace VaporXR
             if (!m_DrawWhileSelecting && m_Interactor.HasSelection)
                 return false;
 
-            if (m_Interactor.DisableVisualsWhenBlockedInGroup && m_Interactor.IsBlockedByInteractionWithinGroup())
-                return false;
+            //if (m_Interactor.DisableVisualsWhenBlockedInGroup && m_Interactor.IsBlockedByInteractionWithinGroup())
+            //    return false;
 
             var hasRaycastHit = false;
             var raycastPos = Vector3.zero;
             var raycastNormal = Vector3.zero;
 
-            if (m_Interactor is VXRRayInteractor rayInteractor)
+            if (m_Interactor.Composite is VXRRayCompositeInteractor rayInteractor)
             {
                 if (rayInteractor.TryGetCurrentRaycast(out var raycastHit, out _, out var uiRaycastHit, out _, out var isUIHitClosest))
                 {
@@ -282,7 +283,7 @@ namespace VaporXR
                         raycastNormal = hit.worldNormal;
                         // If the raycast hits the back of a UI canvas, ensure the normal refers to back of the UI canvas
                         // instead of the front facing world normal of the UI canvas
-                        var isHittingBackOfCanvas = Vector3.Dot(rayInteractor.RayOriginTransform.forward, raycastNormal) > 0.0f;
+                        var isHittingBackOfCanvas = Vector3.Dot(rayInteractor.GetOrCreateRayOrigin().forward, raycastNormal) > 0.0f;
                         if (isHittingBackOfCanvas)
                             raycastNormal *= -1;
                         hasRaycastHit = true;
@@ -347,12 +348,12 @@ namespace VaporXR
                 }
                 else
                 {
-                    m_ReticleInstance.transform.rotation = Quaternion.LookRotation(relativeUpVector, (m_Interactor.AttachTransform.position - m_TargetEndPoint).normalized);
+                    m_ReticleInstance.transform.rotation = Quaternion.LookRotation(relativeUpVector, (m_Interactor.AttachPoint.position - m_TargetEndPoint).normalized);
                 }
 
                 var scaleFactor = m_PrefabScalingFactor;
                 if (m_UndoDistanceScaling)
-                    scaleFactor *= Vector3.Distance(m_Interactor.AttachTransform.position, m_TargetEndPoint);
+                    scaleFactor *= Vector3.Distance(m_Interactor.AttachPoint.position, m_TargetEndPoint);
                 m_ReticleInstance.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
                 reticleActive = true;
             }

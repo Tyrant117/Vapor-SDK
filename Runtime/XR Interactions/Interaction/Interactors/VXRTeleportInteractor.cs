@@ -273,10 +273,10 @@ namespace VaporXR
         private Transform EffectiveRayOrigin => _hasRayOriginTransform ? _rayOriginTransform : transform;
 
         /// <inheritdoc />
-        public Vector3 rayEndPoint { get; private set; }
+        public Vector3 RayEndPoint { get; private set; }
 
         /// <inheritdoc />
-        public Transform rayEndTransform { get; private set; }
+        public Transform RayEndTransform { get; private set; }
 
         /// <summary>
         /// The starting position and direction of any ray casts.
@@ -460,7 +460,7 @@ namespace VaporXR
             }
 
             var filter = TargetFilter;
-            if (filter != null && filter.canProcess)
+            if (filter != null && filter.CanProcess)
             {
                 filter.Process(this, targets, s_Results);
 
@@ -818,7 +818,7 @@ namespace VaporXR
             _raycastHit = default;
          
             _raycastHitOccurred = false;
-            rayEndTransform = null;
+            RayEndTransform = null;
             _raycastInteractable = null;
 
             var hitIndex = int.MaxValue;
@@ -834,15 +834,15 @@ namespace VaporXR
 
             if (_raycastHitOccurred)
             {
-                rayEndPoint = _raycastHit.point;
-                rayEndTransform = InteractionManager.TryGetInteractableForCollider(_raycastHit.collider, out _raycastInteractable)
+                RayEndPoint = _raycastHit.point;
+                RayEndTransform = InteractionManager.TryGetInteractableForCollider(_raycastHit.collider, out _raycastInteractable)
                     ? _raycastInteractable.GetAttachTransform(this)
                     : _raycastHit.transform;
             }
             else
             {
                 UpdateSamplePointsIfNecessary();
-                rayEndPoint = _samplePoints[^1].Position;
+                RayEndPoint = _samplePoints[^1].Position;
             }
         }
 

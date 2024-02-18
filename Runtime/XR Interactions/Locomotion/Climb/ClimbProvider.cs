@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using VaporInspector;
+using VaporXR.Interactors;
 
 namespace VaporXR.Locomotion
 {
@@ -44,7 +45,7 @@ namespace VaporXR.Locomotion
         /// The interactor that is currently grabbing and driving movement. This will be <see langword="null"/> if
         /// there is no active climb.
         /// </summary>
-        public VXRBaseInteractor ClimbAnchorInteractor => _grabbingInteractors.Count > 0 ? _grabbingInteractors[^1] : null;
+        public IVXRSelectInteractor ClimbAnchorInteractor => _grabbingInteractors.Count > 0 ? _grabbingInteractors[^1] : null;
 
         /// <summary>
         /// The transformation that is used by this component to apply climb movement.
@@ -55,7 +56,7 @@ namespace VaporXR.Locomotion
         #region Fields
         // These are parallel lists, where each interactor and its grabbed interactable share the same index in each list.
         // The last item in each list represents the most recent selection, which is the only one that actually drives movement.
-        private readonly List<VXRBaseInteractor> _grabbingInteractors = new();
+        private readonly List<IVXRSelectInteractor> _grabbingInteractors = new();
         private readonly List<ClimbInteractable> _grabbedClimbables = new();
 
         private Vector3 _interactorAnchorWorldPosition;
@@ -89,7 +90,7 @@ namespace VaporXR.Locomotion
         /// state if locomotion has not already started. The phase will then enter the <see cref="LocomotionState.Moving"/>
         /// state in the next <see cref="Update"/>.
         /// </remarks>
-        public void StartClimbGrab(ClimbInteractable climbInteractable, VXRBaseInteractor interactor)
+        public void StartClimbGrab(ClimbInteractable climbInteractable, IVXRSelectInteractor interactor)
         {
             var xrOrigin = Mediator.XROrigin?.Origin;
             if (xrOrigin == null)
@@ -113,7 +114,7 @@ namespace VaporXR.Locomotion
         /// If there is no other active grab to fall back on, this will put the <see cref="LocomotionProvider.LocomotionState"/>
         /// in the <see cref="LocomotionState.Ended"/> state in the next <see cref="Update"/>.
         /// </remarks>
-        public void FinishClimbGrab(VXRBaseInteractor interactor)
+        public void FinishClimbGrab(IVXRSelectInteractor interactor)
         {
             var interactionIndex = _grabbingInteractors.IndexOf(interactor);
             if (interactionIndex < 0)
@@ -133,7 +134,7 @@ namespace VaporXR.Locomotion
             _grabbedClimbables.RemoveAt(interactionIndex);
         }
 
-        private void UpdateClimbAnchor(ClimbInteractable climbInteractable, VXRBaseInteractor interactor)
+        private void UpdateClimbAnchor(ClimbInteractable climbInteractable, IVXRSelectInteractor interactor)
         {
             var climbTransform = climbInteractable.climbTransform;
             _interactorAnchorWorldPosition = interactor.transform.position;
@@ -174,7 +175,7 @@ namespace VaporXR.Locomotion
             }
         }
 
-        private void StepClimbMovement(ClimbInteractable currentClimbInteractable, VXRBaseInteractor currentInteractor)
+        private void StepClimbMovement(ClimbInteractable currentClimbInteractable, IVXRSelectInteractor currentInteractor)
         {
             // Move rig such that climb interactor position stays constant
             var activeClimbSettings = GetActiveClimbSettings(currentClimbInteractable);

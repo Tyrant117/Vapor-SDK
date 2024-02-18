@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
+using VaporXR.Interactors;
 
 namespace VaporXR.Locomotion
 {
@@ -74,7 +75,7 @@ namespace VaporXR.Locomotion
 
         Vector3 m_PreviousControllerLocalPosition;
 
-        readonly List<IXRSelectInteractor> m_ControllerInteractors = new List<IXRSelectInteractor>();
+        readonly List<IVXRSelectInteractor> m_ControllerInteractors = new ();
 
         /// <summary>
         /// See <see cref="MonoBehaviour"/>.

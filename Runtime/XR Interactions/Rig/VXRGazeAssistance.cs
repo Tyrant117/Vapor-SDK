@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
 using VaporInspector;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -65,7 +66,7 @@ namespace VaporXR
             private bool _initialized;
 
             private IXRRayProvider _rayProvider;
-            private IXRSelectInteractor _selectInteractor;
+            private IVXRSelectInteractor _selectInteractor;
 
             private bool _restoreVisuals;
             private VXRInteractorLineVisual _lineVisual;
@@ -89,7 +90,7 @@ namespace VaporXR
                     return;
 
                 _rayProvider = _interactor as IXRRayProvider;
-                _selectInteractor = _interactor as IXRSelectInteractor;
+                _selectInteractor = _interactor as IVXRSelectInteractor;
                 if (_rayProvider == null || _selectInteractor == null)
                 {
                     Debug.LogWarning("No ray and select interactor found!");
@@ -466,7 +467,7 @@ namespace VaporXR
         /// <inheritdoc />
         public Vector3 GetAssistedVelocity(in Vector3 source, in Vector3 velocity, float gravity)
         {
-            GetAssistedVelocityInternal(source, _gazeInteractor.rayEndPoint, velocity, gravity,
+            GetAssistedVelocityInternal(source, _gazeInteractor.RayEndPoint, velocity, gravity,
                 _aimAssistRequiredAngle, _aimAssistRequiredSpeed, _aimAssistMaxSpeedPercent, _aimAssistPercent, Mathf.Epsilon, out var adjustedVelocity);
             return adjustedVelocity;
         }
@@ -474,7 +475,7 @@ namespace VaporXR
         /// <inheritdoc />
         public Vector3 GetAssistedVelocity(in Vector3 source, in Vector3 velocity, float gravity, float maxAngle)
         {
-            GetAssistedVelocityInternal(source, _gazeInteractor.rayEndPoint, velocity, gravity,
+            GetAssistedVelocityInternal(source, _gazeInteractor.RayEndPoint, velocity, gravity,
                 maxAngle, _aimAssistRequiredSpeed, _aimAssistMaxSpeedPercent, _aimAssistPercent, Mathf.Epsilon, out var adjustedVelocity);
             return adjustedVelocity;
         }

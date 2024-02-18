@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
     /// <summary>
     /// An interface that represents an Interaction Group component that is capable of overriding the interaction of the
-    /// <see cref="IXRInteractionGroup.activeInteractor"/> when another interactor tries to select any of the interactables
+    /// <see cref="IXRInteractionGroup.ActiveInteractor"/> when another interactor tries to select any of the interactables
     /// being hovered or selected. An interactor can only override interaction when it is or is contained within a Group
     /// member that is configured as a possible override for the active Group member.
     /// </summary>
@@ -19,7 +20,7 @@ namespace VaporXR
         /// <param name="overrideGroupMember">The Group member to add as a possible interaction override.</param>
         /// <remarks>
         /// Both members must be registered with the Group. Additionally, <paramref name="overrideGroupMember"/> must
-        /// implement either <see cref="VXRBaseInteractor"/> or <see cref="IXRInteractionOverrideGroup"/>.
+        /// implement either <see cref="VXRInteractor"/> or <see cref="IXRInteractionOverrideGroup"/>.
         /// This method must not create a loop in the chain of overrides for <paramref name="sourceGroupMember"/>. Use the
         /// implementation of <see cref="GroupMemberIsPartOfOverrideChain"/> to ensure there is no loop before adding override.
         /// </remarks>
@@ -84,26 +85,26 @@ namespace VaporXR
         void GetInteractionOverridesForGroupMember(IXRGroupMember sourceGroupMember, HashSet<IXRGroupMember> results);
 
         /// <summary>
-        /// Checks whether the Group should end the interactions of the <see cref="IXRInteractionGroup.activeInteractor"/>
+        /// Checks whether the Group should end the interactions of the <see cref="IXRInteractionGroup.ActiveInteractor"/>
         /// and instead prioritize an override interactor for interaction. An interactor should only override if it exists
         /// in the set of override Group members for the active member and is capable of selecting any interactable that
-        /// <see cref="IXRInteractionGroup.activeInteractor"/> is interacting with. If multiple Group members are capable
+        /// <see cref="IXRInteractionGroup.ActiveInteractor"/> is interacting with. If multiple Group members are capable
         /// of overriding, only the highest priority one should override.
         /// </summary>
         /// <param name="overridingInteractor">The interactor that should override interaction.</param>
         /// <returns>
         /// Returns <see langword="true"/> if the Group should end the interactions of the
-        /// <see cref="IXRInteractionGroup.activeInteractor"/> and instead prioritize an override interactor for
+        /// <see cref="IXRInteractionGroup.ActiveInteractor"/> and instead prioritize an override interactor for
         /// interaction. Otherwise, returns <see langword="false"/>.
         /// </returns>
         /// <remarks>
-        /// The implementation of <see cref="IXRInteractionGroup.UpdateGroupMemberInteractions(VXRBaseInteractor, out VXRBaseInteractor)"/>
+        /// The implementation of <see cref="IXRInteractionGroup.UpdateGroupMemberInteractions(VXRInteractor, out VXRInteractor)"/>
         /// should call this method at the start to determine whether <paramref name="overridingInteractor"/> should
         /// override the pre-prioritized interactor.
         /// The implementation of this method should call <see cref="ShouldAnyMemberOverrideInteraction"/> on each
         /// override Group member that is an <see cref="IXRInteractionOverrideGroup"/>.
         /// </remarks>
-        bool ShouldOverrideActiveInteraction(out VXRBaseInteractor overridingInteractor);
+        bool ShouldOverrideActiveInteraction(out IVXRSelectInteractor overridingInteractor);
 
         /// <summary>
         /// Checks whether any member of the Group should override the interactions of <paramref name="interactingInteractor"/>.
@@ -120,7 +121,7 @@ namespace VaporXR
         /// The implementation of this method should call this method on each Group member that is an
         /// <see cref="IXRInteractionOverrideGroup"/>.
         /// </remarks>
-        bool ShouldAnyMemberOverrideInteraction(VXRBaseInteractor interactingInteractor,
-            out VXRBaseInteractor overridingInteractor);
+        bool ShouldAnyMemberOverrideInteraction(IVXRInteractor interactingInteractor,
+            out IVXRSelectInteractor overridingInteractor);
     }
 }

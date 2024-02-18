@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -67,7 +68,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsSelected"/>
         /// <seealso cref="VXRBaseInteractor.InteractablesSelected"/>
-        List<VXRBaseInteractor> InteractorsSelecting { get; }
+        List<IVXRSelectInteractor> InteractorsSelecting { get; }
 
         /// <summary>
         /// (Read Only) The first interactor that selected this interactable since not being selected by any interactor.
@@ -75,7 +76,7 @@ namespace VaporXR
         /// when it released while multiple interactors were selecting this interactable.
         /// </summary>
         /// <seealso cref="VXRBaseInteractor.FirstInteractableSelected"/>
-        VXRBaseInteractor FirstInteractorSelecting { get; }
+        IVXRSelectInteractor FirstInteractorSelecting { get; }
 
 
         /// <summary>
@@ -108,7 +109,7 @@ namespace VaporXR
         /// <param name="interactor">Interactor to check for a valid selection with.</param>
         /// <returns>Returns <see langword="true"/> if selection is valid this frame. Returns <see langword="false"/> if not.</returns>
         /// <seealso cref="VXRBaseInteractor.CanSelect"/>
-        bool IsSelectableBy(VXRBaseInteractor interactor);
+        bool IsSelectableBy(IVXRSelectInteractor interactor);
 
         /// <summary>
         /// Gets the world position and rotation of the Attach Transform captured during the moment of selection.
@@ -119,7 +120,7 @@ namespace VaporXR
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractable.GetAttachTransform"/>
         /// <seealso cref="VXRBaseInteractor.GetAttachPoseOnSelect"/>
-        Pose GetAttachPoseOnSelect(VXRBaseInteractor interactor);
+        Pose GetAttachPoseOnSelect(IVXRInteractor interactor);
 
         /// <summary>
         /// Gets the local position and rotation of the Attach Transform captured during the moment of selection.
@@ -130,7 +131,7 @@ namespace VaporXR
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractable.GetAttachTransform"/>
         /// <seealso cref="VXRBaseInteractor.GetLocalAttachPoseOnSelect"/>
-        Pose GetLocalAttachPoseOnSelect(VXRBaseInteractor interactor);
+        Pose GetLocalAttachPoseOnSelect(IVXRInteractor interactor);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -197,7 +198,7 @@ namespace VaporXR
         /// Equivalent to <code>interactorsSelecting.Count > 0 ? interactorsSelecting[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
-        public static VXRBaseInteractor GetOldestInteractorSelecting(this IXRSelectInteractable interactable) =>
+        public static IVXRSelectInteractor GetOldestInteractorSelecting(this IXRSelectInteractable interactable) =>
             interactable?.InteractorsSelecting.Count > 0 ? interactable.InteractorsSelecting[0] : null;
 
         /// <summary>

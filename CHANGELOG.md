@@ -1,3 +1,7 @@
+# v0.2.22
+* Updated to include new input system
+* Overhauled the interactor system.
+
 # v0.2.15
 * Updated the VXRHand to use a state machine.
 * Modified the interactors and interactables to use Actions instead of UnityEvents.

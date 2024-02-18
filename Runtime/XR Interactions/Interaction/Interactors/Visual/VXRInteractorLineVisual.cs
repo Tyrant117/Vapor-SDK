@@ -9,6 +9,7 @@ using UnityEngine;
 using Vapor.Utilities;
 using VaporXR.Utilities.Tweenables;
 using VaporInspector;
+using VaporXR.Interactors;
 
 namespace VaporXR
 {
@@ -343,10 +344,10 @@ namespace VaporXR
         private IAdvancedLineRenderable _advancedLineRenderable;
         private bool _hasAdvancedLineRenderable;
 
-        private VXRBaseInteractor _lineRenderableAsSelectInteractor;
-        private VXRBaseInteractor _lineRenderableAsHoverInteractor;
-        private VXRBaseInteractor _lineRenderableAsBaseInteractor;
-        private VXRTeleportInteractor _lineRenderableAsRayInteractor;
+        private IVXRSelectInteractor _lineRenderableAsSelectInteractor;
+        private VXRHoverInteractor _lineRenderableAsHoverInteractor;
+        private VXRInteractor _lineRenderableAsBaseInteractor;
+        private VXRRayCompositeInteractor _lineRenderableAsRayInteractor;
 
         // Reusable list of target points
         private NativeArray<Vector3> _targetPoints;
@@ -412,28 +413,25 @@ namespace VaporXR
 
             if (_lineRenderable != null)
             {
-                if (_lineRenderable is VXRBaseInteractor baseInteractor)
-                {
-                    _lineRenderableAsBaseInteractor = baseInteractor;
-                    _hasBaseInteractor = true;
-                }
-
-                if (_lineRenderable is VXRBaseInteractor selectInteractor)
-                {
-                    _lineRenderableAsSelectInteractor = selectInteractor;
-                    _hasSelectInteractor = true;
-                }
-
-                if (_lineRenderable is VXRBaseInteractor hoverInteractor)
-                {
-                    _lineRenderableAsHoverInteractor = hoverInteractor;
-                    _hasHoverInteractor = true;
-                }
-
-                if (_lineRenderable is VXRTeleportInteractor rayInteractor)
+                if(_lineRenderable is VXRRayCompositeInteractor rayInteractor)
                 {
                     _lineRenderableAsRayInteractor = rayInteractor;
                     _hasRayInteractor = true;
+
+                    if (rayInteractor.Hover != null)
+                    {
+                        _lineRenderableAsBaseInteractor = rayInteractor.Hover;
+                        _hasBaseInteractor = true;
+
+                        _lineRenderableAsHoverInteractor = rayInteractor.Hover;
+                        _hasHoverInteractor = true;
+                    }
+
+                    if (rayInteractor.Select != null)
+                    {
+                        _lineRenderableAsSelectInteractor = rayInteractor.Select;
+                        _hasSelectInteractor = true;
+                    }                    
                 }
             }
 
@@ -554,13 +552,13 @@ namespace VaporXR
 
         public void UpdateLineVisual()
         {
-            if (_lineRenderableAsBaseInteractor != null &&
-                _lineRenderableAsBaseInteractor.DisableVisualsWhenBlockedInGroup &&
-                _lineRenderableAsBaseInteractor.IsBlockedByInteractionWithinGroup())
-            {
-                _lineRenderer.enabled = false;
-                return;
-            }
+            //if (_lineRenderableAsSelectInteractor != null &&
+            //    _lineRenderableAsSelectInteractor.DisableVisualsWhenBlockedInGroup &&
+            //    _lineRenderableAsSelectInteractor.IsBlockedByInteractionWithinGroup())
+            //{
+            //    _lineRenderer.enabled = false;
+            //    return;
+            //}
 
             if (!_lineRenderableAsRayInteractor.ShouldDrawLine)
             {
@@ -580,7 +578,7 @@ namespace VaporXR
             var hasSelection = _hasSelectInteractor && _lineRenderableAsSelectInteractor.HasSelection;
 
             // Using a straight line type because it's likely the straight line won't gracefully follow an object not in it's path.
-            var hasStraightRayCast = _hasRayInteractor && _lineRenderableAsRayInteractor.LineType == VXRTeleportInteractor.LineModeType.StraightLine;
+            var hasStraightRayCast = _hasRayInteractor && _lineRenderableAsRayInteractor.LineType == LineModeType.StraightLine;
 
             // Query the line provider for origin data and apply overrides if needed.
             GetLineOriginAndDirection(ref _targetPoints, _numTargetPoints, hasStraightRayCast, out var lineOrigin, out var lineDirection);
@@ -693,13 +691,13 @@ namespace VaporXR
                 // We use regular valid state visuals if not hovering because the blocked state does not apply
                 // (e.g. we could have a valid target that is UI and therefore not hoverable or selectable as an interactable).
                 var useBlockedVisuals = false;
-                if (!hasSelection && _hasBaseInteractor && _lineRenderableAsBaseInteractor.HasHover)
+                if (!hasSelection && _hasBaseInteractor && _lineRenderableAsHoverInteractor.HasHover)
                 {
                     var interactionManager = _lineRenderableAsBaseInteractor.InteractionManager;
                     var canSelectSomething = false;
-                    foreach (var interactable in _lineRenderableAsBaseInteractor.InteractablesHovered)
+                    foreach (var interactable in _lineRenderableAsHoverInteractor.InteractablesHovered)
                     {
-                        if (interactable is IXRSelectInteractable selectInteractable && interactionManager.IsSelectPossible(_lineRenderableAsBaseInteractor, selectInteractable))
+                        if (interactable is IXRSelectInteractable selectInteractable && interactionManager.IsSelectPossible(_lineRenderableAsSelectInteractor, selectInteractable))
                         {
                             canSelectSomething = true;
                             break;
@@ -894,7 +892,7 @@ namespace VaporXR
                 if (validHit && _snapEndpointIfAvailable && _hasRayInteractor)
                 {
                     // When hovering a new collider, check if it has a specified snapping volume, if it does then get the closest point on it
-                    if (_lineRenderableAsRayInteractor.TryGetCurrent3DRaycastHit(out var raycastHit, out _))
+                    if (_lineRenderableAsRayInteractor.TryGetCurrent3DRaycastHit(out var raycastHit))
                         hitCollider = raycastHit.collider;
 
                     if (hitCollider != _previousCollider && hitCollider != null)

@@ -13,10 +13,10 @@ namespace VaporXR.Utilities
         /// <summary>
         /// Evaluates the distance between an interactor and an interactable.
         /// </summary>
-        /// <param name="interactor">The VXRBaseInteractor to use in the calculation.</param>
+        /// <param name="attachPoint">The IAttachPoint to use in the calculation.</param>
         /// <param name="interactable">The IXRInteractable to evaluate the distance to.</param>
         /// <returns>The calculated distance as a float.</returns>
-        float EvaluateDistance(VXRBaseInteractor interactor, IXRInteractable interactable);
+        float EvaluateDistance(IAttachPoint attachPoint, IXRInteractable interactable);
     }
 
     /// <summary>
@@ -97,19 +97,19 @@ namespace VaporXR.Utilities
         }
 
         /// <summary>
-        /// Sorts the Interactables in <paramref name="unsortedTargets"/> by distance to the <paramref name="interactor"/>,
+        /// Sorts the Interactables in <paramref name="unsortedTargets"/> by distance to the <paramref name="attachPoint"/>,
         /// storing the ordered result in <paramref name="results"/>.
         /// </summary>
-        /// <param name="interactor">The Interactor to calculate distance against.</param>
+        /// <param name="attachPoint">The Interactor to calculate distance against.</param>
         /// <param name="unsortedTargets">The read only list of Interactables to sort. This list is not modified.</param>
         /// <param name="results">The results list to populate with the sorted results.</param>
         /// <remarks>
         /// Clears <paramref name="results"/> before adding to it.
         /// This method is not thread safe.
         /// </remarks>
-        public static void SortByDistanceToInteractor(VXRBaseInteractor interactor, List<IXRInteractable> unsortedTargets, List<IXRInteractable> results)
+        public static void SortByDistanceToInteractor(IAttachPoint attachPoint, List<IXRInteractable> unsortedTargets, List<IXRInteractable> results)
         {
-            SortByDistanceToInteractor(interactor, unsortedTargets, results, interactableBasedEvaluator);
+            SortByDistanceToInteractor(attachPoint, unsortedTargets, results, interactableBasedEvaluator);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace VaporXR.Utilities
         /// Clears <paramref name="results"/> before adding to it.
         /// This method is not thread safe.
         /// </remarks>
-        public static void SortByDistanceToInteractor(VXRBaseInteractor interactor, List<IXRInteractable> unsortedTargets, List<IXRInteractable> results, IInteractorDistanceEvaluator distanceEvaluator)
+        public static void SortByDistanceToInteractor(IAttachPoint attachPoint, List<IXRInteractable> unsortedTargets, List<IXRInteractable> results, IInteractorDistanceEvaluator distanceEvaluator)
         {
             results.Clear();
 
@@ -142,7 +142,7 @@ namespace VaporXR.Utilities
             s_InteractableDistanceSqrMap.Clear();
 
             foreach (var interactable in unsortedTargets)
-                s_InteractableDistanceSqrMap[interactable] = distanceEvaluator.EvaluateDistance(interactor, interactable);
+                s_InteractableDistanceSqrMap[interactable] = distanceEvaluator.EvaluateDistance(attachPoint, interactable);
 
             results.Sort(s_InteractableDistanceComparison);
         }
@@ -197,12 +197,12 @@ namespace VaporXR.Utilities
             /// <summary>
             /// Evaluates the distance between an interactor and an interactable based on the interactable's defined method.
             /// </summary>
-            /// <param name="interactor">The interactor to use in the distance calculation.</param>
+            /// <param name="attachPoint">The attach point to use in the distance calculation.</param>
             /// <param name="interactable">The interactable to which the distance is being calculated.</param>
             /// <returns>The square of the distance between the interactor and the interactable.</returns>
-            public float EvaluateDistance(VXRBaseInteractor interactor, IXRInteractable interactable)
+            public float EvaluateDistance(IAttachPoint attachPoint, IXRInteractable interactable)
             {
-                return interactable.GetDistanceSqrToInteractor(interactor);
+                return interactable.GetDistanceSqrToInteractor(attachPoint);
             }
         }
 
@@ -214,12 +214,12 @@ namespace VaporXR.Utilities
             /// <summary>
             /// Evaluates the distance between an interactor and the closest point on an interactable's collider.
             /// </summary>
-            /// <param name="interactor">The interactor to use in the distance calculation.</param>
+            /// <param name="attachPoint">The attachPoint to use in the distance calculation.</param>
             /// <param name="interactable">The interactable to which the distance is being calculated.</param>
             /// <returns>The square of the distance between the interactor's attachment point and the closest point on the interactable's collider.</returns>
-            public float EvaluateDistance(VXRBaseInteractor interactor, IXRInteractable interactable)
+            public float EvaluateDistance(IAttachPoint attachPoint, IXRInteractable interactable)
             {
-                float3 interactorAttachPoint = interactor.GetAttachTransform(interactable).position;
+                float3 interactorAttachPoint = attachPoint.GetAttachTransform(interactable).position;
                 XRInteractableUtility.TryGetClosestPointOnCollider(interactable, interactorAttachPoint, out var distanceInfo);
                 return distanceInfo.distanceSqr;
             }
@@ -235,13 +235,13 @@ namespace VaporXR.Utilities
             /// <summary>
             /// Evaluates the squared distance between the attachment points of an interactor and an interactable.
             /// </summary>
-            /// <param name="interactor">The interactor whose attachment point is used in the calculation.</param>
+            /// <param name="attachPoint">The attachPoint used in the calculation.</param>
             /// <param name="interactable">The interactable whose attachment point is used in the calculation.</param>
             /// <returns>The square of the distance between the attachment points of the interactor and the interactable.</returns>
-            public float EvaluateDistance(VXRBaseInteractor interactor, IXRInteractable interactable)
+            public float EvaluateDistance(IAttachPoint attachPoint, IXRInteractable interactable)
             {
-                float3 interactorAttachPoint = interactor.GetAttachTransform(interactable).position;
-                float3 interactableAttachPoint = interactable.GetAttachTransform(interactor).position;
+                float3 interactorAttachPoint = attachPoint.GetAttachTransform(interactable).position;
+                float3 interactableAttachPoint = interactable.GetAttachTransform(attachPoint).position;
                 return SqDistanceToInteractable(interactorAttachPoint, interactableAttachPoint);
             }
 

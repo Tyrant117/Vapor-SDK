@@ -18,7 +18,7 @@ namespace VaporXR
         /// Reads the <see cref="ReadValue"/> converted to a float. 1f or 0f.
         /// </summary>
         /// <returns></returns>
-        public float ReadValueAsFloat() => ReadBoolValue() ? 1f : 0f;
+        public override float ReadValueAsFloat() => ReadBoolValue() ? 1f : 0f;
 
         /// <inheritdoc />
         public override bool TryReadValue(out bool value) => TryReadBoolValue(out value);

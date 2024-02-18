@@ -14,6 +14,11 @@ namespace VaporXR
         /// <inheritdoc />
         public override Vector2 ReadValue() => ReadVector2Value();
 
+        public override float ReadValueAsFloat()
+        {
+            return ReadVector2Value().magnitude;
+        }
+
         /// <inheritdoc />
         public override bool TryReadValue(out Vector2 value) => TryReadVector2Value(out value);
     }

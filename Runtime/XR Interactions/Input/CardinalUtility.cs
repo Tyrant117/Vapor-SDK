@@ -1,54 +1,7 @@
 using UnityEngine;
 
 namespace VaporXR
-{
-    /// <summary>
-    /// One of the four primary directions.
-    /// </summary>
-    /// <seealso cref="CardinalUtility"/>
-    public enum Cardinal
-    {
-        /// <summary>
-        /// North direction, e.g. forward on a thumbstick.
-        /// </summary>
-        North,
-
-        /// <summary>
-        /// South direction, e.g. back on a thumbstick.
-        /// </summary>
-        South,
-
-        /// <summary>
-        /// East direction, e.g. right on a thumbstick.
-        /// </summary>
-        East,
-
-        /// <summary>
-        /// West direction, e.g. left on a thumbstick.
-        /// </summary>
-        West,
-
-        /// <summary>
-        /// NorthWest direction, e.g. forward-left on a thumbstick.
-        /// </summary>
-        NorthWest,
-
-        /// <summary>
-        /// NorthEast direction, e.g. forward-right on a thumbstick.
-        /// </summary>
-        NorthEast,
-
-        /// <summary>
-        /// SouthEast direction, e.g. back-right on a thumbstick.
-        /// </summary>
-        SouthEast,
-
-        /// <summary>
-        /// SouthWest direction, e.g. back-left on a thumbstick.
-        /// </summary>
-        SouthWest
-    }
-
+{   
     /// <summary>
     /// Utility functions related to <see cref="Cardinal"/> directions.
     /// </summary>

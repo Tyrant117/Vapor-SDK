@@ -8,6 +8,7 @@ using UnityEngine;
 using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
+using VaporXR.Interactors;
 using VaporXR.Utilities;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -20,7 +21,7 @@ namespace VaporXR
     /// hover and selection.
     /// </summary>
     [DefaultExecutionOrder(XRInteractionUpdateOrder.k_Interactors)]
-    public class VXRBaseInteractor : MonoBehaviour, IXRGroupMember, IXRTargetPriorityInteractor
+    public class VXRBaseInteractor : MonoBehaviour, IXRGroupMember, IXRTargetPriorityInteractor, IVXRHoverInteractor, IVXRSelectInteractor
     {
         private static readonly ProfilerMarker s_ProcessInteractionStrengthMarker = new ProfilerMarker("XRI.ProcessInteractionStrength.Interactors");
 
@@ -81,7 +82,9 @@ namespace VaporXR
                     RegisterWithInteractionManager();
             }
         }
-        
+
+        public VXRCompositeInteractor Bridge => throw new NotImplementedException();
+
         /// <inheritdoc />
         public IXRInteractionGroup ContainingGroup { get; private set; }
         
@@ -380,6 +383,17 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="VXRGrabInteractable.movementType"/>
         public virtual VXRBaseInteractable.MovementType? SelectedInteractableMovementTypeOverride => null;
+
+        public VXRCompositeInteractor Composite => throw new NotImplementedException();
+
+        public LogicalInputState LogicalSelectState => throw new NotImplementedException();
+
+        public Transform AttachPoint => throw new NotImplementedException();
+
+        public Func<(bool, bool, float)> SelectActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        Func<XRIneractionActiveState> IVXRSelectInteractor.SelectActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Func<bool> HoverActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        Func<VXRBaseInteractable.MovementType> IVXRSelectInteractor.SelectedInteractableMovementTypeOverride { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion
 
         #region Fields
@@ -417,35 +431,11 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="VXRInteractionManager.interactorUnregistered"/>
         public event Action<InteractorUnregisteredEventArgs> Unregistered;
-        
-        /// <summary>
-        /// The event that is called when this Interactor begins hovering over an Interactable.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="HoverEnterEventArgs"/> passed to each listener is only valid while the event is invoked,
-        /// do not hold a reference to it.
-        /// </remarks>
-        /// <seealso cref="HoverExited"/>
-        public HoverEnterEvent HoverEntered
-        {
-            get => _hoverEntered;
-            set => _hoverEntered = value;
-        }
-        
-        /// <summary>
-        /// The event that is called when this Interactor ends hovering over an Interactable.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="HoverExitEventArgs"/> passed to each listener is only valid while the event is invoked,
-        /// do not hold a reference to it.
-        /// </remarks>
-        /// <seealso cref="HoverEntered"/>
-        public HoverExitEvent HoverExited
-        {
-            get => _hoverExited;
-            set => _hoverExited = value;
-        }
-        
+
+        public event Action<HoverEnterEventArgs> HoverEntered;
+
+        public event Action<HoverExitEventArgs> HoverExited;
+
         /// <summary>
         /// The event that is called when this Interactor begins selecting an Interactable.
         /// </summary>
@@ -454,11 +444,7 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="SelectExited"/>
-        public SelectEnterEvent SelectEntered
-        {
-            get => _selectEntered;
-            set => _selectEntered = value;
-        }
+        public event Action<SelectEnterEventArgs> SelectEntered;
         
         /// <summary>
         /// The event that is called when this Interactor ends selecting an Interactable.
@@ -468,11 +454,11 @@ namespace VaporXR
         /// do not hold a reference to it.
         /// </remarks>
         /// <seealso cref="SelectEntered"/>
-        public SelectExitEvent SelectExited
-        {
-            get => _selectExited;
-            set => _selectExited = value;
-        }
+        public event Action<SelectExitEventArgs> SelectExited;
+        public event Action<SelectEnterEventArgs> SelectEntering;
+        public event Action<SelectExitEventArgs> SelectExiting;
+        public event Action<HoverEnterEventArgs> HoverEntering;
+        public event Action<HoverExitEventArgs> HoverExiting;
         #endregion
 
         #region - Initialization -
@@ -626,7 +612,7 @@ namespace VaporXR
         }
         #endregion
 
-        #region - Hovering
+        #region - Hovering -
         /// <summary>
         /// Determines if the Interactable is valid for hover this frame.
         /// </summary>
@@ -1165,6 +1151,16 @@ namespace VaporXR
         /// </remarks>
         public virtual void GetValidTargets(List<IXRInteractable> targets)
         {
+        }
+
+        public bool TryGetSelectInteractor(out IVXRSelectInteractor interactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetHoverInteractor(out IVXRHoverInteractor interactor)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }

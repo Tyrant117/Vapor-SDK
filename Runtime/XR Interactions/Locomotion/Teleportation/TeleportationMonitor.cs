@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Pool;
+using VaporXR.Interactors;
 using Object = UnityEngine.Object;
 
 namespace VaporXR.Locomotion.Teleportation
@@ -32,7 +33,7 @@ namespace VaporXR.Locomotion.Teleportation
         /// <remarks>
         /// There will typically only ever be one <see cref="TeleportationProvider"/> in the scene.
         /// </remarks>
-        Dictionary<TeleportationProvider, List<VXRBaseInteractor>> m_TeleportInteractors;
+        Dictionary<TeleportationProvider, List<IVXRInteractor>> m_TeleportInteractors;
 
         /// <summary>
         /// The <see cref="Pose"/> of the <see cref="XROrigin"/> rig before teleportation.
@@ -40,8 +41,8 @@ namespace VaporXR.Locomotion.Teleportation
         /// </summary>
         Dictionary<LocomotionMediator, Pose> m_OriginPosesBeforeTeleport;
 
-        static readonly LinkedPool<Dictionary<TeleportationProvider, List<VXRBaseInteractor>>> s_TeleportInteractorsPool =
-            new LinkedPool<Dictionary<TeleportationProvider, List<VXRBaseInteractor>>>(() => new Dictionary<TeleportationProvider, List<VXRBaseInteractor>>());
+        static readonly LinkedPool<Dictionary<TeleportationProvider, List<IVXRInteractor>>> s_TeleportInteractorsPool =
+            new LinkedPool<Dictionary<TeleportationProvider, List<IVXRInteractor>>>(() => new Dictionary<TeleportationProvider, List<IVXRInteractor>>());
 
         static readonly LinkedPool<Dictionary<LocomotionMediator, Pose>> s_OriginPosesBeforeTeleportPool =
             new LinkedPool<Dictionary<LocomotionMediator, Pose>>(() => new Dictionary<LocomotionMediator, Pose>());
@@ -57,7 +58,7 @@ namespace VaporXR.Locomotion.Teleportation
         /// </summary>
         /// <param name="interactor">The Interactor to add.</param>
         /// <seealso cref="RemoveInteractor"/>
-        public void AddInteractor(VXRBaseInteractor interactor)
+        public void AddInteractor(IVXRInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));
@@ -82,7 +83,7 @@ namespace VaporXR.Locomotion.Teleportation
 
                 if (!m_TeleportInteractors.TryGetValue(teleportationProvider, out var interactors))
                 {
-                    interactors = new List<VXRBaseInteractor>();
+                    interactors = new List<IVXRInteractor>();
                     m_TeleportInteractors.Add(teleportationProvider, interactors);
                 }
 
@@ -102,7 +103,7 @@ namespace VaporXR.Locomotion.Teleportation
         /// </summary>
         /// <param name="interactor">The Interactor to remove.</param>
         /// <seealso cref="AddInteractor"/>
-        public void RemoveInteractor(VXRBaseInteractor interactor)
+        public void RemoveInteractor(IVXRInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));

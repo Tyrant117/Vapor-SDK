@@ -126,15 +126,15 @@ namespace VaporXR
         [SerializeField] private ButtonReadType _buttonType;
         
         [SerializeField, ShowIf("$IsDirectButton")]
-        private XRInputDeviceBoolValueReader _buttonDirectReader;
+        private XRInputBoolReader _buttonDirectReader;
         
         [SerializeField, ShowIf("$IsAxisButton")]
-        private XRInputDeviceFloatValueReader _buttonAxis1DReader;
+        private XRInputFloatReader _buttonAxis1DReader;
         
         [SerializeField, ShowIf("$IsSectorButton")] 
-        private XRInputDeviceVector2ValueReader _buttonAxis2DReader;
+        private XRInputVector2Reader _buttonAxis2DReader;
         [SerializeField, ShowIf("$IsSectorButton")]
-        private XRInputDeviceBoolValueReader _buttonAxis2DButton;
+        private XRInputBoolReader _buttonAxis2DButton;
         [SerializeField, ShowIf("$IsSectorButton")]
         private Directions _directionalButton;
         [SerializeField, ShowIf("$IsSectorButton")] 
@@ -162,13 +162,15 @@ namespace VaporXR
 
 #if UNITY_EDITOR
         // ReSharper disable once UnusedMember.Local
+#pragma warning disable IDE0051 // Remove unused private members
         private bool IsNone => _buttonType == ButtonReadType.None;
-        // ReSharper disable once UnusedMember.Local
+                               // ReSharper disable once UnusedMember.Local
         private bool IsDirectButton => _buttonType == ButtonReadType.DirectButton;
         // ReSharper disable once UnusedMember.Local
         private bool IsAxisButton => _buttonType == ButtonReadType.AxisButton;
         // ReSharper disable once UnusedMember.Local
         private bool IsSectorButton => _buttonType == ButtonReadType.SectorButton;        
+#pragma warning restore IDE0051 // Remove unused private members
 #endif
         
         private IInputDeviceUpdateProvider _updateProvider;
@@ -443,9 +445,9 @@ namespace VaporXR
 
         public override string ToString()
         {
-            var s1 = _buttonDirectReader ? _buttonDirectReader.name : "";
-            var s2 = _buttonAxis1DReader ? _buttonAxis1DReader.name : "";
-            var s3 = _buttonAxis2DReader ? _buttonAxis2DReader.name : "";
+            var s1 = _buttonDirectReader.IsValid ? _buttonDirectReader.ToString() : "";
+            var s2 = _buttonAxis1DReader.IsValid ? _buttonAxis1DReader.ToString() : "";
+            var s3 = _buttonAxis2DReader.IsValid ? _buttonAxis2DReader.ToString() : "";
             return $"Button Reader: {s1} {s2} {s3}";
         }
 

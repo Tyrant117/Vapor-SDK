@@ -5,8 +5,13 @@ namespace VaporXR
     /// <summary>
     /// Matches the UI Model to the state of the Interactor.
     /// </summary>
-    public interface IUIInteractor
+    public interface IUIInteractor : IAttachPoint
     {
+        /// <summary>
+        /// Determines if interactor is interacting with UGUI canvas.
+        /// </summary>
+        bool IsInteractingWithUI { get; }
+
         /// <summary>
         /// Updates the current UI Model to match the state of the Interactor.
         /// </summary>
