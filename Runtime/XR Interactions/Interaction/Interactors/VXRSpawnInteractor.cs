@@ -72,7 +72,7 @@ namespace VaporXR
             set
             {
                 _spawnerActive = value;
-                m_SocketGrabTransformer.canProcess = value && isActiveAndEnabled;
+                m_SocketGrabTransformer.CanProcess = value && isActiveAndEnabled;
             }
         }
 
@@ -132,7 +132,7 @@ namespace VaporXR
 
         public override bool IsSelectActive => base.IsSelectActive && _spawnerActive;
 
-        public override VXRBaseInteractable.MovementType? SelectedInteractableMovementTypeOverride => VXRBaseInteractable.MovementType.Instantaneous;
+        public override MovementType? SelectedInteractableMovementTypeOverride => MovementType.Instantaneous;
 
         // ***** Internal *****
         /// <summary>
@@ -140,7 +140,7 @@ namespace VaporXR
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        protected List<IXRInteractable> UnsortedValidTargets { get; } = new List<IXRInteractable>();
+        protected List<IVXRInteractable> UnsortedValidTargets { get; } = new List<IVXRInteractable>();
 
         /// <summary>
         /// Maximum number of interactables this interactor can socket.
@@ -181,14 +181,14 @@ namespace VaporXR
         protected override void OnEnable()
         {
             base.OnEnable();
-            m_SocketGrabTransformer.canProcess = _spawnerActive;
+            m_SocketGrabTransformer.CanProcess = _spawnerActive;
             SyncTransformerParams();
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            m_SocketGrabTransformer.canProcess = false;
+            m_SocketGrabTransformer.CanProcess = false;
         }
 
         private void SyncTransformerParams()
@@ -257,7 +257,7 @@ namespace VaporXR
 
         #region - Interaction -
         /// <inheritdoc />
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 
@@ -279,14 +279,14 @@ namespace VaporXR
         #endregion
 
         #region - Hover -
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             return false;
         }
         #endregion
 
         #region - Select -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) &&
                 ((!HasSelection && !interactable.IsSelected) || (IsSelecting(interactable) && interactable.InteractorsSelecting.Count == 1));
@@ -296,7 +296,7 @@ namespace VaporXR
         {
             base.OnSelectEntered(args);
 
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.InteractableObject is VXRGrabInteractable grabInteractable)
             {
                 StartSocketSnapping(grabInteractable);
             }
@@ -312,7 +312,7 @@ namespace VaporXR
         {
             base.OnSelectExited(args);
 
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.GetinteractableObject() is VXRGrabInteractable grabInteractable)
             {
                 EndSocketSnapping(grabInteractable);
             }

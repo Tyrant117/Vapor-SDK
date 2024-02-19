@@ -8,7 +8,7 @@ namespace VaporXR.Interactors
     public interface IVXRHoverInteractor : IVXRInteractor
     {
         bool IsHoverActive { get; }
-        List<IXRHoverInteractable> InteractablesHovered { get; }
+        List<IVXRHoverInteractable> InteractablesHovered { get; }
         IXRFilterList<IXRHoverFilter> HoverFilters { get; }
         Func<bool> HoverActive { get; set; }
 
@@ -17,8 +17,8 @@ namespace VaporXR.Interactors
         event Action<HoverExitEventArgs> HoverExiting;
         event Action<HoverExitEventArgs> HoverExited;
 
-        bool CanHover(IXRHoverInteractable interactable);
-        bool IsHovering(IXRHoverInteractable interactable);
+        bool CanHover(IVXRHoverInteractable interactable);
+        bool IsHovering(IVXRHoverInteractable interactable);
         void OnHoverEntered(HoverEnterEventArgs args);
         void OnHoverEntering(HoverEnterEventArgs args);
         void OnHoverExited(HoverExitEventArgs args);

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
+using VaporXR.Interactables;
 
 namespace VaporXR
 {
@@ -45,7 +46,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public virtual bool canProcess => isActiveAndEnabled;
+        public virtual bool CanProcess => isActiveAndEnabled;
 
         /// <summary>
         /// Controls how this grab transformer will be registered automatically at startup.
@@ -129,25 +130,25 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public virtual void OnLink(VXRGrabInteractable grabInteractable)
+        public virtual void OnLink(IVXRGrabCompositeInteractable grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public virtual void OnGrab(VXRGrabInteractable grabInteractable)
+        public virtual void OnGrab(IVXRGrabCompositeInteractable grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public virtual void OnGrabCountChanged(VXRGrabInteractable grabInteractable, Pose targetPose, Vector3 localScale)
+        public virtual void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale)
         {
         }
 
         /// <inheritdoc />
-        public abstract void Process(VXRGrabInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
+        public abstract void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
 
         /// <inheritdoc />
-        public virtual void OnUnlink(VXRGrabInteractable grabInteractable)
+        public virtual void OnUnlink(IVXRGrabCompositeInteractable grabInteractable)
         {
         }
     }

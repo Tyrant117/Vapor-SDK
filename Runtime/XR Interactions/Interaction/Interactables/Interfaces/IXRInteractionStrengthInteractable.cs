@@ -13,7 +13,7 @@ namespace VaporXR
     /// It can also be based on a poke amount for how deep a poke interactor has pressed into an interactable.
     /// </remarks>
     /// <seealso cref="IXRInteractionStrengthInteractor"/>
-    public interface IXRInteractionStrengthInteractable : IXRInteractable
+    public interface IXRInteractionStrengthInteractable : IVXRInteractable
     {
         /// <summary>
         /// The largest interaction strength value of all interactors hovering or selecting this interactable.

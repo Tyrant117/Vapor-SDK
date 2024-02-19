@@ -1,6 +1,7 @@
 ﻿using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Assertions;
+using VaporXR.Interactables;
 
 namespace VaporXR
 {
@@ -81,15 +82,15 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void OnGrabCountChanged(VXRGrabInteractable grabInteractable, Pose targetPose, Vector3 localScale)
+        public override void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale)
         {
             base.OnGrabCountChanged(grabInteractable, targetPose, localScale);
-            if (grabInteractable.InteractorsSelecting.Count == 2)
+            if (grabInteractable.Select.InteractorsSelecting.Count == 2)
                 m_LastUp = grabInteractable.transform.up;
         }
 
         /// <inheritdoc />
-        public override void Process(VXRGrabInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        public override void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             switch (updatePhase)
             {
@@ -103,20 +104,20 @@ namespace VaporXR
             }
         }
 
-        void UpdateTarget(VXRGrabInteractable grabInteractable, ref Pose targetPose)
+        void UpdateTarget(IVXRGrabCompositeInteractable grabInteractable, ref Pose targetPose)
         {
-            if (grabInteractable.InteractorsSelecting.Count == 1)
+            if (grabInteractable.Select.InteractorsSelecting.Count == 1)
                 XRSingleGrabFreeTransformer.UpdateTarget(grabInteractable, ref targetPose);
             else
                 UpdateTargetMulti(grabInteractable, ref targetPose);
         }
 
-        void UpdateTargetMulti(VXRGrabInteractable grabInteractable, ref Pose targetPose)
+        void UpdateTargetMulti(IVXRGrabCompositeInteractable grabInteractable, ref Pose targetPose)
         {
-            Debug.Assert(grabInteractable.InteractorsSelecting.Count > 1, this);
+            Debug.Assert(grabInteractable.Select.InteractorsSelecting.Count > 1, this);
 
-            var primaryAttachPose = grabInteractable.InteractorsSelecting[0].GetAttachTransform(grabInteractable).GetWorldPose();
-            var secondaryAttachPose = grabInteractable.InteractorsSelecting[1].GetAttachTransform(grabInteractable).GetWorldPose();
+            var primaryAttachPose = grabInteractable.Select.InteractorsSelecting[0].GetAttachTransform(grabInteractable.Select).GetWorldPose();
+            var secondaryAttachPose = grabInteractable.Select.InteractorsSelecting[1].GetAttachTransform(grabInteractable.Select).GetWorldPose();
 
             // When multi-selecting, adjust the effective interactorAttachPose with our default 2-hand algorithm.
             // Default to the primary interactor.
@@ -191,7 +192,7 @@ namespace VaporXR
 
             lastInteractorAttachPose = interactorAttachPose;
 
-            if (!grabInteractable.trackRotation)
+            if (!grabInteractable.TrackRotation)
             {
                 // When not using the rotation of the Interactor we apply the position without an offset
                 targetPose.position = interactorAttachPose.position;
@@ -202,7 +203,7 @@ namespace VaporXR
             if (m_MultiSelectRotation == PoseContributor.First || m_MultiSelectRotation == PoseContributor.Second)
             {
                 var controllerIndex = m_MultiSelectRotation == PoseContributor.First ? 0 : 1;
-                var thisAttachTransform = grabInteractable.GetAttachTransform(grabInteractable.InteractorsSelecting[controllerIndex]);
+                var thisAttachTransform = grabInteractable.Select.GetAttachTransform(grabInteractable.Select.InteractorsSelecting[controllerIndex]);
                 var thisTransformPose = grabInteractable.transform.GetWorldPose();
 
                 // Calculate offset of the grab interactable's position relative to its attach transform.

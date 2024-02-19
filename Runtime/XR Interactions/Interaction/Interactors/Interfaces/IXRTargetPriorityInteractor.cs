@@ -37,7 +37,7 @@ namespace VaporXR
     /// An interface that represents an Interactor component that monitors the Interactables with priority for selection
     /// in a frame (called Targets), useful for custom feedback.
     /// </summary>
-    /// <seealso cref="VXRInteractionManager.InteractorSelectValidTargets(IXRSelectInteractor, List{IXRInteractable})"/>
+    /// <seealso cref="VXRInteractionManager.InteractorSelectValidTargets(IXRSelectInteractor, List{IVXRInteractable})"/>
     /// <seealso cref="VXRInteractionManager.IsHighestPriorityTarget"/>
     /// <seealso cref="IXRInteractor.GetValidTargets"/>
     public interface IXRTargetPriorityInteractor
@@ -57,6 +57,6 @@ namespace VaporXR
         /// Unity automatically clears and updates this list every frame if <see cref="TargetPriorityMode"/> has a
         /// value different from <see cref="TargetPriorityMode.None"/>, in this case a valid list must be returned.
         /// </remarks>
-        List<IXRSelectInteractable> TargetsForSelection { get; }
+        List<IVXRSelectInteractable> TargetsForSelection { get; }
     }
 }

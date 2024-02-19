@@ -14,7 +14,7 @@ namespace VaporXR
         private bool _contactsSortedThisFrame;
 
         #region - Interaction -
-        public override IXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
         {
             // Determine the Interactables that this Interactor could possibly interact with this frame
             GetValidTargets(interactor, _frameValidTargets, filter);
@@ -22,7 +22,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -63,16 +63,16 @@ namespace VaporXR
 
         #region - Contacts -
         protected override void EvaluateContacts() { }
-        protected override void OnContactAdded(IXRInteractable interactable) { }
-        protected override void OnContactRemoved(IXRInteractable interactable) { }
+        protected override void OnContactAdded(IVXRInteractable interactable) { }
+        protected override void OnContactRemoved(IVXRInteractable interactable) { }
 
-        public override void ManualAddTarget(IXRInteractable interactable)
+        public override void ManualAddTarget(IVXRInteractable interactable)
         {
             base.ManualAddTarget(interactable);
             _contactsSortedThisFrame = false;
         }
 
-        public override bool ManualRemoveTarget(IXRInteractable interactable)
+        public override bool ManualRemoveTarget(IVXRInteractable interactable)
         {
             if (base.ManualRemoveTarget(interactable))
             {

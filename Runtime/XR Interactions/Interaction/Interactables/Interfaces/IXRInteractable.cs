@@ -15,8 +15,8 @@ namespace VaporXR
     /// </remarks>
     /// <seealso cref="XRBaseInteractable"/>
     /// <seealso cref="IXRActivateInteractable"/>
-    /// <seealso cref="IXRHoverInteractable"/>
-    /// <seealso cref="IXRSelectInteractable"/>
+    /// <seealso cref="IVXRHoverInteractable"/>
+    /// <seealso cref="IVXRSelectInteractable"/>
     /// <seealso cref="VXRBaseInteractor"/>
     public interface IXRInteractable
     {
@@ -80,7 +80,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="VXRInteractionManager.RegisterInteractable(IXRInteractable)"/>
+        /// <seealso cref="VXRInteractionManager.RegisterInteractable(IVXRInteractable)"/>
         void OnRegistered(InteractableRegisteredEventArgs args);
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="VXRInteractionManager.UnregisterInteractable(IXRInteractable)"/>
+        /// <seealso cref="VXRInteractionManager.UnregisterInteractable(IVXRInteractable)"/>
         void OnUnregistered(InteractableUnregisteredEventArgs args);
 
         /// <summary>

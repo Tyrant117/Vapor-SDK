@@ -12,11 +12,11 @@ namespace VaporXR.Interactors
         private readonly struct PokeCollision
         {
             public readonly Collider Collider;
-            public readonly IXRInteractable Interactable;
+            public readonly IVXRInteractable Interactable;
             public readonly IXRPokeFilter Filter;
             public readonly bool HasPokeFilter;
 
-            public PokeCollision(Collider collider, IXRInteractable interactable, IXRPokeFilter filter)
+            public PokeCollision(Collider collider, IVXRInteractable interactable, IXRPokeFilter filter)
             {
                 Collider = collider;
                 Interactable = interactable;

@@ -114,7 +114,7 @@ namespace VaporXR
         /// <summary>
         /// Reusable list of interactables (used to process the valid targets when this interactor has a filter).
         /// </summary>
-        private static readonly List<IXRInteractable> s_Results = new();
+        private static readonly List<IVXRInteractable> s_Results = new();
 
         /// <summary>
         /// Reusable list of raycast hits, used to avoid allocations during sphere casting.
@@ -746,13 +746,13 @@ namespace VaporXR
         }
 
         /// <summary>
-        /// The nearest <see cref="IXRInteractable"/> object hit by the ray that was inserted into the valid targets
+        /// The nearest <see cref="IVXRInteractable"/> object hit by the ray that was inserted into the valid targets
         /// list when not selecting anything.
         /// </summary>
         /// <remarks>
         /// Updated during <see cref="PreprocessInteractor"/>.
         /// </remarks>
-        protected IXRInteractable CurrentNearestValidTarget { get; private set; }
+        protected IVXRInteractable CurrentNearestValidTarget { get; private set; }
 
         /// <inheritdoc />
         public Vector3 RayEndPoint { get; private set; }
@@ -926,7 +926,7 @@ namespace VaporXR
 
         private bool _scaleInputActive;
         
-        private readonly List<IXRInteractable> _validTargets = new List<IXRInteractable>();
+        private readonly List<IVXRInteractable> _validTargets = new List<IVXRInteractable>();
 
         private float _lastTimeHoveredObjectChanged;
         private bool _passedHoverTimeToSelect;
@@ -990,7 +990,7 @@ namespace VaporXR
         private RaycastHit _raycastHit;
         private RaycastResult _uiRaycastHit;
         private bool _isUIHitClosest;
-        private IXRInteractable _raycastInteractable;
+        private IVXRInteractable _raycastInteractable;
 #if AR_FOUNDATION_PRESENT 
         private int m_ARRaycastHitEndpointIndex;
         private readonly List<ARRaycastHit> m_ARRaycastHits = new List<ARRaycastHit>();
@@ -2078,7 +2078,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 
@@ -2503,7 +2503,7 @@ namespace VaporXR
         
 
         /// <inheritdoc />
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             if (base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable)))
             {
@@ -2514,7 +2514,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             if (CurrentNearestValidTarget == interactable && _autoDeselect && HasSelection && _passedHoverTimeToSelect && _passedTimeToAutoDeselect)
                 return false;
@@ -2531,7 +2531,7 @@ namespace VaporXR
         /// <param name="interactable">The interactable to get the duration for.</param>
         /// <returns>Returns the number of seconds for which this Interactor must hover over an Interactable to select it.</returns>
         /// <seealso cref="HoverTimeToSelect"/>
-        protected virtual float GetHoverTimeToSelect(IXRInteractable interactable) => _hoverTimeToSelect;
+        protected virtual float GetHoverTimeToSelect(IVXRInteractable interactable) => _hoverTimeToSelect;
 
         /// <summary>
         /// Gets the number of seconds for which this interactor will keep the interactable selected before automatically deselecting it.
@@ -2539,7 +2539,7 @@ namespace VaporXR
         /// <param name="interactable">The interactable to get the duration for.</param>
         /// <returns>Returns the number of seconds for which this Interactor will keep an Interactable selected before automatically deselecting it.</returns>
         /// <seealso cref="TimeToAutoDeselect"/>
-        protected virtual float GetTimeToAutoDeselect(IXRInteractable interactable) => _timeToAutoDeselect;
+        protected virtual float GetTimeToAutoDeselect(IVXRInteractable interactable) => _timeToAutoDeselect;
 
         /// <inheritdoc />
         public override void OnSelectEntering(SelectEnterEventArgs args)

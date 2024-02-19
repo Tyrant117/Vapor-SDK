@@ -195,7 +195,7 @@ namespace VaporXR
         #region - Initialization -
         protected override void Awake()
         {
-            TargetsForSelection = new List<IXRSelectInteractable>();
+            TargetsForSelection = new List<IVXRSelectInteractable>();
 
             base.Awake();
 

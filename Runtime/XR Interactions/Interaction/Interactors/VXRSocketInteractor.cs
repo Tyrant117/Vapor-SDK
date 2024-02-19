@@ -94,7 +94,7 @@ namespace VaporXR
             set
             {
                 _socketActive = value;
-                m_SocketGrabTransformer.canProcess = value && isActiveAndEnabled;
+                m_SocketGrabTransformer.CanProcess = value && isActiveAndEnabled;
             }
         }
 
@@ -198,7 +198,7 @@ namespace VaporXR
 
         public override bool IsSelectActive => base.IsSelectActive && _socketActive;
 
-        public override VXRBaseInteractable.MovementType? SelectedInteractableMovementTypeOverride => VXRBaseInteractable.MovementType.Instantaneous;
+        public override MovementType? SelectedInteractableMovementTypeOverride => MovementType.Instantaneous;
 
         // ***** Internal *****
         /// <summary>
@@ -206,7 +206,7 @@ namespace VaporXR
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        protected List<IXRInteractable> unsortedValidTargets { get; } = new List<IXRInteractable>();
+        protected List<IVXRInteractable> unsortedValidTargets { get; } = new List<IVXRInteractable>();
 
         /// <summary>
         /// Maximum number of interactables this interactor can socket.
@@ -229,7 +229,7 @@ namespace VaporXR
         /// </summary>
         private readonly HashSet<Collider> m_StayedColliders = new();
         private readonly TriggerContactMonitor m_TriggerContactMonitor = new();
-        private readonly Dictionary<IXRInteractable, ValueTuple<MeshFilter, Renderer>[]> m_MeshFilterCache = new();
+        private readonly Dictionary<IVXRInteractable, ValueTuple<MeshFilter, Renderer>[]> m_MeshFilterCache = new();
         readonly XRSocketGrabTransformer m_SocketGrabTransformer = new();
         readonly HashSetList<VXRGrabInteractable> m_InteractablesWithSocketTransformer = new();
 
@@ -263,7 +263,7 @@ namespace VaporXR
             base.OnEnable();
             m_TriggerContactMonitor.contactAdded += OnContactAdded;
             m_TriggerContactMonitor.contactRemoved += OnContactRemoved;
-            m_SocketGrabTransformer.canProcess = _socketActive;
+            m_SocketGrabTransformer.CanProcess = _socketActive;
             SyncTransformerParams();
             ResetCollidersAndValidTargets();
             StartCoroutine(m_UpdateCollidersAfterTriggerStay);
@@ -272,7 +272,7 @@ namespace VaporXR
         protected override void OnDisable()
         {
             base.OnDisable();
-            m_SocketGrabTransformer.canProcess = false;
+            m_SocketGrabTransformer.CanProcess = false;
             m_TriggerContactMonitor.contactAdded -= OnContactAdded;
             m_TriggerContactMonitor.contactRemoved -= OnContactRemoved;
             ResetCollidersAndValidTargets();
@@ -383,7 +383,7 @@ namespace VaporXR
             m_TriggerContactMonitor.RemoveCollider(other);
         }
 
-        private void OnContactAdded(IXRInteractable interactable)
+        private void OnContactAdded(IVXRInteractable interactable)
         {
             if (!unsortedValidTargets.Contains(interactable))
             {
@@ -391,7 +391,7 @@ namespace VaporXR
             }
         }
 
-        private void OnContactRemoved(IXRInteractable interactable)
+        private void OnContactRemoved(IVXRInteractable interactable)
         {
             unsortedValidTargets.Remove(interactable);
         }
@@ -409,7 +409,7 @@ namespace VaporXR
 
         #region - Interaction -
         /// <inheritdoc />
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 
@@ -431,20 +431,20 @@ namespace VaporXR
         #endregion
 
         #region - Hover -
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             return base.CanHover(interactable) && IsHoverRecycleAllowed;
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="IXRInteractable"/> object can hover snap.
+        /// Determines whether the specified <see cref="IVXRInteractable"/> object can hover snap.
         /// </summary>
-        /// <param name="interactable">The <see cref="IXRInteractable"/> object to check for hover snap capability.</param>
+        /// <param name="interactable">The <see cref="IVXRInteractable"/> object to check for hover snap capability.</param>
         /// <returns>Returns <see langword="true"/> if hover socket snapping is enabled and the interactable has no selection or is selecting; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// This method checks whether hover socket snapping is allowed and whether the specified interactable has no current selection or is in the process of selecting.
         /// </remarks>
-        protected virtual bool CanHoverSnap(IXRInteractable interactable)
+        protected virtual bool CanHoverSnap(IVXRInteractable interactable)
         {
             return _hoverSocketSnapping && (!HasSelection || IsSelecting(interactable));
         }
@@ -504,7 +504,7 @@ namespace VaporXR
         #endregion
 
         #region - Select -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) &&
                 ((!HasSelection && !interactable.IsSelected) ||
@@ -515,7 +515,7 @@ namespace VaporXR
         {
             base.OnSelectEntered(args);
 
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.InteractableObject is VXRGrabInteractable grabInteractable)
             {
                 StartSocketSnapping(grabInteractable);
             }
@@ -536,7 +536,7 @@ namespace VaporXR
                 return;
             }
 
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.GetinteractableObject() is VXRGrabInteractable grabInteractable)
             {
                 EndSocketSnapping(grabInteractable);
             }
@@ -682,7 +682,7 @@ namespace VaporXR
             }
         }
 
-        private Matrix4x4 GetHoverMeshMatrix(IXRInteractable interactable, MeshFilter meshFilter, float hoverScale)
+        private Matrix4x4 GetHoverMeshMatrix(IVXRInteractable interactable, MeshFilter meshFilter, float hoverScale)
         {
             var interactableAttachTransform = interactable.GetAttachTransform(this);
 
@@ -747,7 +747,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The hovered Interactable to get the material for.</param>
         /// <returns>Returns the material Unity should use to draw the given hovered Interactable.</returns>
-        protected virtual Material GetHoveredInteractableMaterial(IXRHoverInteractable interactable)
+        protected virtual Material GetHoveredInteractableMaterial(IVXRHoverInteractable interactable)
         {
             return HasSelection ? _interactableCantHoverMeshMaterial : _interactableHoverMeshMaterial;
         }

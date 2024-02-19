@@ -323,10 +323,10 @@ namespace VaporXR
 
         private void OnSelectExited(SelectExitEventArgs args)
         {
-            if (m_PlaySelectCanceled && args.isCanceled)
+            if (m_PlaySelectCanceled && args.IsCanceled)
                 PlayAudio(m_SelectCanceledClip);
 
-            if (m_PlaySelectExited && !args.isCanceled)
+            if (m_PlaySelectExited && !args.IsCanceled)
                 PlayAudio(m_SelectExitedClip);
         }
 
@@ -348,15 +348,15 @@ namespace VaporXR
                 PlayAudio(m_HoverExitedClip);
         }
 
-        private bool IsHoverAudioAllowed(IVXRHoverInteractor interactor, IXRInteractable interactable)
+        private bool IsHoverAudioAllowed(IVXRHoverInteractor interactor, IVXRInteractable interactable)
         {
             return m_AllowHoverAudioWhileSelecting || !IsSelecting(interactor, interactable);
         }
 
-        private static bool IsSelecting(IVXRHoverInteractor interactor, IXRInteractable interactable)
+        private static bool IsSelecting(IVXRHoverInteractor interactor, IVXRInteractable interactable)
         {
             return interactor.Composite != null &&
-                interactable is IXRSelectInteractable selectable &&
+                interactable is IVXRSelectInteractable selectable &&
                 interactor.Composite.IsSelecting(selectable);
         }
     }

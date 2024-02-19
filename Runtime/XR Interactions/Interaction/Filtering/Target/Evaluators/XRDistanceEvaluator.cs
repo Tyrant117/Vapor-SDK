@@ -37,7 +37,7 @@ namespace VaporXR
         /// <remarks>
         /// This is similar to the implementation of the default algorithm to get valid targets in <see cref="XRDirectInteractor"/>.
         /// </remarks>
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IXRInteractable target)
+        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
         {
             if (Mathf.Approximately(m_MaxDistance, 0f))
                 return 0f;

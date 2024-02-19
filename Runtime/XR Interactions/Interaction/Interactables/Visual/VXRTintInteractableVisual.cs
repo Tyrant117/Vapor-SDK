@@ -58,9 +58,9 @@ namespace VaporXR
             set => m_TintRenderers = value;
         }
 
-        IXRInteractable m_Interactable;
-        IXRHoverInteractable m_HoverInteractable;
-        IXRSelectInteractable m_SelectInteractable;
+        IVXRInteractable m_Interactable;
+        IVXRHoverInteractable m_HoverInteractable;
+        IVXRSelectInteractable m_SelectInteractable;
 
         MaterialPropertyBlock m_TintPropertyBlock;
 
@@ -78,11 +78,11 @@ namespace VaporXR
         /// </summary>
         protected void Awake()
         {
-            m_Interactable = GetComponent<IXRInteractable>();
+            m_Interactable = GetComponent<IVXRInteractable>();
             if (m_Interactable is Object unityObject && unityObject != null)
             {
-                m_HoverInteractable = m_Interactable as IXRHoverInteractable;
-                m_SelectInteractable = m_Interactable as IXRSelectInteractable;
+                m_HoverInteractable = m_Interactable as IVXRHoverInteractable;
+                m_SelectInteractable = m_Interactable as IVXRSelectInteractable;
 
                 if (m_HoverInteractable != null)
                 {

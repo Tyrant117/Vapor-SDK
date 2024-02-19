@@ -9,7 +9,7 @@ namespace VaporXR
     /// toggling a flashlight on and off.
     /// </summary>
     /// <seealso cref="IXRActivateInteractor"/>
-    public interface IXRActivateInteractable : IXRInteractable
+    public interface IXRActivateInteractable : IVXRInteractable
     {
         /// <summary>
         /// The event that is called when the selecting Interactor activates this Interactable.

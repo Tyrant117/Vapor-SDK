@@ -16,20 +16,20 @@ namespace VaporXR
 
         #region Properties
         /// <summary>
-        /// The nearest <see cref="IXRInteractable"/> object hit by the ray that was inserted into the valid targets
+        /// The nearest <see cref="IVXRInteractable"/> object hit by the ray that was inserted into the valid targets
         /// list when not selecting anything.
         /// </summary>
         /// <remarks>
         /// Updated during <see cref="PreprocessInteractor"/>.
         /// </remarks>
-        public IXRInteractable CurrentNearestValidTarget { get; protected set; }
+        public IVXRInteractable CurrentNearestValidTarget { get; protected set; }
 
         /// <summary>
         /// The set of Interactables that this Interactor could possibly interact with this frame.
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        public List<IXRInteractable> PossibleTargets { get; } = new();
+        public List<IVXRInteractable> PossibleTargets { get; } = new();
 
         public Transform AttachPoint { get => _attachPoint; set => _attachPoint = value; }
         #endregion
@@ -46,8 +46,8 @@ namespace VaporXR
         protected PhysicsScene _localPhysicsScene;
         protected bool _frameContactsEvaulated;
         
-        protected readonly List<IXRInteractable> _sortedValidTargets = new();
-        protected readonly List<IXRInteractable> _frameValidTargets = new();        
+        protected readonly List<IVXRInteractable> _sortedValidTargets = new();
+        protected readonly List<IVXRInteractable> _frameValidTargets = new();        
         #endregion
 
         #region - Initialization -
@@ -107,11 +107,11 @@ namespace VaporXR
             }
         }
 
-        public abstract IXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null);
+        public abstract IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null);
 
-        public abstract void GetValidTargets(IVXRInteractor interactor, List<IXRInteractable> targets, IXRTargetFilter filter = null);        
+        public abstract void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null);        
 
-        public Transform GetAttachTransform(IXRInteractable interactable)
+        public Transform GetAttachTransform(IVXRInteractable interactable)
         {
             return _attachPoint;
         }
@@ -124,8 +124,8 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="IVXRInteractor.InteractionLayers"/>
-        /// <seealso cref="IXRInteractable.InteractionLayers"/>
-        protected static bool HasInteractionLayerOverlap(IVXRInteractor interactor, IXRInteractable interactable)
+        /// <seealso cref="IVXRInteractable.InteractionLayers"/>
+        protected static bool HasInteractionLayerOverlap(IVXRInteractor interactor, IVXRInteractable interactable)
         {
             return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
@@ -134,10 +134,10 @@ namespace VaporXR
         #region - Contacts -
         protected abstract void EvaluateContacts();       
 
-        protected abstract void OnContactAdded(IXRInteractable interactable);
-        protected abstract void OnContactRemoved(IXRInteractable interactable);
+        protected abstract void OnContactAdded(IVXRInteractable interactable);
+        protected abstract void OnContactRemoved(IVXRInteractable interactable);
 
-        public virtual void ManualAddTarget(IXRInteractable interactable)
+        public virtual void ManualAddTarget(IVXRInteractable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -147,7 +147,7 @@ namespace VaporXR
             PossibleTargets.Add(interactable);
         }
 
-        public virtual bool ManualRemoveTarget(IXRInteractable interactable)
+        public virtual bool ManualRemoveTarget(IVXRInteractable interactable)
         {
             if (PossibleTargets.Remove(interactable))
             {

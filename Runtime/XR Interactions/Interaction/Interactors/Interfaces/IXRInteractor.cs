@@ -19,7 +19,7 @@ namespace VaporXR
     /// <seealso cref="IXRHoverInteractor"/>
     /// <seealso cref="IXRSelectInteractor"/>
     /// <seealso cref="IXRGroupMember"/>
-    /// <seealso cref="IXRInteractable"/>
+    /// <seealso cref="IVXRInteractable"/>
     //public interface IXRInteractor : IAttachPoint
     //{
     //    /// <summary>

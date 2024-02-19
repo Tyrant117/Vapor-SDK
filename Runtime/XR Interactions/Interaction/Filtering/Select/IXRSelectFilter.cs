@@ -53,7 +53,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> when the given Interactor can select the given Interactable. Otherwise,
         /// returns <see langword="false"/>.
         /// </returns>
-        bool Process(IVXRSelectInteractor interactor, IXRSelectInteractable interactable);
+        bool Process(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ namespace VaporXR
         /// <summary>
         /// The delegate to be invoked when processing this filter.
         /// </summary>
-        public Func<IVXRSelectInteractor, IXRSelectInteractable, bool> DelegateToProcess { get; set; }
+        public Func<IVXRSelectInteractor, IVXRSelectInteractable, bool> DelegateToProcess { get; set; }
 
         /// <inheritdoc />
         public bool CanProcess { get; set; } = true;
@@ -75,7 +75,7 @@ namespace VaporXR
         /// Creates a new select filter delegate.
         /// </summary>
         /// <param name="delegateToProcess">The delegate to be invoked when processing this filter.</param>
-        public XRSelectFilterDelegate(Func<IVXRSelectInteractor, IXRSelectInteractable, bool> delegateToProcess)
+        public XRSelectFilterDelegate(Func<IVXRSelectInteractor, IVXRSelectInteractable, bool> delegateToProcess)
         {
             if (delegateToProcess == null)
                 throw new ArgumentException(nameof(delegateToProcess));
@@ -84,7 +84,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool Process(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public bool Process(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             return DelegateToProcess.Invoke(interactor, interactable);
         }

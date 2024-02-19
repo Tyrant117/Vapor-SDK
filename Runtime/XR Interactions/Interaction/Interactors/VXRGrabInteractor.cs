@@ -79,22 +79,22 @@ namespace VaporXR
 
         #region Properties
         /// <summary>
-        /// The nearest <see cref="IXRInteractable"/> object hit by the ray that was inserted into the valid targets
+        /// The nearest <see cref="IVXRInteractable"/> object hit by the ray that was inserted into the valid targets
         /// list when not selecting anything.
         /// </summary>
         /// <remarks>
         /// Updated during <see cref="PreprocessInteractor"/>.
         /// </remarks>
-        protected IXRInteractable CurrentNearestValidTarget { get; private set; }
+        protected IVXRInteractable CurrentNearestValidTarget { get; private set; }
 
         /// <summary>
         /// The set of Interactables that this Interactor could possibly interact with this frame.
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        protected List<IXRInteractable> UnsortedOverlapTargets { get; } = new ();
+        protected List<IVXRInteractable> UnsortedOverlapTargets { get; } = new ();
 
-        protected List<IXRInteractable> SortedRaycastTargets { get; } = new();
+        protected List<IVXRInteractable> SortedRaycastTargets { get; } = new();
         #endregion
 
         #region Fields
@@ -117,8 +117,8 @@ namespace VaporXR
         private readonly RaycastHit[] _castHits = new RaycastHit[25];
         private bool _firstFrame = true;
         private bool _overlapContactsSortedThisFrame;
-        private readonly List<IXRInteractable> _sortedValidTargets = new();
-        private readonly List<IXRInteractable> _frameValidTargets = new();
+        private readonly List<IVXRInteractable> _sortedValidTargets = new();
+        private readonly List<IVXRInteractable> _frameValidTargets = new();
 
 
         private readonly RaycastHit[] _raycastHits = new RaycastHit[MaxRaycastHits];
@@ -513,7 +513,7 @@ namespace VaporXR
             return hitCounter;
         }
 
-        private void OnOverlapContactAdded(IXRInteractable interactable)
+        private void OnOverlapContactAdded(IVXRInteractable interactable)
         {
             if (UnsortedOverlapTargets.Contains(interactable))
             {
@@ -524,7 +524,7 @@ namespace VaporXR
             _overlapContactsSortedThisFrame = false;
         }
 
-        private void OnRaycastContactAdded(IXRInteractable interactable)
+        private void OnRaycastContactAdded(IVXRInteractable interactable)
         {
             if (SortedRaycastTargets.Contains(interactable))
             {
@@ -534,7 +534,7 @@ namespace VaporXR
             SortedRaycastTargets.Add(interactable);
         }
 
-        private void OnOverlapContactRemoved(IXRInteractable interactable)
+        private void OnOverlapContactRemoved(IVXRInteractable interactable)
         {
             if (UnsortedOverlapTargets.Remove(interactable))
             {
@@ -542,7 +542,7 @@ namespace VaporXR
             }
         }
 
-        private void OnRaycastContactRemoved(IXRInteractable interactable)
+        private void OnRaycastContactRemoved(IVXRInteractable interactable)
         {
             SortedRaycastTargets.Remove(interactable);
         }
@@ -565,21 +565,21 @@ namespace VaporXR
         #endregion
 
         #region - Hovering -
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             return base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable));
         }
         #endregion
 
         #region - Selection -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) && (!HasSelection || IsSelecting(interactable));
         }
         #endregion
 
         #region - Helpers -
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 

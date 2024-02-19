@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Vapor.Utilities;
 using VaporInspector;
+using VaporXR.Interactables;
 using VaporXR.Interactors;
 using VaporXR.Locomotion.Teleportation;
 using VaporXR.Utilities;
@@ -36,7 +37,7 @@ namespace VaporXR
     /// <para>
     /// There are fallback rules that could allow a Single Grab Transformer to be processed when there are multiple grabs,
     /// and for a Multiple Grab Transformer to be processed when there is a single grab (though a grab transformer will never be
-    /// processed if its <see cref="IXRGrabTransformer.canProcess"/> returns <see langword="false"/>).
+    /// processed if its <see cref="IXRGrabTransformer.CanProcess"/> returns <see langword="false"/>).
     /// <list type="bullet">
     /// <item>
     /// <description>When there is a single interactor selecting this object, the Multiple Grab Transformer will be processed only
@@ -55,7 +56,7 @@ namespace VaporXR
     [RequireComponent(typeof(Rigidbody))]
     [BurstCompile]
     // ReSharper disable once InconsistentNaming
-    public class VXRGrabInteractable : VXRBaseInteractable
+    public class VXRGrabInteractable : VXRBaseInteractable, IVXRGrabCompositeInteractable
     {
         private const float DefaultTighteningAmount = 0.1f;
         private const float DefaultSmoothingAmount = 8f;
@@ -219,11 +220,11 @@ namespace VaporXR
         /// rather than reverting back to the attach pose from the original grab.
         /// </summary>
         /// <remarks>
-        /// <see cref="IXRSelectInteractable.SelectMode"/> must be set to <see cref="InteractableSelectMode.Multiple"/> for
+        /// <see cref="IVXRSelectInteractable.SelectMode"/> must be set to <see cref="InteractableSelectMode.Multiple"/> for
         /// this setting to take effect.
         /// </remarks>
         /// <seealso cref="UseDynamicAttach"/>
-        /// <seealso cref="IXRSelectInteractable.SelectMode"/>
+        /// <seealso cref="IVXRSelectInteractable.SelectMode"/>
         public bool ReinitializeDynamicAttachEverySingleGrab { get => m_ReinitializeDynamicAttachEverySingleGrab; set => m_ReinitializeDynamicAttachEverySingleGrab = value; }
 
         /// <summary>
@@ -525,6 +526,16 @@ namespace VaporXR
                 m_IsTargetLocalScaleDirty = value;
             }
         }
+
+        public bool TrackRotation => throw new NotImplementedException();
+
+        public bool TrackPosition => throw new NotImplementedException();
+
+        public bool TrackScale => throw new NotImplementedException();
+
+        public IVXRHoverInteractable Hover => throw new NotImplementedException();
+
+        public IVXRSelectInteractable Select => throw new NotImplementedException();
 
         private float m_CurrentAttachEaseTime;
         private MovementType m_CurrentMovementType;
@@ -861,8 +872,8 @@ namespace VaporXR
         {
             // Setup the dynamic attach transform.
             // Done before calling the base method so the attach pose captured is the dynamic one.
-            var dynamicAttachTransform = CreateDynamicAttachTransform(args.interactorObject);
-            InitializeDynamicAttachPoseInternal(args.interactorObject, dynamicAttachTransform);
+            var dynamicAttachTransform = CreateDynamicAttachTransform(args.InteractorObject);
+            InitializeDynamicAttachPoseInternal(args.InteractorObject, dynamicAttachTransform);
 
             // Store the grab count change.
             var grabCountBeforeChange = InteractorsSelecting.Count;
@@ -884,16 +895,16 @@ namespace VaporXR
             // the first select could have happened from a non-character interactor.
             if (!m_IgnoringCharacterCollision)
             {
-                m_SelectingCharacterController = args.interactorObject.transform.GetComponentInParent<CharacterController>();
+                m_SelectingCharacterController = args.InteractorObject.transform.GetComponentInParent<CharacterController>();
                 if (m_SelectingCharacterController != null)
                 {
-                    m_SelectingCharacterInteractors.Add(args.interactorObject);
+                    m_SelectingCharacterInteractors.Add(args.InteractorObject);
                     StartIgnoringCharacterCollision(m_SelectingCharacterController);
                 }
             }
-            else if (m_SelectingCharacterController != null && args.interactorObject.transform.IsChildOf(m_SelectingCharacterController.transform))
+            else if (m_SelectingCharacterController != null && args.InteractorObject.transform.IsChildOf(m_SelectingCharacterController.transform))
             {
-                m_SelectingCharacterInteractors.Add(args.interactorObject);
+                m_SelectingCharacterInteractors.Add(args.InteractorObject);
             }
 
             if (InteractorsSelecting.Count == 1)
@@ -902,7 +913,7 @@ namespace VaporXR
                 InvokeGrabTransformersOnGrab();
             }
 
-            SubscribeTeleportationProvider(args.interactorObject);
+            SubscribeTeleportationProvider(args.InteractorObject);
         }
 
         /// <inheritdoc />
@@ -920,7 +931,7 @@ namespace VaporXR
             if (InteractorsSelecting.Count == 0)
             {
                 if (m_ThrowOnDetach)
-                    m_ThrowAssist = args.interactorObject.transform.GetComponentInParent<IXRAimAssist>();
+                    m_ThrowAssist = args.InteractorObject.transform.GetComponentInParent<IXRAimAssist>();
 
                 Drop();
 
@@ -928,7 +939,7 @@ namespace VaporXR
                 {
                     using (s_DropEventArgs.Get(out var dropArgs))
                     {
-                        dropArgs.selectExitEventArgs = args;
+                        dropArgs.SelectExitEventArgs = args;
                         InvokeGrabTransformersOnDrop(dropArgs);
                     }
                 }
@@ -936,9 +947,9 @@ namespace VaporXR
 
             // Don't restore ability to collide with character until the object is not overlapping with the character.
             // This prevents the character from being pushed out of the way of the dropped object while moving.
-            m_SelectingCharacterInteractors.Remove(args.interactorObject);
+            m_SelectingCharacterInteractors.Remove(args.InteractorObject);
 
-            UnsubscribeTeleportationProvider(args.interactorObject);
+            UnsubscribeTeleportationProvider(args.InteractorObject);
         }
 
         /// <inheritdoc />
@@ -946,7 +957,7 @@ namespace VaporXR
         {
             base.OnSelectExited(args);
 
-            ReleaseDynamicAttachTransform(args.interactorObject);
+            ReleaseDynamicAttachTransform(args.InteractorObject);
         }
         #endregion
 
@@ -1407,7 +1418,7 @@ namespace VaporXR
                             if (!m_MultipleGrabTransformers.IsStillRegistered(transformer))
                                 continue;
 
-                            if (transformer.canProcess)
+                            if (transformer.CanProcess)
                             {
                                 transformer.Process(this, updatePhase, ref targetPose, ref localScale);
                                 processed = true;
@@ -1422,7 +1433,7 @@ namespace VaporXR
                             if (!m_SingleGrabTransformers.IsStillRegistered(transformer))
                                 continue;
 
-                            if (transformer.canProcess)
+                            if (transformer.CanProcess)
                                 transformer.Process(this, updatePhase, ref targetPose, ref localScale);
                         }
                     }
@@ -1442,7 +1453,7 @@ namespace VaporXR
                                 continue;
                             }
 
-                            if (dropTransformer.canProcessOnDrop && transformer.canProcess)
+                            if (dropTransformer.CanProcessOnDrop && transformer.CanProcess)
                                 transformer.Process(this, updatePhase, ref targetPose, ref localScale);
                         }
                     }
@@ -1457,7 +1468,7 @@ namespace VaporXR
                                 continue;
                             }
 
-                            if (dropTransformer.canProcessOnDrop && transformer.canProcess)
+                            if (dropTransformer.CanProcessOnDrop && transformer.CanProcess)
                                 transformer.Process(this, updatePhase, ref targetPose, ref localScale);
                         }
                     }
@@ -1481,7 +1492,7 @@ namespace VaporXR
                     if (!m_SingleGrabTransformers.IsStillRegistered(transformer))
                         continue;
 
-                    if (transformer.canProcess)
+                    if (transformer.CanProcess)
                         return true;
                 }
             }

@@ -152,7 +152,7 @@ namespace VaporXR.Locomotion
         {
             base.OnSelectEntered(args);
             if (m_ClimbProvider != null || ComponentLocatorUtility<ClimbProvider>.TryFindComponent(out m_ClimbProvider))
-                m_ClimbProvider.StartClimbGrab(this, args.interactorObject);
+                m_ClimbProvider.StartClimbGrab(this, args.InteractorObject);
         }
 
         /// <inheritdoc />
@@ -160,7 +160,7 @@ namespace VaporXR.Locomotion
         {
             base.OnSelectExited(args);
             if (m_ClimbProvider != null)
-                m_ClimbProvider.FinishClimbGrab(args.interactorObject);
+                m_ClimbProvider.FinishClimbGrab(args.InteractorObject);
         }
     }
 }

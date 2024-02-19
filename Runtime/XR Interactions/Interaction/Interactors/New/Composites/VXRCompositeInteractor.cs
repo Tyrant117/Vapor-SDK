@@ -55,27 +55,27 @@ namespace VaporXR
             }
         }
 
-        public virtual bool IsHovering(IXRInteractable interactable)
+        public virtual bool IsHovering(IVXRInteractable interactable)
         {
             return _hover != null && _hover.IsHovering(interactable);
         }
 
-        public virtual bool CanHover(IXRHoverInteractable interactable)
+        public virtual bool CanHover(IVXRHoverInteractable interactable)
         {
             return true;
         }
 
-        public virtual bool IsSelecting(IXRInteractable interactable)
+        public virtual bool IsSelecting(IVXRInteractable interactable)
         {
             return _select != null && _select.IsSelecting(interactable);
         }
 
-        public virtual bool CanSelect(IXRSelectInteractable interactable)
+        public virtual bool CanSelect(IVXRSelectInteractable interactable)
         {
             return true;
         }
 
-        public Transform GetAttachTransform(IXRInteractable interactable)
+        public Transform GetAttachTransform(IVXRInteractable interactable)
         {
             return _attachPoint;
         }

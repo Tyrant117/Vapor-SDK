@@ -81,7 +81,7 @@ namespace VaporXR
         /// <summary>
         /// Reusable list of interactables (used to process the valid targets when this interactor has a filter).
         /// </summary>
-        private static readonly List<IXRInteractable> s_Results = new();
+        private static readonly List<IVXRInteractable> s_Results = new();
 
         /// <summary>
         /// Reusable list of raycast hits, used to avoid allocations during sphere casting.
@@ -254,13 +254,13 @@ namespace VaporXR
         }
 
         /// <summary>
-        /// The nearest <see cref="IXRInteractable"/> object hit by the ray that was inserted into the valid targets
+        /// The nearest <see cref="IVXRInteractable"/> object hit by the ray that was inserted into the valid targets
         /// list when not selecting anything.
         /// </summary>
         /// <remarks>
         /// Updated during <see cref="PreprocessInteractor"/>.
         /// </remarks>
-        protected IXRInteractable CurrentNearestValidTarget { get; private set; }
+        protected IVXRInteractable CurrentNearestValidTarget { get; private set; }
 
         private Vector3 ReferenceUp => _hasReferenceFrame ? _referenceFrame.up : Vector3.up;
 
@@ -314,7 +314,7 @@ namespace VaporXR
         private bool _hasRayOriginTransform;
         private bool _hasReferenceFrame;
 
-        private readonly List<IXRInteractable> _validTargets = new List<IXRInteractable>();
+        private readonly List<IVXRInteractable> _validTargets = new List<IVXRInteractable>();
 
         private readonly RaycastHit[] _raycastHits = new RaycastHit[MaxRaycastHits];
         private int _raycastHitsCount;
@@ -359,7 +359,7 @@ namespace VaporXR
         // Cached raycast data
         private bool _raycastHitOccurred;
         private RaycastHit _raycastHit;
-        private IXRInteractable _raycastInteractable;
+        private IVXRInteractable _raycastInteractable;
 
         /// <summary>
         /// The closest index of the sample endpoint where a 3D or UI hit occurred.
@@ -373,7 +373,7 @@ namespace VaporXR
         #region - Initialization -
         protected override void Awake()
         {
-            TargetsForSelection = new List<IXRSelectInteractable>();
+            TargetsForSelection = new List<IVXRSelectInteractable>();
 
             base.Awake();
         }
@@ -428,7 +428,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 
@@ -1023,14 +1023,14 @@ namespace VaporXR
         #endregion
 
         #region - Hovering -
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             return base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable));
         }
         #endregion
 
         #region - Selection -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) && (!HasSelection || IsSelecting(interactable));
         }

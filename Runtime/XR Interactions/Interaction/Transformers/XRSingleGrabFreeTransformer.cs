@@ -1,5 +1,6 @@
 ﻿using Unity.XR.CoreUtils;
 using UnityEngine;
+using VaporXR.Interactables;
 
 namespace VaporXR
 {
@@ -11,7 +12,7 @@ namespace VaporXR
     public class XRSingleGrabFreeTransformer : XRBaseGrabTransformer
     {
         /// <inheritdoc />
-        public override void Process(VXRGrabInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        public override void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             switch (updatePhase)
             {
@@ -25,18 +26,18 @@ namespace VaporXR
             }
         }
 
-        internal static void UpdateTarget(VXRGrabInteractable grabInteractable, ref Pose targetPose)
+        internal static void UpdateTarget(IVXRGrabCompositeInteractable grabInteractable, ref Pose targetPose)
         {
-            var interactor = grabInteractable.InteractorsSelecting[0];
-            var interactorAttachPose = interactor.GetAttachTransform(grabInteractable).GetWorldPose();
+            var interactor = grabInteractable.Select.InteractorsSelecting[0];
+            var interactorAttachPose = interactor.GetAttachTransform(grabInteractable.Select).GetWorldPose();
             var thisTransformPose = grabInteractable.transform.GetWorldPose();
-            var thisAttachTransform = grabInteractable.GetAttachTransform(interactor);
+            var thisAttachTransform = grabInteractable.Select.GetAttachTransform(interactor);
 
             // Calculate offset of the grab interactable's position relative to its attach transform
             var attachOffset = thisTransformPose.position - thisAttachTransform.position;
 
             // Compute the new target world pose
-            if (grabInteractable.trackRotation)
+            if (grabInteractable.TrackRotation)
             {
                 // Transform that offset direction from world space to local space of the transform it's relative to.
                 // It will be applied to the interactor's attach position using the orientation of the Interactor's attach transform.

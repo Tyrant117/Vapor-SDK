@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace VaporXR.Interactors
 {
-    public class VXRSelectInteractor : VXRInteractor, IVXRSelectInteractor, IXRGroupMember, IXRInteractionStrengthInteractor, IPoseSource
+    public class VXRSelectInteractor : VXRInteractor, IVXRSelectInteractor, IPoseSource
     {
         private static readonly ProfilerMarker s_ProcessInteractionStrengthMarker = new("VXR.ProcessInteractionStrength.Interactors");
         private const float InteractionStrengthSelect = 1f;
@@ -64,11 +64,11 @@ namespace VaporXR.Interactors
         public InputTriggerType SelectActionTrigger { get => _selectActionTrigger; set => _selectActionTrigger = value; }
         public bool KeepSelectedTargetValid => _keepSelectedTargetValid;
 
-        private readonly HashSetList<IXRSelectInteractable> _interactablesSelected = new();
+        private readonly HashSetList<IVXRSelectInteractable> _interactablesSelected = new();
         
-        public List<IXRSelectInteractable> InteractablesSelected => (List<IXRSelectInteractable>)_interactablesSelected.AsList();
+        public List<IVXRSelectInteractable> InteractablesSelected => (List<IVXRSelectInteractable>)_interactablesSelected.AsList();
         
-        public IXRSelectInteractable FirstInteractableSelected { get; private set; }
+        public IVXRSelectInteractable FirstInteractableSelected { get; private set; }
         
         public bool HasSelection => _interactablesSelected.Count > 0;
 
@@ -83,12 +83,12 @@ namespace VaporXR.Interactors
         #endregion
 
         #region Fields
-        private readonly Dictionary<IXRSelectInteractable, Pose> _attachPoseOnSelect = new();
-        private readonly Dictionary<IXRSelectInteractable, Pose> _localAttachPoseOnSelect = new();
+        private readonly Dictionary<IVXRSelectInteractable, Pose> _attachPoseOnSelect = new();
+        private readonly Dictionary<IVXRSelectInteractable, Pose> _localAttachPoseOnSelect = new();
         private readonly HashSetList<IXRInteractionStrengthInteractable> _interactionStrengthInteractables = new();
-        private readonly Dictionary<IXRInteractable, float> _interactionStrengths = new();
+        private readonly Dictionary<IVXRInteractable, float> _interactionStrengths = new();
 
-        private IXRSelectInteractable _manualInteractionInteractable;
+        private IVXRSelectInteractable _manualInteractionInteractable;
         #endregion
 
         #region Events
@@ -118,7 +118,7 @@ namespace VaporXR.Interactors
         /// for reduced movement latency.
         /// </remarks>
         /// <seealso cref="VXRGrabInteractable.movementType"/>
-        public Func<VXRBaseInteractable.MovementType> SelectedInteractableMovementTypeOverride { get; set; }
+        public Func<MovementType> SelectedInteractableMovementTypeOverride { get; set; }
         #endregion
 
         #region - Initialization -
@@ -161,8 +161,8 @@ namespace VaporXR.Interactors
         /// </summary>
         /// <param name="interactable">Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactable can be selected this frame.</returns>
-        /// <seealso cref="IXRSelectInteractable.IsSelectableBy"/>
-        public virtual bool CanSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.IsSelectableBy"/>
+        public virtual bool CanSelect(IVXRSelectInteractable interactable)
         {
             return ProcessSelectFilters(interactable) && (Composite == null || Composite.CanSelect(interactable));
         }
@@ -177,7 +177,7 @@ namespace VaporXR.Interactors
         /// In other words, returns whether <see cref="InteractablesSelected"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        public bool IsSelecting(IXRSelectInteractable interactable) => _interactablesSelected.Contains(interactable);
+        public bool IsSelecting(IVXRSelectInteractable interactable) => _interactablesSelected.Contains(interactable);
 
         /// <summary>
         /// Determines whether this Interactor is currently selecting the Interactable.
@@ -189,7 +189,7 @@ namespace VaporXR.Interactors
         /// In other words, returns whether <see cref="InteractablesSelected"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        public bool IsSelecting(IXRInteractable interactable) => interactable is IXRSelectInteractable hoverable && IsSelecting(hoverable);
+        public bool IsSelecting(IVXRInteractable interactable) => interactable is IVXRSelectInteractable hoverable && IsSelecting(hoverable);
 
         /// <summary>
         /// Returns the processing value of the filters in <see cref="SelectFilters"/> for this Interactor and the
@@ -200,7 +200,7 @@ namespace VaporXR.Interactors
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="SelectFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessSelectFilters(IXRSelectInteractable interactable)
+        protected bool ProcessSelectFilters(IVXRSelectInteractable interactable)
         {
             return XRFilterUtility.Process(_selectFilters, this, interactable);
         }
@@ -237,7 +237,7 @@ namespace VaporXR.Interactors
         /// </summary>
         /// <param name="interactable">The specific interactable to get the interaction strength between.</param>
         /// <returns>Returns a value <c>[0.0, 1.0]</c> of the interaction strength.</returns>
-        public float GetInteractionStrength(IXRInteractable interactable)
+        public float GetInteractionStrength(IVXRInteractable interactable)
         {
             return _interactionStrengths.GetValueOrDefault(interactable, 0f);
         }
@@ -261,11 +261,13 @@ namespace VaporXR.Interactors
                 {
                     var interactable = _interactablesSelected[i];
                     if (interactable is IXRInteractionStrengthInteractable)
+                    {
                         continue;
+                    }
 
-                    _interactionStrengths[interactable] = InteractionStrengthSelect;
+                    _interactionStrengths[interactable] = LogicalSelectState.CurrentValue;
 
-                    maxInteractionStrength = InteractionStrengthSelect;
+                    maxInteractionStrength = LogicalSelectState.CurrentValue;
                 }
 
                 for (int i = 0, count = _interactionStrengthInteractables.Count; i < count; ++i)
@@ -296,21 +298,21 @@ namespace VaporXR.Interactors
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectEntering(SelectEnterEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Entering: {args.interactableObject}");
-            var added = _interactablesSelected.Add(args.interactableObject);
+            Debug.Log($"{Handedness} Hand Select Entering: {args.InteractableObject}");
+            var added = _interactablesSelected.Add(args.InteractableObject);
             Debug.Assert(added, "An Interactor received a Select Enter event for an Interactable that it was already selecting.", this);
 
-            if (args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
+            if (args.InteractableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
             {
                 _interactionStrengthInteractables.Add(interactionStrengthInteractable);
             }
 
             if (_interactablesSelected.Count == 1)
             {
-                FirstInteractableSelected = args.interactableObject;
+                FirstInteractableSelected = args.InteractableObject;
             }
 
-            CaptureAttachPose(args.interactableObject);
+            CaptureAttachPose(args.InteractableObject);
 
             LogicalSelectState.UpdateHasSelection(true);
             SelectEntering?.Invoke(args);
@@ -328,7 +330,7 @@ namespace VaporXR.Interactors
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectEntered(SelectEnterEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Entered: {args.interactableObject}");
+            Debug.Log($"{Handedness} Hand Select Entered: {args.InteractableObject}");
 
             SelectEntered?.Invoke(args);
         }
@@ -345,12 +347,12 @@ namespace VaporXR.Interactors
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectExiting(SelectExitEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Exiting: {args.interactableObject}");
-            var removed = _interactablesSelected.Remove(args.interactableObject);
+            Debug.Log($"{Handedness} Hand Select Exiting: {args.GetinteractableObject()}");
+            var removed = _interactablesSelected.Remove(args.GetinteractableObject());
             Debug.Assert(removed, "An Interactor received a Select Exit event for an Interactable that it was not selecting.", this);
 
             if (_interactionStrengthInteractables.Count > 0 &&
-                args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable &&
+                args.GetinteractableObject() is IXRInteractionStrengthInteractable interactionStrengthInteractable &&
                 !Composite.IsHovering(interactionStrengthInteractable))
             {
                 _interactionStrengthInteractables.Remove(interactionStrengthInteractable);
@@ -378,7 +380,7 @@ namespace VaporXR.Interactors
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectExited(SelectExitEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Exited: {args.interactableObject}");
+            Debug.Log($"{Handedness} Hand Select Exited: {args.GetinteractableObject()}");
             SelectExited?.Invoke(args);
 
             // The dictionaries are pruned so that they don't infinitely grow in size as selections are made.
@@ -404,7 +406,7 @@ namespace VaporXR.Interactors
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="VXRBaseInteractable.CaptureAttachPose"/>
-        protected void CaptureAttachPose(IXRSelectInteractable interactable)
+        protected void CaptureAttachPose(IVXRSelectInteractable interactable)
         {
             var thisAttachTransform = GetAttachTransform(interactable);
             if (thisAttachTransform != null)
@@ -429,8 +431,8 @@ namespace VaporXR.Interactors
         /// and otherwise the identity <see cref="Pose"/> if it was not selected during the current selection stack.</returns>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractor.GetAttachTransform"/>
-        /// <seealso cref="IXRSelectInteractable.GetAttachPoseOnSelect"/>
-        public Pose GetAttachPoseOnSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.GetAttachPoseOnSelect"/>
+        public Pose GetAttachPoseOnSelect(IVXRSelectInteractable interactable)
         {
             return _attachPoseOnSelect.TryGetValue(interactable, out var pose) ? pose : Pose.identity;
         }
@@ -443,8 +445,8 @@ namespace VaporXR.Interactors
         /// and otherwise the identity <see cref="Pose"/> if it was not selected during the current selection stack.</returns>
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractor.GetAttachTransform"/>
-        /// <seealso cref="IXRSelectInteractable.GetLocalAttachPoseOnSelect"/>
-        public Pose GetLocalAttachPoseOnSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.GetLocalAttachPoseOnSelect"/>
+        public Pose GetLocalAttachPoseOnSelect(IVXRSelectInteractable interactable)
         {
             return _localAttachPoseOnSelect.TryGetValue(interactable, out var pose) ? pose : Pose.identity;
         }
@@ -457,7 +459,7 @@ namespace VaporXR.Interactors
                 {
                     _hand.RequestHandPose(HandPoseType.Grab, this, pose.Value, duration: duration);
                 }
-                else
+                else if (_selectPose != null)
                 {
                     _hand.RequestHandPose(HandPoseType.Grab, this, _selectPose.Value, duration: _selectPoseDuration);
                 }
@@ -479,7 +481,7 @@ namespace VaporXR.Interactors
         /// </summary>
         /// <param name="interactable">Interactable that is being selected.</param>
         /// <seealso cref="EndManualInteraction"/>
-        public virtual void StartManualInteraction(IXRSelectInteractable interactable)
+        public virtual void StartManualInteraction(IVXRSelectInteractable interactable)
         {
             if (InteractionManager == null)
             {
@@ -495,7 +497,7 @@ namespace VaporXR.Interactors
         /// <summary>
         /// Ends the manually initiated selection of an Interactable.
         /// </summary>
-        /// <seealso cref="StartManualInteraction(IXRSelectInteractable)"/>
+        /// <seealso cref="StartManualInteraction(IVXRSelectInteractable)"/>
         public virtual void EndManualInteraction()
         {
             if (InteractionManager == null)

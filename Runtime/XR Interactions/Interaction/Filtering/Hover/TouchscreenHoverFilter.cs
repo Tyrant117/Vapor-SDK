@@ -30,7 +30,7 @@ namespace VaporXR
         public bool CanProcess => isActiveAndEnabled;
 
         /// <inheritdoc />
-        public bool Process(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public bool Process(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             return _screenTouchCountInput.ReadValue();
         }

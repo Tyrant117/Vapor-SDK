@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
 using VaporInspector;
+using VaporXR.Interactables;
 using VaporXR.Interactors;
 
 namespace VaporXR
@@ -24,7 +25,7 @@ namespace VaporXR
         private bool _spawnerActive = true;
         [FoldoutGroup("Spawner"), SerializeField]
         [RichTextTooltip("The prefab to spawn at the spawner.")]
-        private VXRGrabInteractable _spawnPrefab;
+        private VXRGrabCompositeInteractable _spawnPrefab;
 
         [FoldoutGroup("Socket"), SerializeField, Min(-1)]
         [RichTextTooltip("The quantity that can respawn, -1 for infinite stock")]
@@ -124,7 +125,7 @@ namespace VaporXR
             Select.SelectEntered += OnSelectEntered;
             Select.SelectExited += OnSelectExited;
             Select.SetOverrideSorter(_manualSorter);
-            m_SocketGrabTransformer.canProcess = _spawnerActive;
+            m_SocketGrabTransformer.CanProcess = _spawnerActive;
             SyncTransformerParams();
         }               
 
@@ -134,7 +135,7 @@ namespace VaporXR
             Select.SelectEntered -= OnSelectEntered;
             Select.SelectExited -= OnSelectExited;
             Select.SetOverrideSorter(null);
-            m_SocketGrabTransformer.canProcess = false;
+            m_SocketGrabTransformer.CanProcess = false;
         }
 
         private void SyncTransformerParams()
@@ -166,13 +167,13 @@ namespace VaporXR
             void _Spawn()
             {
                 var grab = GameObject.Instantiate(_spawnPrefab, AttachPoint.position, AttachPoint.rotation);
-                Select.StartManualInteraction(grab);
+                Select.StartManualInteraction(grab.Select);
             }
         }
         #endregion
 
         #region - Selection -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) &&
                 ((!HasSelection && !interactable.IsSelected) || (IsSelecting(interactable) && interactable.InteractorsSelecting.Count == 1));
@@ -185,7 +186,7 @@ namespace VaporXR
 
         private void OnSelectEntered(SelectEnterEventArgs args)
         {
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.InteractableObject is VXRGrabInteractable grabInteractable)
             {
                 StartSocketSnapping(grabInteractable);
             }
@@ -194,7 +195,7 @@ namespace VaporXR
         private void OnSelectExited(SelectExitEventArgs args)
         {
             m_LastRemoveTime = Time.time;
-            if (args.interactableObject is VXRGrabInteractable grabInteractable)
+            if (args.GetinteractableObject() is VXRGrabInteractable grabInteractable)
             {
                 EndSocketSnapping(grabInteractable);
             }

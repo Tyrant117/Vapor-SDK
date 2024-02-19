@@ -31,7 +31,7 @@ namespace VaporXR
     /// rather than being called directly in order to maintain consistency between both targets of an interaction event.
     /// </remarks>
     /// <seealso cref="IVXRInteractor"/>
-    /// <seealso cref="IXRInteractable"/>
+    /// <seealso cref="IVXRInteractable"/>
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(XRInteractionUpdateOrder.k_InteractionManager)]
     // ReSharper disable once InconsistentNaming
@@ -82,25 +82,25 @@ namespace VaporXR
         public event Action<InteractorUnregisteredEventArgs> interactorUnregistered;
 
         /// <summary>
-        /// Calls the methods in its invocation list when an <see cref="IXRInteractable"/> is registered.
+        /// Calls the methods in its invocation list when an <see cref="IVXRInteractable"/> is registered.
         /// </summary>
         /// <remarks>
         /// The <see cref="InteractableRegisteredEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="RegisterInteractable(IXRInteractable)"/>
-        /// <seealso cref="IXRInteractable.Registered"/>
+        /// <seealso cref="RegisterInteractable(IVXRInteractable)"/>
+        /// <seealso cref="IVXRInteractable.Registered"/>
         public event Action<InteractableRegisteredEventArgs> interactableRegistered;
 
         /// <summary>
-        /// Calls the methods in its invocation list when an <see cref="IXRInteractable"/> is unregistered.
+        /// Calls the methods in its invocation list when an <see cref="IVXRInteractable"/> is unregistered.
         /// </summary>
         /// <remarks>
         /// The <see cref="InteractableUnregisteredEventArgs"/> passed to each listener is only valid while the event is invoked,
         /// do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="UnregisterInteractable(IXRInteractable)"/>
-        /// <seealso cref="IXRInteractable.Unregistered"/>
+        /// <seealso cref="UnregisterInteractable(IVXRInteractable)"/>
+        /// <seealso cref="IVXRInteractable.Unregistered"/>
         public event Action<InteractableUnregisteredEventArgs> interactableUnregistered;
 
 
@@ -199,7 +199,7 @@ namespace VaporXR
         /// <summary>
         /// Map of all registered objects to test for colliding.
         /// </summary>
-        readonly Dictionary<Collider, IXRInteractable> m_ColliderToInteractableMap = new();
+        readonly Dictionary<Collider, IVXRInteractable> m_ColliderToInteractableMap = new();
 
         /// <summary>
         /// Map of colliders and their associated <see cref="XRInteractableSnapVolume"/>.
@@ -219,22 +219,22 @@ namespace VaporXR
         /// <summary>
         /// List of registered Interactables.
         /// </summary>
-        readonly RegistrationList<IXRInteractable> m_Interactables = new RegistrationList<IXRInteractable>();
+        readonly RegistrationList<IVXRInteractable> m_Interactables = new RegistrationList<IVXRInteractable>();
 
         /// <summary>
         /// Reusable list of Interactables for retrieving the current hovered Interactables of an Interactor.
         /// </summary>
-        readonly List<IXRHoverInteractable> m_CurrentHovered = new List<IXRHoverInteractable>();
+        readonly List<IVXRHoverInteractable> m_CurrentHovered = new List<IVXRHoverInteractable>();
 
         /// <summary>
         /// Reusable list of Interactables for retrieving the current selected Interactables of an Interactor.
         /// </summary>
-        readonly List<IXRSelectInteractable> m_CurrentSelected = new List<IXRSelectInteractable>();
+        readonly List<IVXRSelectInteractable> m_CurrentSelected = new List<IVXRSelectInteractable>();
 
         /// <summary>
         /// Map of Interactables that have the highest priority for selection in a frame.
         /// </summary>
-        readonly Dictionary<IXRSelectInteractable, List<IXRTargetPriorityInteractor>> m_HighestPriorityTargetMap = new Dictionary<IXRSelectInteractable, List<IXRTargetPriorityInteractor>>();
+        readonly Dictionary<IVXRSelectInteractable, List<IXRTargetPriorityInteractor>> m_HighestPriorityTargetMap = new Dictionary<IVXRSelectInteractable, List<IXRTargetPriorityInteractor>>();
 
         /// <summary>
         /// Pool of Target Priority Interactor lists. Used by m_HighestPriorityTargetMap.
@@ -244,12 +244,12 @@ namespace VaporXR
         /// <summary>
         /// Reusable list of valid targets for an Interactor.
         /// </summary>
-        readonly List<IXRInteractable> m_ValidTargets = new List<IXRInteractable>();
+        readonly List<IVXRInteractable> m_ValidTargets = new List<IVXRInteractable>();
 
         /// <summary>
         /// Reusable set of valid targets for an Interactor.
         /// </summary>
-        readonly HashSet<IXRInteractable> m_UnorderedValidTargets = new HashSet<IXRInteractable>();
+        readonly HashSet<IVXRInteractable> m_UnorderedValidTargets = new HashSet<IVXRInteractable>();
 
         /// <summary>
         /// Set of all Interactors that are in an Interaction Group.
@@ -513,7 +513,7 @@ namespace VaporXR
         /// <remarks>
         /// Please see the <see cref="XRInteractionUpdateOrder.UpdatePhase"/> documentation for more details on update order.
         /// </remarks>
-        /// <seealso cref="IXRInteractable.ProcessInteractable"/>
+        /// <seealso cref="IVXRInteractable.ProcessInteractable"/>
         /// <seealso cref="XRInteractionUpdateOrder.UpdatePhase"/>
         protected virtual void ProcessInteractables(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
@@ -570,7 +570,7 @@ namespace VaporXR
         /// filters to this object (see <see cref="startingHoverFilters"/> and <see cref="hoverFilters"/>).
         /// </remarks>
         /// <seealso cref="IsHoverPossible"/>
-        public virtual bool CanHover(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public virtual bool CanHover(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             return interactor.IsHoverActive && IsHoverPossible(interactor, interactable);
         }
@@ -582,7 +582,7 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns whether the given Interactor would be able to hover the given Interactable if the Interactor were in a state where it could hover.</returns>
         /// <seealso cref="CanHover"/>
-        public bool IsHoverPossible(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public bool IsHoverPossible(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             return HasInteractionLayerOverlap(interactor, interactable) && ProcessHoverFilters(interactor, interactable) &&
                 interactor.CanHover(interactable) && interactable.IsHoverableBy(interactor);
@@ -600,7 +600,7 @@ namespace VaporXR
         /// filters to this object (see <see cref="startingSelectFilters"/> and <see cref="selectFilters"/>).
         /// </remarks>
         /// <seealso cref="IsSelectPossible"/>
-        public virtual bool CanSelect(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public virtual bool CanSelect(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             return interactor.IsSelectActive && IsSelectPossible(interactor, interactable);
         }
@@ -612,7 +612,7 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns whether the given Interactor would be able to select the given Interactable if the Interactor were in a state where it could select.</returns>
         /// <seealso cref="CanSelect"/>
-        public bool IsSelectPossible(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public bool IsSelectPossible(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             return HasInteractionLayerOverlap(interactor, interactable) && ProcessSelectFilters(interactor, interactable) &&
                 interactor.CanSelect(interactable) && interactable.IsSelectableBy(interactor);
@@ -898,7 +898,7 @@ namespace VaporXR
         /// Registers a new Interactable to be processed.
         /// </summary>
         /// <param name="interactable">The Interactable to be registered.</param>
-        public virtual void RegisterInteractable(IXRInteractable interactable)
+        public virtual void RegisterInteractable(IVXRInteractable interactable)
         {
             if (m_Interactables.Register(interactable))
             {
@@ -948,7 +948,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="RegisterInteractable(IXRInteractable)"/>
+        /// <seealso cref="RegisterInteractable(IVXRInteractable)"/>
         protected virtual void OnRegistered(InteractableRegisteredEventArgs args)
         {
             Debug.Assert(args.manager == this, this);
@@ -961,7 +961,7 @@ namespace VaporXR
         /// Unregister an Interactable so it is no longer processed.
         /// </summary>
         /// <param name="interactable">The Interactable to be unregistered.</param>
-        public virtual void UnregisterInteractable(IXRInteractable interactable)
+        public virtual void UnregisterInteractable(IVXRInteractable interactable)
         {
             if (!IsRegistered(interactable))
                 return;
@@ -969,10 +969,10 @@ namespace VaporXR
             if (interactable is IXRFocusInteractable focusable)
                 CancelInteractableFocus(focusable);
 
-            if (interactable is IXRSelectInteractable selectable)
+            if (interactable is IVXRSelectInteractable selectable)
                 CancelInteractableSelection(selectable);
 
-            if (interactable is IXRHoverInteractable hoverable)
+            if (interactable is IVXRHoverInteractable hoverable)
                 CancelInteractableHover(hoverable);
 
             if (m_Interactables.Unregister(interactable))
@@ -1006,7 +1006,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="UnregisterInteractable(IXRInteractable)"/>
+        /// <seealso cref="UnregisterInteractable(IVXRInteractable)"/>
         protected virtual void OnUnregistered(InteractableUnregisteredEventArgs args)
         {
             Debug.Assert(args.manager == this, this);
@@ -1092,7 +1092,7 @@ namespace VaporXR
         /// results of this method.
         /// Clears <paramref name="results"/> before adding to it.
         /// </remarks>
-        /// <seealso cref="GetRegisteredInteractables(List{IXRInteractable})"/>
+        /// <seealso cref="GetRegisteredInteractables(List{IVXRInteractable})"/>
         public void GetRegisteredInteractors(List<IVXRInteractor> results)
         {
             if (results == null)
@@ -1113,7 +1113,7 @@ namespace VaporXR
         /// Clears <paramref name="results"/> before adding to it.
         /// </remarks>
         /// <seealso cref="GetRegisteredInteractors(List{IVXRInteractor})"/>
-        public void GetRegisteredInteractables(List<IXRInteractable> results)
+        public void GetRegisteredInteractables(List<IVXRInteractable> results)
         {
             if (results == null)
                 throw new ArgumentNullException(nameof(results));
@@ -1148,8 +1148,8 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if registered. Otherwise, returns <see langword="false"/>.</returns>
-        /// <seealso cref="RegisterInteractable(IXRInteractable)"/>
-        public bool IsRegistered(IXRInteractable interactable)
+        /// <seealso cref="RegisterInteractable(IVXRInteractable)"/>
+        public bool IsRegistered(IVXRInteractable interactable)
         {
             return m_Interactables.IsRegistered(interactable);
         }
@@ -1160,7 +1160,7 @@ namespace VaporXR
         /// <param name="interactableCollider">The collider of the Interactable to retrieve.</param>
         /// <param name="interactable">The returned Interactable associated with the collider.</param>
         /// <returns>Returns <see langword="true"/> if an Interactable was associated with the collider. Otherwise, returns <see langword="false"/>.</returns>
-        public bool TryGetInteractableForCollider(Collider interactableCollider, out IXRInteractable interactable)
+        public bool TryGetInteractableForCollider(Collider interactableCollider, out IVXRInteractable interactable)
         {
             interactable = null;
             if (interactableCollider == null)
@@ -1184,7 +1184,7 @@ namespace VaporXR
         /// <param name="interactable">The returned Interactable associated with the collider.</param>
         /// <param name="snapVolume">The returned snap volume associated with the collider.</param>
         /// <returns>Returns <see langword="true"/> if an Interactable was associated with the collider. Otherwise, returns <see langword="false"/>.</returns>
-        public bool TryGetInteractableForCollider(Collider interactableCollider, out IXRInteractable interactable, out VXRInteractableSnapVolume snapVolume)
+        public bool TryGetInteractableForCollider(Collider interactableCollider, out IVXRInteractable interactable, out VXRInteractableSnapVolume snapVolume)
         {
             interactable = null;
             snapVolume = null;
@@ -1241,7 +1241,7 @@ namespace VaporXR
         /// <remarks>
         /// Clears <paramref name="interactors"/> before adding to it.
         /// </remarks>
-        public bool IsHighestPriorityTarget(IXRSelectInteractable target, List<IXRTargetPriorityInteractor> interactors = null)
+        public bool IsHighestPriorityTarget(IVXRSelectInteractable target, List<IXRTargetPriorityInteractor> interactors = null)
         {
             if (!m_HighestPriorityTargetMap.TryGetValue(target, out var targetPriorityInteractors))
                 return false;
@@ -1265,7 +1265,7 @@ namespace VaporXR
         /// Unity expects the <paramref name="interactor"/>'s implementation of <see cref="IVXRInteractor.GetValidTargets"/> to clear <paramref name="targets"/> before adding to it.
         /// </remarks>
         /// <seealso cref="IVXRInteractor.GetValidTargets"/>
-        public void GetValidTargets(IVXRInteractor interactor, List<IXRInteractable> targets)
+        public void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets)
         {
             targets.Clear();
             interactor.GetValidTargets(targets);
@@ -1284,7 +1284,7 @@ namespace VaporXR
         /// <remarks>
         /// Does not modify the manager at all, just the list.
         /// </remarks>
-        internal static int RemoveAllUnregistered(VXRInteractionManager manager, List<IXRInteractable> interactables)
+        internal static int RemoveAllUnregistered(VXRInteractionManager manager, List<IVXRInteractable> interactables)
         {
             var numRemoved = 0;
             for (var i = interactables.Count - 1; i >= 0; --i)
@@ -1318,7 +1318,7 @@ namespace VaporXR
             var cleared = false;
 
             var selectInteractor = focusInteractor as IVXRSelectInteractor;
-            var selectInteractable = focusInteractable as IXRSelectInteractable;
+            var selectInteractable = focusInteractable as IVXRSelectInteractable;
             
             if (selectInteractor != null)
             {
@@ -1359,8 +1359,8 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor to potentially exit its selection state.</param>
         /// <param name="validTargets">The list of interactables that this Interactor could possibly interact with this frame.</param>
-        /// <seealso cref="ClearInteractorHover(IVXRSelectInteractor, List{IXRInteractable})"/>
-        public virtual void ClearInteractorSelection(IVXRSelectInteractor interactor, List<IXRInteractable> validTargets)
+        /// <seealso cref="ClearInteractorHover(IVXRSelectInteractor, List{IVXRInteractable})"/>
+        public virtual void ClearInteractorSelection(IVXRSelectInteractor interactor, List<IVXRInteractable> validTargets)
         {
             if (interactor.InteractablesSelected.Count == 0)
                 return;
@@ -1408,7 +1408,7 @@ namespace VaporXR
         /// Automatically called when an Interactable is unregistered to cancel the selection of the Interactable if necessary.
         /// </summary>
         /// <param name="interactable">The Interactable to potentially exit its selection state due to cancellation.</param>
-        public virtual void CancelInteractableSelection(IXRSelectInteractable interactable)
+        public virtual void CancelInteractableSelection(IVXRSelectInteractable interactable)
         {
             for (var i = interactable.InteractorsSelecting.Count - 1; i >= 0; --i)
             {
@@ -1421,8 +1421,8 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor to potentially exit its hover state.</param>
         /// <param name="validTargets">The list of interactables that this Interactor could possibly interact with this frame.</param>
-        /// <seealso cref="ClearInteractorSelection(IVXRInteractor, List{IXRInteractable})"/>
-        public virtual void ClearInteractorHover(IVXRHoverInteractor interactor, List<IXRInteractable> validTargets)
+        /// <seealso cref="ClearInteractorSelection(IVXRInteractor, List{IVXRInteractable})"/>
+        public virtual void ClearInteractorHover(IVXRHoverInteractor interactor, List<IVXRInteractable> validTargets)
         {
             if (interactor.InteractablesHovered.Count == 0)
                 return;
@@ -1466,7 +1466,7 @@ namespace VaporXR
         /// Automatically called when an Interactable is unregistered to cancel the hover state of the Interactable if necessary.
         /// </summary>
         /// <param name="interactable">The Interactable to potentially exit its hover state due to cancellation.</param>
-        public virtual void CancelInteractableHover(IXRHoverInteractable interactable)
+        public virtual void CancelInteractableHover(IVXRHoverInteractable interactable)
         {
             for (var i = interactable.InteractorsHovering.Count - 1; i >= 0; --i)
             {
@@ -1501,7 +1501,7 @@ namespace VaporXR
             using (m_FocusEnterEventArgs.Get(out var args))
             {
                 args.manager = this;
-                args.interactorObject = interactor;
+                args.InteractorObject = interactor;
                 args.interactableObject = interactable;
                 args.interactionGroup = group;
                 FocusEnter(group, interactable, args);
@@ -1520,7 +1520,7 @@ namespace VaporXR
             using (m_FocusExitEventArgs.Get(out var args))
             {
                 args.manager = this;
-                args.interactorObject = interactor;
+                args.InteractorObject = interactor;
                 args.interactableObject = interactable;
                 args.interactionGroup = group;
                 args.isCanceled = false;
@@ -1539,7 +1539,7 @@ namespace VaporXR
             using (m_FocusExitEventArgs.Get(out var args))
             {
                 args.manager = this;
-                args.interactorObject = group.FocusInteractor;
+                args.InteractorObject = group.FocusInteractor;
                 args.interactableObject = interactable;
                 args.interactionGroup = group;
                 args.isCanceled = true;
@@ -1556,16 +1556,16 @@ namespace VaporXR
         /// <remarks>
         /// This attempt may be ignored depending on the selection policy of the Interactor and/or the Interactable.
         /// </remarks>
-        public virtual void SelectEnter(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public virtual void SelectEnter(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             if (interactable.IsSelected && !ResolveExistingSelect(interactor, interactable))
                 return;
 
             using (m_SelectEnterEventArgs.Get(out var args))
             {
-                args.manager = this;
-                args.interactorObject = interactor;
-                args.interactableObject = interactable;
+                args.Manager = this;
+                args.InteractorObject = interactor;
+                args.InteractableObject = interactable;
                 SelectEnter(interactor, interactable, args);
             }
 
@@ -1580,14 +1580,14 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor that is no longer selecting.</param>
         /// <param name="interactable">The Interactable that is no longer being selected.</param>
-        public virtual void SelectExit(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public virtual void SelectExit(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             using (m_SelectExitEventArgs.Get(out var args))
             {
-                args.manager = this;
-                args.interactorObject = interactor;
-                args.interactableObject = interactable;
-                args.isCanceled = false;
+                args.Manager = this;
+                args.InteractorObject = interactor;
+                args.SetinteractableObject(interactable);
+                args.IsCanceled = false;
                 SelectExit(interactor, interactable, args);
             }
         }
@@ -1598,14 +1598,14 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor that is no longer selecting.</param>
         /// <param name="interactable">The Interactable that is no longer being selected.</param>
-        public virtual void SelectCancel(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public virtual void SelectCancel(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             using (m_SelectExitEventArgs.Get(out var args))
             {
-                args.manager = this;
-                args.interactorObject = interactor;
-                args.interactableObject = interactable;
-                args.isCanceled = true;
+                args.Manager = this;
+                args.InteractorObject = interactor;
+                args.SetinteractableObject(interactable);
+                args.IsCanceled = true;
                 SelectExit(interactor, interactable, args);
             }
         }
@@ -1615,7 +1615,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor that is hovering.</param>
         /// <param name="interactable">The Interactable being hovered over.</param>
-        public virtual void HoverEnter(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public virtual void HoverEnter(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             using (m_HoverEnterEventArgs.Get(out var args))
             {
@@ -1631,7 +1631,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor that is no longer hovering.</param>
         /// <param name="interactable">The Interactable that is no longer being hovered over.</param>
-        public virtual void HoverExit(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public virtual void HoverExit(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             using (m_HoverExitEventArgs.Get(out var args))
             {
@@ -1649,7 +1649,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor that is no longer hovering.</param>
         /// <param name="interactable">The Interactable that is no longer being hovered over.</param>
-        public virtual void HoverCancel(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        public virtual void HoverCancel(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             using (m_HoverExitEventArgs.Get(out var args))
             {
@@ -1706,7 +1706,7 @@ namespace VaporXR
         /// </remarks>
         protected virtual void FocusExit(IXRInteractionGroup group, IXRFocusInteractable interactable, FocusExitEventArgs args)
         {
-            Debug.Assert(args.interactorObject == group.FocusInteractor, this);
+            Debug.Assert(args.InteractorObject == group.FocusInteractor, this);
             Debug.Assert(args.interactableObject == interactable, this);
             Debug.Assert(args.manager == this || args.manager == null, this);
             args.manager = this;
@@ -1737,12 +1737,12 @@ namespace VaporXR
         /// event finishes calling all methods in the sequence to notify of the first event.
         /// </remarks>
         // ReSharper disable PossiblyImpureMethodCallOnReadonlyVariable -- ProfilerMarker.Begin with context object does not have Pure attribute
-        protected virtual void SelectEnter(IVXRSelectInteractor interactor, IXRSelectInteractable interactable, SelectEnterEventArgs args)
+        protected virtual void SelectEnter(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable, SelectEnterEventArgs args)
         {
-            Debug.Assert(args.interactorObject == interactor, this);
-            Debug.Assert(args.interactableObject == interactable, this);
-            Debug.Assert(args.manager == this || args.manager == null, this);
-            args.manager = this;
+            Debug.Assert(args.InteractorObject == interactor, this);
+            Debug.Assert(args.InteractableObject == interactable, this);
+            Debug.Assert(args.Manager == this || args.Manager == null, this);
+            args.Manager = this;
 
             using (s_SelectEnterMarker.Auto())
             {
@@ -1765,12 +1765,12 @@ namespace VaporXR
         /// called during the handling of the first event, the second will start and finish before the first
         /// event finishes calling all methods in the sequence to notify of the first event.
         /// </remarks>
-        protected virtual void SelectExit(IVXRSelectInteractor interactor, IXRSelectInteractable interactable, SelectExitEventArgs args)
+        protected virtual void SelectExit(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable, SelectExitEventArgs args)
         {
-            Debug.Assert(args.interactorObject == interactor, this);
-            Debug.Assert(args.interactableObject == interactable, this);
-            Debug.Assert(args.manager == this || args.manager == null, this);
-            args.manager = this;
+            Debug.Assert(args.InteractorObject == interactor, this);
+            Debug.Assert(args.GetinteractableObject() == interactable, this);
+            Debug.Assert(args.Manager == this || args.Manager == null, this);
+            args.Manager = this;
 
             using (s_SelectExitMarker.Auto())
             {
@@ -1793,7 +1793,7 @@ namespace VaporXR
         /// called during the handling of the first event, the second will start and finish before the first
         /// event finishes calling all methods in the sequence to notify of the first event.
         /// </remarks>
-        protected virtual void HoverEnter(IVXRHoverInteractor interactor, IXRHoverInteractable interactable, HoverEnterEventArgs args)
+        protected virtual void HoverEnter(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable, HoverEnterEventArgs args)
         {
             Debug.Assert(args.interactorObject == interactor, this);
             Debug.Assert(args.interactableObject == interactable, this);
@@ -1821,7 +1821,7 @@ namespace VaporXR
         /// called during the handling of the first event, the second will start and finish before the first
         /// event finishes calling all methods in the sequence to notify of the first event.
         /// </remarks>
-        protected virtual void HoverExit(IVXRHoverInteractor interactor, IXRHoverInteractable interactable, HoverExitEventArgs args)
+        protected virtual void HoverExit(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable, HoverExitEventArgs args)
         {
             Debug.Assert(args.interactorObject == interactor, this);
             Debug.Assert(args.interactableObject == interactable, this);
@@ -1847,8 +1847,8 @@ namespace VaporXR
         /// If the Interactor implements <see cref="IXRTargetPriorityInteractor"/> and is configured to monitor Targets, this method will update its
         /// Targets For Selection property.
         /// </remarks>
-        /// <seealso cref="InteractorHoverValidTargets(IVXRSelectInteractor, List{IXRInteractable})"/>
-        public virtual void InteractorSelectValidTargets(IVXRSelectInteractor interactor, List<IXRInteractable> validTargets)
+        /// <seealso cref="InteractorHoverValidTargets(IVXRSelectInteractor, List{IVXRInteractable})"/>
+        public virtual void InteractorSelectValidTargets(IVXRSelectInteractor interactor, List<IVXRInteractable> validTargets)
         {
             if (validTargets.Count == 0)
                 return;
@@ -1861,7 +1861,7 @@ namespace VaporXR
             var foundHighestPriorityTarget = false;
             foreach (var target in validTargets)
             {
-                if (target is not IXRSelectInteractable interactable)
+                if (target is not IVXRSelectInteractable interactable)
                 {
                     continue;
                 }
@@ -1903,15 +1903,15 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactor">The Interactor to potentially enter its hover state.</param>
         /// <param name="validTargets">The list of interactables that this Interactor could possibly interact with this frame.</param>
-        /// <seealso cref="InteractorSelectValidTargets(IVXRInteractor, List{IXRInteractable})"/>
-        public virtual void InteractorHoverValidTargets(IVXRHoverInteractor interactor, List<IXRInteractable> validTargets)
+        /// <seealso cref="InteractorSelectValidTargets(IVXRInteractor, List{IVXRInteractable})"/>
+        public virtual void InteractorHoverValidTargets(IVXRHoverInteractor interactor, List<IVXRInteractable> validTargets)
         {
             if (validTargets.Count == 0)
                 return;
 
             foreach (var target in validTargets)
             {
-                if (target is not IXRHoverInteractable interactable) continue;
+                if (target is not IVXRHoverInteractable interactable) continue;
                 
                 if (CanHover(interactor, interactable) && !interactor.IsHovering(interactable))
                 {
@@ -1959,8 +1959,8 @@ namespace VaporXR
         /// <param name="interactable">The Interactable being selected.</param>
         /// <returns>Returns <see langword="true"/> if the existing selection was successfully resolved and selection should continue.
         /// Otherwise, returns <see langword="false"/> if the select should be ignored.</returns>
-        /// <seealso cref="SelectEnter(IVXRInteractor, IXRSelectInteractable)"/>
-        protected virtual bool ResolveExistingSelect(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        /// <seealso cref="SelectEnter(IVXRInteractor, IVXRSelectInteractable)"/>
+        protected virtual bool ResolveExistingSelect(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             Debug.Assert(interactable.IsSelected, this);
 
@@ -1990,8 +1990,8 @@ namespace VaporXR
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="IVXRInteractor.InteractionLayers"/>
-        /// <seealso cref="IXRInteractable.InteractionLayers"/>
-        protected static bool HasInteractionLayerOverlap(IVXRInteractor interactor, IXRInteractable interactable)
+        /// <seealso cref="IVXRInteractable.InteractionLayers"/>
+        protected static bool HasInteractionLayerOverlap(IVXRInteractor interactor, IVXRInteractable interactable)
         {
             return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
@@ -2006,7 +2006,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="hoverFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessHoverFilters(IVXRHoverInteractor interactor, IXRHoverInteractable interactable)
+        protected bool ProcessHoverFilters(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
         {
             return XRFilterUtility.Process(m_HoverFilters, interactor, interactable);
         }
@@ -2021,12 +2021,12 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="selectFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessSelectFilters(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        protected bool ProcessSelectFilters(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             return XRFilterUtility.Process(m_SelectFilters, interactor, interactable);
         }
 
-        private void ExitInteractableSelection(IXRSelectInteractable interactable)
+        private void ExitInteractableSelection(IVXRSelectInteractable interactable)
         {
             for (var i = interactable.InteractorsSelecting.Count - 1; i >= 0; --i)
             {

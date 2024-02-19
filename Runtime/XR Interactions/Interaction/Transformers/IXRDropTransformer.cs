@@ -1,3 +1,5 @@
+using VaporXR.Interactables;
+
 namespace VaporXR
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace VaporXR
         /// <summary>
         /// The event data associated with the select exit event.
         /// </summary>
-        public SelectExitEventArgs selectExitEventArgs { get; set; }
+        public SelectExitEventArgs SelectExitEventArgs { get; set; }
     }
 
     /// <summary>
@@ -25,12 +27,12 @@ namespace VaporXR
         /// by Unity once more after the interactable is deselected by all interactors.
         /// </summary>
         /// <remarks>
-        /// When the grab transformer implements this interface and this property and <see cref="IXRGrabTransformer.canProcess"/>
+        /// When the grab transformer implements this interface and this property and <see cref="IXRGrabTransformer.CanProcess"/>
         /// both returns <see langword="true"/>, the <see cref="IXRGrabTransformer.Process"/> method will be called once more after <see cref="OnDrop"/>.
         /// </remarks>
-        /// <seealso cref="IXRGrabTransformer.canProcess"/>
+        /// <seealso cref="IXRGrabTransformer.CanProcess"/>
         /// <seealso cref="IXRGrabTransformer.Process"/>
-        bool canProcessOnDrop { get; }
+        bool CanProcessOnDrop { get; }
 
         /// <summary>
         /// Called by Unity when the given Interactable is dropped (in other words, when exiting the Select state).
@@ -46,6 +48,6 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IXRGrabTransformer.OnGrab"/>
         /// <seealso cref="XRGrabInteractable.Drop"/>
-        void OnDrop(VXRGrabInteractable grabInteractable, DropEventArgs args);
+        void OnDrop(IVXRGrabCompositeInteractable grabInteractable, DropEventArgs args);
     }
 }

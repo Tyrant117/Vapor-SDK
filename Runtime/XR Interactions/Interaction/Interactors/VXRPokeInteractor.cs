@@ -18,11 +18,11 @@ namespace VaporXR
         private readonly struct PokeCollision
         {
             public readonly Collider Collider;
-            public readonly IXRInteractable Interactable;
+            public readonly IVXRInteractable Interactable;
             public readonly IXRPokeFilter Filter;
             public readonly bool HasPokeFilter;
 
-            public PokeCollision(Collider collider, IXRInteractable interactable, IXRPokeFilter filter)
+            public PokeCollision(Collider collider, IVXRInteractable interactable, IXRPokeFilter filter)
             {
                 Collider = collider;
                 Interactable = interactable;
@@ -34,7 +34,7 @@ namespace VaporXR
         /// <summary>
         /// Reusable list of interactables (used to process the valid targets when this interactor has a filter).
         /// </summary>
-        private static readonly List<IXRInteractable> s_Results = new();
+        private static readonly List<IVXRInteractable> s_Results = new();
 
         #region Inspector
         [SerializeField, FoldoutGroup("Interaction")]
@@ -198,7 +198,7 @@ namespace VaporXR
 
         private bool _pokeCanSelect;
         private bool _firstFrame = true;
-        private IXRSelectInteractable _currentPokeTarget;
+        private IVXRSelectInteractable _currentPokeTarget;
         private IXRPokeFilter _currentPokeFilter;
 
         private readonly RaycastHit[] _sphereCastHits = new RaycastHit[25];
@@ -287,7 +287,7 @@ namespace VaporXR
         #endregion
 
         #region - Selection -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return _pokeCanSelect && interactable == _currentPokeTarget && base.CanSelect(interactable);
         }
@@ -303,7 +303,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if poke interaction can be completed.
         /// Otherwise, returns <see langword="false"/>.
         /// </returns>
-        private bool EvaluatePokeInteraction(out IXRSelectInteractable newHoveredInteractable, out IXRPokeFilter newPokeFilter)
+        private bool EvaluatePokeInteraction(out IVXRSelectInteractable newHoveredInteractable, out IXRPokeFilter newPokeFilter)
         {
             newHoveredInteractable = default;
             newPokeFilter = default;
@@ -316,14 +316,14 @@ namespace VaporXR
             {
                 var smallestSqrDistance = float.MaxValue;
                 int pokeTargetsCount = _pokeTargets.Count;
-                IXRSelectInteractable closestInteractable = null;
+                IVXRSelectInteractable closestInteractable = null;
                 IXRPokeFilter closestPokeFilter = null;
 
                 for (var i = 0; i < pokeTargetsCount; ++i)
                 {
                     var interactable = _pokeTargets[i].Interactable;
-                    if (interactable is IXRSelectInteractable selectable &&
-                        interactable is IXRHoverInteractable hoverable && hoverable.IsHoverableBy(this))
+                    if (interactable is IVXRSelectInteractable selectable &&
+                        interactable is IVXRHoverInteractable hoverable && hoverable.IsHoverableBy(this))
                     {
                         var sqrDistance = interactable.GetDistanceSqrToInteractor(this);
                         if (sqrDistance < smallestSqrDistance)
@@ -529,7 +529,7 @@ namespace VaporXR
         #endregion
 
         #region - Helpers -
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 

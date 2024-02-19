@@ -79,7 +79,7 @@ namespace VaporXR
 
         private void OnSelectEntered(SelectEnterEventArgs obj)
         {
-            switch (obj.interactorObject.Handedness)
+            switch (obj.InteractorObject.Handedness)
             {
                 case InteractorHandedness.None:
                     break;

@@ -52,7 +52,7 @@ namespace VaporXR.Interactors
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
-        /// <seealso cref="IXRInteractable.InteractionLayers"/>
+        /// <seealso cref="IVXRInteractable.InteractionLayers"/>
         public InteractionLayerMask InteractionLayers => _interactionLayers;
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace VaporXR.Interactors
             _useOverrideSorter = _overrideSorter != null;
         }
 
-        public virtual void GetValidTargets(List<IXRInteractable> targets)
+        public virtual void GetValidTargets(List<IVXRInteractable> targets)
         {
             if (_useOverrideSorter)
             {
@@ -316,11 +316,11 @@ namespace VaporXR.Interactors
         /// </summary>
         /// <param name="interactable">The specific Interactable as context to get the attachment point for.</param>
         /// <returns>Returns the attachment point <see cref="Transform"/>.</returns>
-        /// <seealso cref="IXRInteractable.GetAttachTransform"/>
+        /// <seealso cref="IVXRInteractable.GetAttachTransform"/>
         /// <remarks>
         /// This should typically return the Transform of a child GameObject or the <see cref="transform"/> itself.
         /// </remarks>
-        public virtual Transform GetAttachTransform(IXRInteractable interactable)
+        public virtual Transform GetAttachTransform(IVXRInteractable interactable)
         {
             return _attachPoint;
         }

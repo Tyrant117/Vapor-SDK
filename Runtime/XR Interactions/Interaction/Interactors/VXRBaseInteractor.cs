@@ -91,7 +91,7 @@ namespace VaporXR
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
-        /// <seealso cref="IXRInteractable.InteractionLayers"/>
+        /// <seealso cref="IVXRInteractable.InteractionLayers"/>
         public InteractionLayerMask InteractionLayers
         {
             get => _interactionLayers;
@@ -210,11 +210,11 @@ namespace VaporXR
         /// <summary>
         /// Defines whether this interactor is performing a manual interaction or not.
         /// </summary>
-        /// <seealso cref="StartManualInteraction(IXRSelectInteractable)"/>
+        /// <seealso cref="StartManualInteraction(IVXRSelectInteractable)"/>
         /// <seealso cref="EndManualInteraction"/>
         public bool IsPerformingManualInteraction { get; private set; }
 
-        private readonly HashSetList<IXRHoverInteractable> _interactablesHovered = new();
+        private readonly HashSetList<IVXRHoverInteractable> _interactablesHovered = new();
         /// <summary>
         /// (Read Only) The list of Interactables that are currently being hovered over (may by empty).
         /// </summary>
@@ -224,8 +224,8 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasHover"/>
-        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
-        public List<IXRHoverInteractable> InteractablesHovered => (List<IXRHoverInteractable>)_interactablesHovered.AsList();
+        /// <seealso cref="IVXRHoverInteractable.InteractorsHovering"/>
+        public List<IVXRHoverInteractable> InteractablesHovered => (List<IVXRHoverInteractable>)_interactablesHovered.AsList();
         
         /// <summary>
         /// (Read Only) Indicates whether this Interactor is currently hovering an Interactable.
@@ -237,10 +237,10 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        /// <seealso cref="IXRHoverInteractable.IsHovered"/>
+        /// <seealso cref="IVXRHoverInteractable.IsHovered"/>
         public bool HasHover => _interactablesHovered.Count > 0;
 
-        private readonly HashSetList<IXRSelectInteractable> _interactablesSelected = new();
+        private readonly HashSetList<IVXRSelectInteractable> _interactablesSelected = new();
         /// <summary>
         /// (Read Only) The list of Interactables that are currently being selected (may by empty).
         /// </summary>
@@ -250,16 +250,16 @@ namespace VaporXR
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasSelection"/>
-        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
-        public List<IXRSelectInteractable> InteractablesSelected => (List<IXRSelectInteractable>)_interactablesSelected.AsList();
+        /// <seealso cref="IVXRSelectInteractable.InteractorsSelecting"/>
+        public List<IVXRSelectInteractable> InteractablesSelected => (List<IVXRSelectInteractable>)_interactablesSelected.AsList();
         
         /// <summary>
         /// (Read Only) The first Interactable selected since not having any selection.
         /// This Interactor may not currently be selecting the Interactable, which would be the case
         /// when it was released while multiple Interactables were selected.
         /// </summary>
-        /// <seealso cref="IXRSelectInteractable.FirstInteractorSelecting"/>
-        public IXRSelectInteractable FirstInteractableSelected { get; private set; }
+        /// <seealso cref="IVXRSelectInteractable.FirstInteractorSelecting"/>
+        public IVXRSelectInteractable FirstInteractableSelected { get; private set; }
         
         /// <summary>
         /// (Read Only) Indicates whether this Interactor is currently selecting an Interactable.
@@ -271,7 +271,7 @@ namespace VaporXR
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        /// <seealso cref="IXRSelectInteractable.IsSelected"/>
+        /// <seealso cref="IVXRSelectInteractable.IsSelected"/>
         public bool HasSelection => _interactablesSelected.Count > 0;
         
         /// <summary>
@@ -368,7 +368,7 @@ namespace VaporXR
         /// Unity automatically clears and updates this list every frame if <see cref="TargetPriorityMode"/> has a
         /// value different from <see cref="TargetPriorityMode.None"/>, in this case a valid list must be returned.
         /// </remarks>
-        public virtual List<IXRSelectInteractable> TargetsForSelection { get; set; }
+        public virtual List<IVXRSelectInteractable> TargetsForSelection { get; set; }
         
         /// <summary>
         /// (Read Only) Overriding movement type of the selected Interactable's movement.
@@ -382,7 +382,7 @@ namespace VaporXR
         /// for reduced movement latency.
         /// </remarks>
         /// <seealso cref="VXRGrabInteractable.movementType"/>
-        public virtual VXRBaseInteractable.MovementType? SelectedInteractableMovementTypeOverride => null;
+        public virtual MovementType? SelectedInteractableMovementTypeOverride => null;
 
         public VXRCompositeInteractor Composite => throw new NotImplementedException();
 
@@ -393,16 +393,16 @@ namespace VaporXR
         public Func<(bool, bool, float)> SelectActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         Func<XRIneractionActiveState> IVXRSelectInteractor.SelectActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public Func<bool> HoverActive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        Func<VXRBaseInteractable.MovementType> IVXRSelectInteractor.SelectedInteractableMovementTypeOverride { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        Func<MovementType> IVXRSelectInteractor.SelectedInteractableMovementTypeOverride { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion
 
         #region Fields
-        private readonly Dictionary<IXRSelectInteractable, Pose> _attachPoseOnSelect = new();
-        private readonly Dictionary<IXRSelectInteractable, Pose> _localAttachPoseOnSelect = new();
+        private readonly Dictionary<IVXRSelectInteractable, Pose> _attachPoseOnSelect = new();
+        private readonly Dictionary<IVXRSelectInteractable, Pose> _localAttachPoseOnSelect = new();
         private readonly HashSetList<IXRInteractionStrengthInteractable> _interactionStrengthInteractables = new();
-        private readonly Dictionary<IXRInteractable, float> _interactionStrengths = new();
+        private readonly Dictionary<IVXRInteractable, float> _interactionStrengths = new();
         
-        private IXRSelectInteractable _manualInteractionInteractable;
+        private IVXRSelectInteractable _manualInteractionInteractable;
 
         private VXRInteractionManager _registeredInteractionManager;
 
@@ -606,7 +606,7 @@ namespace VaporXR
         /// details on update order.
         /// </remarks>
         /// <seealso cref="XRInteractionUpdateOrder.UpdatePhase"/>
-        /// <seealso cref="IXRInteractable.ProcessInteractable"/>
+        /// <seealso cref="IVXRInteractable.ProcessInteractable"/>
         public virtual void ProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
         }
@@ -618,8 +618,8 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the interactable can be hovered over this frame.</returns>
-        /// <seealso cref="IXRHoverInteractable.IsHoverableBy"/>
-        public virtual bool CanHover(IXRHoverInteractable interactable)
+        /// <seealso cref="IVXRHoverInteractable.IsHoverableBy"/>
+        public virtual bool CanHover(IVXRHoverInteractable interactable)
         {
             return ProcessHoverFilters(interactable);
         }
@@ -634,7 +634,7 @@ namespace VaporXR
         /// In other words, returns whether <see cref="InteractablesHovered"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        public bool IsHovering(IXRHoverInteractable interactable) => _interactablesHovered.Contains(interactable);
+        public bool IsHovering(IVXRHoverInteractable interactable) => _interactablesHovered.Contains(interactable);
         
         /// <summary>
         /// Determines whether this Interactor is currently hovering the Interactable.
@@ -647,7 +647,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
         /// <seealso cref="IXRHoverInteractor.IsHovering"/>
-        public bool IsHovering(IXRInteractable interactable) => interactable is IXRHoverInteractable hoverable && IsHovering(hoverable);
+        public bool IsHovering(IVXRInteractable interactable) => interactable is IVXRHoverInteractable hoverable && IsHovering(hoverable);
         
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -737,7 +737,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="HoverFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessHoverFilters(IXRHoverInteractable interactable)
+        protected bool ProcessHoverFilters(IVXRHoverInteractable interactable)
         {
             return XRFilterUtility.Process(_hoverFilters, this, interactable);
         }
@@ -749,8 +749,8 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactable can be selected this frame.</returns>
-        /// <seealso cref="IXRSelectInteractable.IsSelectableBy"/>
-        public virtual bool CanSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.IsSelectableBy"/>
+        public virtual bool CanSelect(IVXRSelectInteractable interactable)
         {
             return ProcessSelectFilters(interactable);
         }
@@ -765,7 +765,7 @@ namespace VaporXR
         /// In other words, returns whether <see cref="InteractablesSelected"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        public bool IsSelecting(IXRSelectInteractable interactable) => _interactablesSelected.Contains(interactable);
+        public bool IsSelecting(IVXRSelectInteractable interactable) => _interactablesSelected.Contains(interactable);
         
         /// <summary>
         /// Determines whether this Interactor is currently selecting the Interactable.
@@ -778,7 +778,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
         /// <seealso cref="IXRSelectInteractor.IsSelecting"/>
-        protected bool IsSelecting(IXRInteractable interactable) => interactable is IXRSelectInteractable selectable && IsSelecting(selectable);
+        protected bool IsSelecting(IVXRInteractable interactable) => interactable is IVXRSelectInteractable selectable && IsSelecting(selectable);
         
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -792,21 +792,21 @@ namespace VaporXR
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectEntering(SelectEnterEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Entering: {args.interactableObject}");
-            var added = _interactablesSelected.Add(args.interactableObject);
+            Debug.Log($"{Handedness} Hand Select Entering: {args.InteractableObject}");
+            var added = _interactablesSelected.Add(args.InteractableObject);
             Debug.Assert(added, "An Interactor received a Select Enter event for an Interactable that it was already selecting.", this);
 
-            if (args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
+            if (args.InteractableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable)
             {
                 _interactionStrengthInteractables.Add(interactionStrengthInteractable);
             }
 
             if (_interactablesSelected.Count == 1)
             {
-                FirstInteractableSelected = args.interactableObject;
+                FirstInteractableSelected = args.InteractableObject;
             }            
 
-            CaptureAttachPose(args.interactableObject);
+            CaptureAttachPose(args.InteractableObject);
         }
 
         /// <summary>
@@ -821,7 +821,7 @@ namespace VaporXR
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectEntered(SelectEnterEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Entered: {args.interactableObject}");
+            Debug.Log($"{Handedness} Hand Select Entered: {args.InteractableObject}");
 
             _selectEntered?.Invoke(args);
         }
@@ -838,12 +838,12 @@ namespace VaporXR
         /// <seealso cref="OnSelectExited(SelectExitEventArgs)"/>
         public virtual void OnSelectExiting(SelectExitEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Exiting: {args.interactableObject}");
-            var removed = _interactablesSelected.Remove(args.interactableObject);
+            Debug.Log($"{Handedness} Hand Select Exiting: {args.GetinteractableObject()}");
+            var removed = _interactablesSelected.Remove(args.GetinteractableObject());
             Debug.Assert(removed, "An Interactor received a Select Exit event for an Interactable that it was not selecting.", this);
 
             if (_interactionStrengthInteractables.Count > 0 &&
-                args.interactableObject is IXRInteractionStrengthInteractable interactionStrengthInteractable &&
+                args.GetinteractableObject() is IXRInteractionStrengthInteractable interactionStrengthInteractable &&
                 !IsHovering(interactionStrengthInteractable))
             {
                 _interactionStrengthInteractables.Remove(interactionStrengthInteractable);
@@ -862,7 +862,7 @@ namespace VaporXR
         /// <seealso cref="OnSelectEntered(SelectEnterEventArgs)"/>
         public virtual void OnSelectExited(SelectExitEventArgs args)
         {
-            Debug.Log($"{Handedness} Hand Select Exited: {args.interactableObject}");
+            Debug.Log($"{Handedness} Hand Select Exited: {args.GetinteractableObject()}");
             _selectExited?.Invoke(args);
 
             // The dictionaries are pruned so that they don't infinitely grow in size as selections are made.
@@ -883,7 +883,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="SelectFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessSelectFilters(IXRSelectInteractable interactable)
+        protected bool ProcessSelectFilters(IVXRSelectInteractable interactable)
         {
             return XRFilterUtility.Process(_selectFilters, this, interactable);
         }
@@ -922,7 +922,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The specific interactable to get the interaction strength between.</param>
         /// <returns>Returns a value <c>[0.0, 1.0]</c> of the interaction strength.</returns>
-        public float GetInteractionStrength(IXRInteractable interactable)
+        public float GetInteractionStrength(IVXRInteractable interactable)
         {
             return _interactionStrengths.GetValueOrDefault(interactable, 0f);
         }
@@ -990,7 +990,7 @@ namespace VaporXR
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="VXRBaseInteractable.CaptureAttachPose"/>
-        protected void CaptureAttachPose(IXRSelectInteractable interactable)
+        protected void CaptureAttachPose(IVXRSelectInteractable interactable)
         {
             var thisAttachTransform = GetAttachTransform(interactable);
             if (thisAttachTransform != null)
@@ -1015,8 +1015,8 @@ namespace VaporXR
         /// and otherwise the identity <see cref="Pose"/> if it was not selected during the current selection stack.</returns>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractor.GetAttachTransform"/>
-        /// <seealso cref="IXRSelectInteractable.GetAttachPoseOnSelect"/>
-        public Pose GetAttachPoseOnSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.GetAttachPoseOnSelect"/>
+        public Pose GetAttachPoseOnSelect(IVXRSelectInteractable interactable)
         {
             return _attachPoseOnSelect.TryGetValue(interactable, out var pose) ? pose : Pose.identity;
         }
@@ -1029,8 +1029,8 @@ namespace VaporXR
         /// and otherwise the identity <see cref="Pose"/> if it was not selected during the current selection stack.</returns>
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="IXRInteractor.GetAttachTransform"/>
-        /// <seealso cref="IXRSelectInteractable.GetLocalAttachPoseOnSelect"/>
-        public Pose GetLocalAttachPoseOnSelect(IXRSelectInteractable interactable)
+        /// <seealso cref="IVXRSelectInteractable.GetLocalAttachPoseOnSelect"/>
+        public Pose GetLocalAttachPoseOnSelect(IVXRSelectInteractable interactable)
         {
             return _localAttachPoseOnSelect.TryGetValue(interactable, out var pose) ? pose : Pose.identity;
         }
@@ -1055,11 +1055,11 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The specific Interactable as context to get the attachment point for.</param>
         /// <returns>Returns the attachment point <see cref="Transform"/>.</returns>
-        /// <seealso cref="IXRInteractable.GetAttachTransform"/>
+        /// <seealso cref="IVXRInteractable.GetAttachTransform"/>
         /// <remarks>
         /// This should typically return the Transform of a child GameObject or the <see cref="transform"/> itself.
         /// </remarks>
-        public virtual Transform GetAttachTransform(IXRInteractable interactable)
+        public virtual Transform GetAttachTransform(IVXRInteractable interactable)
         {
             return _attachTransform != null ? _attachTransform : transform;
         }
@@ -1071,7 +1071,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">Interactable that is being selected.</param>
         /// <seealso cref="EndManualInteraction"/>
-        public virtual void StartManualInteraction(IXRSelectInteractable interactable)
+        public virtual void StartManualInteraction(IVXRSelectInteractable interactable)
         {
             if (InteractionManager == null)
             {
@@ -1087,7 +1087,7 @@ namespace VaporXR
         /// <summary>
         /// Ends the manually initiated selection of an Interactable.
         /// </summary>
-        /// <seealso cref="StartManualInteraction(IXRSelectInteractable)"/>
+        /// <seealso cref="StartManualInteraction(IVXRSelectInteractable)"/>
         public virtual void EndManualInteraction()
         {
             if (InteractionManager == null)
@@ -1149,7 +1149,7 @@ namespace VaporXR
         /// <remarks>
         /// When implementing this method, Unity expects you to clear <paramref name="targets"/> before adding to it.
         /// </remarks>
-        public virtual void GetValidTargets(List<IXRInteractable> targets)
+        public virtual void GetValidTargets(List<IVXRInteractable> targets)
         {
         }
 

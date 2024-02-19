@@ -23,7 +23,7 @@ namespace VaporXR.Utilities
         /// In other words, touching more of its colliders does not cause this to fire again until all of its colliders
         /// are no longer being touched.
         /// </remarks>
-        public event Action<IXRInteractable> contactAdded;
+        public event Action<IVXRInteractable> contactAdded;
 
         /// <summary>
         /// Calls the methods in its invocation list when an Interactable is no longer being touched.
@@ -33,16 +33,16 @@ namespace VaporXR.Utilities
         /// In other words, leaving just one of its colliders when another one of it is still being touched
         /// will not fire the event.
         /// </remarks>
-        public event Action<IXRInteractable> contactRemoved;
+        public event Action<IVXRInteractable> contactRemoved;
 
         /// <summary>
         /// The Interaction Manager used to fetch the Interactable associated with a Collider.
         /// </summary>
-        /// <seealso cref="VXRInteractionManager.TryGetInteractableForCollider(Collider, out IXRInteractable)"/>
+        /// <seealso cref="VXRInteractionManager.TryGetInteractableForCollider(Collider, out IVXRInteractable)"/>
         public VXRInteractionManager interactionManager { get; set; }
 
-        readonly Dictionary<Collider, IXRInteractable> m_EnteredColliders = new Dictionary<Collider, IXRInteractable>();
-        readonly HashSet<IXRInteractable> m_UnorderedInteractables = new HashSet<IXRInteractable>();
+        readonly Dictionary<Collider, IVXRInteractable> m_EnteredColliders = new Dictionary<Collider, IVXRInteractable>();
+        readonly HashSet<IVXRInteractable> m_UnorderedInteractables = new HashSet<IVXRInteractable>();
         readonly HashSet<Collider> m_EnteredUnassociatedColliders = new HashSet<Collider>();
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace VaporXR.Utilities
         /// This process is done automatically when Colliders are added,
         /// but this method can be used to force a refresh.
         /// </remarks>
-        public void ResolveUnassociatedColliders(IXRInteractable interactable)
+        public void ResolveUnassociatedColliders(IVXRInteractable interactable)
         {
             // Cull destroyed colliders from the set to keep it tidy
             // since there would be no reason to monitor it anymore.
@@ -230,7 +230,7 @@ namespace VaporXR.Utilities
         /// </summary>
         /// <param name="interactable">The Interactable to check if touching.</param>
         /// <returns>Returns <see langword="true"/> if the Interactable is being touched. Otherwise, returns <see langword="false"/>.</returns>
-        public bool IsContacting(IXRInteractable interactable)
+        public bool IsContacting(IVXRInteractable interactable)
         {
             return m_UnorderedInteractables.Contains(interactable);
         }

@@ -9,7 +9,7 @@ namespace VaporXR
     /// Interactor components can hover over.
     /// </summary>
     /// <seealso cref="VXRBaseInteractor"/>
-    public interface IXRHoverInteractable : IXRInteractable
+    public interface IXRHoverInteractable : IVXRInteractable
     {
         /// <summary>
         /// The event that is called only when the first Interactor begins hovering
@@ -145,9 +145,9 @@ namespace VaporXR
     }
 
     /// <summary>
-    /// Extension methods for <see cref="IXRHoverInteractable"/>.
+    /// Extension methods for <see cref="IVXRHoverInteractable"/>.
     /// </summary>
-    /// <seealso cref="IXRHoverInteractable"/>
+    /// <seealso cref="IVXRHoverInteractable"/>
     public static class XRHoverInteractableExtensions
     {
         /// <summary>
@@ -159,8 +159,8 @@ namespace VaporXR
         /// <remarks>
         /// Equivalent to <code>interactorsHovering.Count > 0 ? interactorsHovering[0] : null</code>
         /// </remarks>
-        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
-        public static IVXRHoverInteractor GetOldestInteractorHovering(this IXRHoverInteractable interactable) =>
+        /// <seealso cref="IVXRHoverInteractable.InteractorsHovering"/>
+        public static IVXRHoverInteractor GetOldestInteractorHovering(this IVXRHoverInteractable interactable) =>
             interactable?.InteractorsHovering.Count > 0 ? interactable.InteractorsHovering[0] : null;
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsHoveredByRight"/>
         /// <seealso cref="IXRInteractor.Handedness"/>
-        public static bool IsHoveredByLeft(this IXRHoverInteractable interactable) =>
+        public static bool IsHoveredByLeft(this IVXRHoverInteractable interactable) =>
             IsHoveredBy(interactable, InteractorHandedness.Left);
 
         /// <summary>
@@ -190,10 +190,10 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsHoveredByLeft"/>
         /// <seealso cref="IXRInteractor.Handedness"/>
-        public static bool IsHoveredByRight(this IXRHoverInteractable interactable) =>
+        public static bool IsHoveredByRight(this IVXRHoverInteractable interactable) =>
             IsHoveredBy(interactable, InteractorHandedness.Right);
 
-        private static bool IsHoveredBy(IXRHoverInteractable interactable, InteractorHandedness handedness)
+        private static bool IsHoveredBy(IVXRHoverInteractable interactable, InteractorHandedness handedness)
         {
             var interactorsHovering = interactable.InteractorsHovering;
             for (var i = 0; i < interactorsHovering.Count; ++i)

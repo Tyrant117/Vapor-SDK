@@ -225,7 +225,7 @@ namespace VaporXR
         #endregion
 
         #region - Hover -
-        private bool IsHoverHapticsAllowed(IVXRHoverInteractor interactor, IXRInteractable interactable)
+        private bool IsHoverHapticsAllowed(IVXRHoverInteractor interactor, IVXRInteractable interactable)
         {
             return _allowHoverHapticsWhileSelecting || !IsSelecting(interactor, interactable);
         }
@@ -268,22 +268,22 @@ namespace VaporXR
 
         private void OnSelectExited(SelectExitEventArgs args)
         {
-            if (_playSelectCanceled && args.isCanceled)
+            if (_playSelectCanceled && args.IsCanceled)
             {
                 SendHapticImpulse(_selectCanceledData);
             }
 
-            if (_playSelectExited && !args.isCanceled)
+            if (_playSelectExited && !args.IsCanceled)
             {
                 SendHapticImpulse(_selectExitedData);
             }
         }
 
-        private static bool IsSelecting(IVXRHoverInteractor interactor, IXRInteractable interactable)
+        private static bool IsSelecting(IVXRHoverInteractor interactor, IVXRInteractable interactable)
         {
             return interactor != null &&
                    interactor.Composite != null &&
-                   interactable is IXRSelectInteractable selectable &&
+                   interactable is IVXRSelectInteractable selectable &&
                    interactor.Composite.IsSelecting(selectable);
         }
         #endregion

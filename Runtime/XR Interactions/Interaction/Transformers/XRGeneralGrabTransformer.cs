@@ -5,6 +5,7 @@ using Unity.XR.CoreUtils;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporXR.Interactors;
+using VaporXR.Interactables;
 
 namespace VaporXR
 {
@@ -298,7 +299,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void Process(VXRGrabInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        public override void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             switch (updatePhase)
             {
@@ -312,19 +313,19 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void OnGrab(VXRGrabInteractable grabInteractable)
+        public override void OnGrab(IVXRGrabCompositeInteractable grabInteractable)
         {
             base.OnGrab(grabInteractable);
 
-            var interactor = grabInteractable.InteractorsSelecting[0];
+            var interactor = grabInteractable.Select.InteractorsSelecting[0];
             var grabInteractableTransform = grabInteractable.transform;
-            var grabAttachTransform = grabInteractable.GetAttachTransform(interactor);
+            var grabAttachTransform = grabInteractable.Select.GetAttachTransform(interactor);
 
             m_ScaleValueProvider = interactor as IXRScaleValueProvider;
             m_HasScaleValueProvider = m_ScaleValueProvider != null;
 
             m_OriginalObjectPose = grabInteractableTransform.GetWorldPose();
-            m_OriginalInteractorPose = interactor.GetAttachTransform(grabInteractable).GetWorldPose();
+            m_OriginalInteractorPose = interactor.GetAttachTransform(grabInteractable.Select).GetWorldPose();
             m_OriginalInteractor = interactor;
             m_LastGrabCount = 1;
 
@@ -332,7 +333,7 @@ namespace VaporXR
             Quaternion offsetTargetRotation = Quaternion.identity;
 
             Quaternion capturedRotation = m_OriginalObjectPose.rotation;
-            if (grabInteractable.trackRotation)
+            if (grabInteractable.TrackRotation)
             {
                 capturedRotation = m_OriginalInteractorPose.rotation;
 
@@ -340,14 +341,14 @@ namespace VaporXR
             }
 
             Vector3 capturedPosition = m_OriginalObjectPose.position;
-            if (grabInteractable.trackPosition)
+            if (grabInteractable.TrackPosition)
             {
                 capturedPosition = m_OriginalInteractorPose.position;
 
                 // Calculate offset of the grab interactable's position relative to its attach transform
                 var attachOffset = m_OriginalObjectPose.position - grabAttachTransform.position;
 
-                offsetTargetPosition = grabInteractable.trackRotation ? grabAttachTransform.InverseTransformDirection(attachOffset) : attachOffset;
+                offsetTargetPosition = grabInteractable.TrackRotation ? grabAttachTransform.InverseTransformDirection(attachOffset) : attachOffset;
             }
 
             // Cache axis settings on grab because changing them while grab is in progress can lead to undesired results.
@@ -373,15 +374,15 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void OnGrabCountChanged(VXRGrabInteractable grabInteractable, Pose targetPose, Vector3 localScale)
+        public override void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale)
         {
             base.OnGrabCountChanged(grabInteractable, targetPose, localScale);
 
-            var newGrabCount = grabInteractable.InteractorsSelecting.Count;
+            var newGrabCount = grabInteractable.Select.InteractorsSelecting.Count;
             if (newGrabCount == 1)
             {
                 // If the initial grab interactor changes, or we reduce the grab count, we need to recompute initial grab parameters. 
-                var interactor0 = grabInteractable.InteractorsSelecting[0];
+                var interactor0 = grabInteractable.Select.InteractorsSelecting[0];
                 if (interactor0 != m_OriginalInteractor || newGrabCount < m_LastGrabCount)
                 {
                     OnGrab(grabInteractable);
@@ -389,11 +390,11 @@ namespace VaporXR
             }
             else if (newGrabCount > 1)
             {
-                var interactor0 = grabInteractable.InteractorsSelecting[0];
-                var interactor1 = grabInteractable.InteractorsSelecting[1];
+                var interactor0 = grabInteractable.Select.InteractorsSelecting[0];
+                var interactor1 = grabInteractable.Select.InteractorsSelecting[1];
 
-                var interactor0Transform = interactor0.GetAttachTransform(grabInteractable);
-                var grabAttachTransform1 = grabInteractable.GetAttachTransform(interactor1);
+                var interactor0Transform = interactor0.GetAttachTransform(grabInteractable.Select);
+                var grabAttachTransform1 = grabInteractable.Select.GetAttachTransform(interactor1);
 
                 m_ScaleAtGrabStart = localScale;
 
@@ -409,24 +410,24 @@ namespace VaporXR
             m_MaximumScale = m_InitialScale * m_MaximumScaleRatio;
         }
 
-        void ComputeAdjustedInteractorPose(VXRGrabInteractable grabInteractable, out Vector3 newHandleBar, out Vector3 adjustedInteractorPosition, out Quaternion adjustedInteractorRotation)
+        void ComputeAdjustedInteractorPose(IVXRGrabCompositeInteractable grabInteractable, out Vector3 newHandleBar, out Vector3 adjustedInteractorPosition, out Quaternion adjustedInteractorRotation)
         {
-            if (grabInteractable.InteractorsSelecting.Count == 1 || m_TwoHandedRotationMode == TwoHandedRotationMode.FirstHandOnly)
+            if (grabInteractable.Select.InteractorsSelecting.Count == 1 || m_TwoHandedRotationMode == TwoHandedRotationMode.FirstHandOnly)
             {
                 newHandleBar = m_StartHandleBar;
-                var attachTransform = grabInteractable.InteractorsSelecting[0].GetAttachTransform(grabInteractable);
+                var attachTransform = grabInteractable.Select.InteractorsSelecting[0].GetAttachTransform(grabInteractable.Select);
                 adjustedInteractorPosition = attachTransform.position;
                 adjustedInteractorRotation = attachTransform.rotation;
                 return;
             }
 
-            if (grabInteractable.InteractorsSelecting.Count > 1)
+            if (grabInteractable.Select.InteractorsSelecting.Count > 1)
             {
-                var interactor0 = grabInteractable.InteractorsSelecting[0];
-                var interactor1 = grabInteractable.InteractorsSelecting[1];
+                var interactor0 = grabInteractable.Select.InteractorsSelecting[0];
+                var interactor1 = grabInteractable.Select.InteractorsSelecting[1];
 
-                var interactor0Transform = interactor0.GetAttachTransform(grabInteractable);
-                var interactor1Transform = interactor1.GetAttachTransform(grabInteractable);
+                var interactor0Transform = interactor0.GetAttachTransform(grabInteractable.Select);
+                var interactor1Transform = interactor1.GetAttachTransform(grabInteractable.Select);
 
                 newHandleBar = interactor0Transform.InverseTransformPoint(interactor1Transform.position);
 
@@ -632,9 +633,9 @@ namespace VaporXR
             adjustedTargetPosition = originalObjectPosition + sumTranslationVector;
         }
         
-        Vector3 ComputeNewScale(in VXRGrabInteractable grabInteractable, in Vector3 startScale, in Vector3 currentScale, in Vector3 startHandleBar, in Vector3 newHandleBar, bool trackScale)
+        Vector3 ComputeNewScale(IVXRGrabCompositeInteractable grabInteractable, in Vector3 startScale, in Vector3 currentScale, in Vector3 startHandleBar, in Vector3 newHandleBar, bool trackScale)
         {
-            var interactorsCount = grabInteractable.InteractorsSelecting.Count;
+            var interactorsCount = grabInteractable.Select.InteractorsSelecting.Count;
             if (trackScale && interactorsCount == 1 && m_AllowOneHandedScaling && m_HasScaleValueProvider && m_ScaleValueProvider.ScaleMode == ScaleMode.ScaleOverTime)
             {
                 var scaleInput = m_ScaleValueProvider.ScaleValue;
@@ -736,16 +737,16 @@ namespace VaporXR
             }
         }
 
-        void UpdateTarget(VXRGrabInteractable grabInteractable, ref Pose targetPose, ref Vector3 localScale)
+        void UpdateTarget(IVXRGrabCompositeInteractable grabInteractable, ref Pose targetPose, ref Vector3 localScale)
         {
             ComputeAdjustedInteractorPose(grabInteractable, out Vector3 newHandleBar, out Vector3 adjustedInteractorPosition, out  Quaternion adjustedInteractorRotation);
 
-            localScale = ComputeNewScale(grabInteractable, m_ScaleAtGrabStart, localScale, m_StartHandleBar, newHandleBar, grabInteractable.trackScale);
+            localScale = ComputeNewScale(grabInteractable, m_ScaleAtGrabStart, localScale, m_StartHandleBar, newHandleBar, grabInteractable.TrackScale);
 
-            targetPose.rotation = ComputeNewObjectRotation(adjustedInteractorRotation, grabInteractable.trackRotation);
+            targetPose.rotation = ComputeNewObjectRotation(adjustedInteractorRotation, grabInteractable.TrackRotation);
 
             ComputeNewObjectPosition(adjustedInteractorPosition,  adjustedInteractorRotation, 
-                targetPose.rotation, localScale, grabInteractable.trackRotation, 
+                targetPose.rotation, localScale, grabInteractable.TrackRotation, 
                 m_OffsetPose.position, m_ObjectLocalGrabPoint, m_InteractorLocalGrabPoint,
                 out Vector3 targetObjectPosition);
             

@@ -124,7 +124,7 @@ namespace VaporXR
         /// The phase in which updates happen.
         /// </summary>
         /// <seealso cref="IXRInteractor.ProcessInteractor"/>
-        /// <seealso cref="IXRInteractable.ProcessInteractable"/>
+        /// <seealso cref="IVXRInteractable.ProcessInteractable"/>
         public enum UpdatePhase
         {
             /// <summary>

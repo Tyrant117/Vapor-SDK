@@ -29,6 +29,6 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public abstract void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
+        public abstract void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results);
     }
 }

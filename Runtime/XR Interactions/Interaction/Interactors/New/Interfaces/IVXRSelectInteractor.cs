@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace VaporXR.Interactors
 {
-    public interface IVXRSelectInteractor : IVXRInteractor
+    public interface IVXRSelectInteractor : IVXRInteractor, IXRGroupMember, IXRInteractionStrengthInteractor
     {
         bool IsSelectActive { get; }
         /// <summary>
@@ -18,7 +18,7 @@ namespace VaporXR.Interactors
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        /// <seealso cref="IXRSelectInteractable.IsSelected"/>
+        /// <seealso cref="IVXRSelectInteractable.IsSelected"/>
         bool HasSelection { get; }
         /// <summary>
         /// (Read Only) The list of Interactables that are currently being selected (may by empty).
@@ -29,20 +29,20 @@ namespace VaporXR.Interactors
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasSelection"/>
-        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
-        List<IXRSelectInteractable> InteractablesSelected { get; }
+        /// <seealso cref="IVXRSelectInteractable.InteractorsSelecting"/>
+        List<IVXRSelectInteractable> InteractablesSelected { get; }
         /// <summary>
         /// (Read Only) The first Interactable selected since not having any selection.
         /// This Interactor may not currently be selecting the Interactable, which would be the case
         /// when it was released while multiple Interactables were selected.
         /// </summary>
-        /// <seealso cref="IXRSelectInteractable.FirstInteractorSelecting"/>
-        IXRSelectInteractable FirstInteractableSelected { get; }
+        /// <seealso cref="IVXRSelectInteractable.FirstInteractorSelecting"/>
+        IVXRSelectInteractable FirstInteractableSelected { get; }
         bool KeepSelectedTargetValid { get; }
         /// <summary>
         /// Defines whether this interactor is performing a manual interaction or not.
         /// </summary>
-        /// <seealso cref="StartManualInteraction(IXRSelectInteractable)"/>
+        /// <seealso cref="StartManualInteraction(IVXRSelectInteractable)"/>
         /// <seealso cref="EndManualInteraction"/>
         bool IsPerformingManualInteraction { get; }
         /// <summary>
@@ -58,7 +58,7 @@ namespace VaporXR.Interactors
         IXRFilterList<IXRSelectFilter> SelectFilters { get; }
         LogicalInputState LogicalSelectState { get; }
         Func<XRIneractionActiveState> SelectActive { get; set; }
-        Func<VXRBaseInteractable.MovementType> SelectedInteractableMovementTypeOverride { get; set; }
+        Func<MovementType> SelectedInteractableMovementTypeOverride { get; set; }
 
         /// <summary>
         /// The event that is called when this Interactor begins entering selecting an Interactable.
@@ -93,8 +93,8 @@ namespace VaporXR.Interactors
         /// </remarks>
         event Action<SelectExitEventArgs> SelectExited;
 
-        bool CanSelect(IXRSelectInteractable interactable);
-        bool IsSelecting(IXRSelectInteractable interactable);
+        bool CanSelect(IVXRSelectInteractable interactable);
+        bool IsSelecting(IVXRSelectInteractable interactable);
         void OnSelectEntered(SelectEnterEventArgs args);
         void OnSelectEntering(SelectEnterEventArgs args);
         void OnSelectExited(SelectExitEventArgs args);

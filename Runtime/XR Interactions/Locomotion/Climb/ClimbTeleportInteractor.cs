@@ -105,7 +105,7 @@ namespace VaporXR.Locomotion
             {
                 case BaseTeleportationInteractable.TeleportTrigger.OnSelectExited:
                 case BaseTeleportationInteractable.TeleportTrigger.OnSelectEntered:
-                    StartManualInteraction((IXRSelectInteractable)m_TargetTeleportVolume);
+                    StartManualInteraction((IVXRSelectInteractable)m_TargetTeleportVolume);
                     EndManualInteraction();
                     break;
                 case BaseTeleportationInteractable.TeleportTrigger.OnActivated:
@@ -168,7 +168,7 @@ namespace VaporXR.Locomotion
         }
 
         /// <inheritdoc />
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
             if (m_TargetTeleportVolume != null)

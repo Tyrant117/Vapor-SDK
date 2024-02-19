@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using VaporXR.Interactables;
 
 namespace VaporXR
 {
@@ -22,7 +23,7 @@ namespace VaporXR
         /// Transformers that can process targets receive calls to <see cref="Process"/>, transformers that cannot process do not.
         /// Transformers will still have other event methods called to allow for initialization on the frame the grab changes happens.
         /// </summary>
-        bool canProcess { get; }
+        bool CanProcess { get; }
 
         /// <summary>
         /// Called by Unity when the given Interactable links to this grab transformer.
@@ -30,7 +31,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="grabInteractable">The XR Grab Interactable being linked to this transformer.</param>
         /// <seealso cref="OnUnlink"/>
-        void OnLink(VXRGrabInteractable grabInteractable);
+        void OnLink(IVXRGrabCompositeInteractable grabInteractable);
 
         /// <summary>
         /// Called by Unity when the given Interactable is grabbed (in other words, when entering the Select state).
@@ -43,7 +44,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="OnGrabCountChanged"/>
         /// <seealso cref="XRGrabInteractable.Grab"/>
-        void OnGrab(VXRGrabInteractable grabInteractable);
+        void OnGrab(IVXRGrabCompositeInteractable grabInteractable);
 
         /// <summary>
         /// Called by Unity each time the number of selections changes for the given Interactable
@@ -67,7 +68,7 @@ namespace VaporXR
         /// </code>
         /// </example>
         /// </remarks>
-        void OnGrabCountChanged(VXRGrabInteractable grabInteractable, Pose targetPose, Vector3 localScale);
+        void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale);
 
         /// <summary>
         /// Called by the linked Interactable to calculate the target pose and scale.
@@ -92,7 +93,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="XRGrabInteractable.ProcessInteractable"/>
         /// <seealso cref="XRInteractionUpdateOrder.UpdatePhase"/>
-        void Process(VXRGrabInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
+        void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
 
         /// <summary>
         /// Called by Unity when the given Interactable unlinks from this grab transformer.
@@ -100,6 +101,6 @@ namespace VaporXR
         /// </summary>
         /// <param name="grabInteractable">The XR Grab Interactable being unlinked from this transformer.</param>
         /// <seealso cref="OnLink"/>
-        void OnUnlink(VXRGrabInteractable grabInteractable);
+        void OnUnlink(IVXRGrabCompositeInteractable grabInteractable);
     }
 }

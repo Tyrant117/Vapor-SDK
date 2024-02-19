@@ -204,7 +204,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool Process(IVXRSelectInteractor interactor, IXRSelectInteractable interactable)
+        public bool Process(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
         {
             if (interactor.Composite is VXRPokeCompositeInteractor pokeInteractor)
             {
@@ -221,7 +221,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public float Process(IVXRSelectInteractor interactor, IXRInteractable interactable, float interactionStrength)
+        public float Process(IVXRSelectInteractor interactor, IVXRInteractable interactable, float interactionStrength)
         {
             var pokeAmount = 0f;
             if (interactor.Composite is VXRPokeCompositeInteractor)

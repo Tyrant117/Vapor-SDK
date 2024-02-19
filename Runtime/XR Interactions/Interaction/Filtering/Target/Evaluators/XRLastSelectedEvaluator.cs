@@ -14,8 +14,8 @@ namespace VaporXR
     [Serializable]
     public class XRLastSelectedEvaluator : XRTargetEvaluator, IXRTargetEvaluatorLinkable
     {
-        readonly Dictionary<IXRInteractable, float> m_InteractableSelectionTimeMap =
-            new Dictionary<IXRInteractable, float>();
+        readonly Dictionary<IVXRInteractable, float> m_InteractableSelectionTimeMap =
+            new Dictionary<IVXRInteractable, float>();
 
         [Tooltip("Any Interactable which was last selected over Max Time seconds ago will receive a normalized score of 0.")]
         [SerializeField]
@@ -32,7 +32,7 @@ namespace VaporXR
 
         void OnSelect(SelectEnterEventArgs args)
         {
-            if (enabled && args.interactableObject is IXRInteractable interactable)
+            if (enabled && args.InteractableObject is IVXRInteractable interactable)
                 m_InteractableSelectionTimeMap[interactable] = Time.time;
         }
 
@@ -58,7 +58,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IXRInteractable target)
+        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
         {
             // We return .5 as the lowest value - zeroing out the score will flatten out the value, messing with other evaluators
             if (!m_InteractableSelectionTimeMap.TryGetValue(target, out var time) || m_MaxTime <= 0f)

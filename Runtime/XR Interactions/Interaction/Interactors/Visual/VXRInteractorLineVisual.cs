@@ -697,7 +697,7 @@ namespace VaporXR
                     var canSelectSomething = false;
                     foreach (var interactable in _lineRenderableAsHoverInteractor.InteractablesHovered)
                     {
-                        if (interactable is IXRSelectInteractable selectInteractable && interactionManager.IsSelectPossible(_lineRenderableAsSelectInteractor, selectInteractable))
+                        if (interactable is IVXRSelectInteractable selectInteractable && interactionManager.IsSelectPossible(_lineRenderableAsSelectInteractor, selectInteractable))
                         {
                             canSelectSomething = true;
                             break;

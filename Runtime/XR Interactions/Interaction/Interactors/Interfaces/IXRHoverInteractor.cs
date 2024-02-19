@@ -8,7 +8,7 @@ namespace VaporXR
     /// An interface that represents an Interactor component that can hover over
     /// an Interactable component.
     /// </summary>
-    /// <seealso cref="IXRHoverInteractable"/>
+    /// <seealso cref="IVXRHoverInteractable"/>
     //public interface IXRHoverInteractor : IXRInteractor
     //{
     //    /// <summary>
@@ -146,7 +146,7 @@ namespace VaporXR
         /// Equivalent to <code>interactablesHovered.Count > 0 ? interactablesHovered[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRHoverInteractor.InteractablesHovered"/>
-        public static IXRHoverInteractable GetOldestInteractableHovered(this VXRBaseInteractor interactor) =>
+        public static IVXRHoverInteractable GetOldestInteractableHovered(this VXRBaseInteractor interactor) =>
             interactor.InteractablesHovered.Count > 0 ? interactor.InteractablesHovered[0] : null;
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace VaporXR
         /// Equivalent to <code>interactablesHovered.Count > 0 ? interactablesHovered[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRHoverInteractor.InteractablesHovered"/>
-        public static IXRHoverInteractable GetOldestInteractableHovered(this VXRHoverInteractor interactor) =>
+        public static IVXRHoverInteractable GetOldestInteractableHovered(this VXRHoverInteractor interactor) =>
             interactor.InteractablesHovered.Count > 0 ? interactor.InteractablesHovered[0] : null;
     }
 }

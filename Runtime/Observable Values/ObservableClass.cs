@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,148 +11,132 @@ namespace VaporObservables
     [Serializable]
     public struct SavedObservableClass
     {
-        public int Type;
-        public int ID;
-        public SavedObservableField[] SavedFields;
+        public string Name;
+        public string ClassType;
+        public SavedObservable[] SavedFields;
 
-        public SavedObservableClass(int type, int id, List<SavedObservableField> fields)
+        public SavedObservableClass(string name, Type type, List<SavedObservable> fields)
         {
-            Type = type;
-            ID = id;
+            Name = name;
+            ClassType = type.AssemblyQualifiedName;
             SavedFields = fields.ToArray();
         }
     }
 
+    public interface IObservedClass
+    {
+        void SetupFields(ObservableClass @class)
+        {
+
+        }
+    }
+
     /// <summary>
-    /// Base class for a collection of observable fields.
+    /// An abstract implementation of an observable class that can keep track of a collection of Observables.
+    /// When a value is changed inside the monitored collection the entire class will be marked dirty.
+    /// This class also facillitates serializing and deserializing the class into a json format.
+    /// The one requirement of this class is it must implement a constructor that only implements the default string named arguments.
+    /// <code>
+    /// public class ChildObservableClass
+    /// {
+    ///     public ChildObservableClass(string className) : base(className) { }
+    ///     
+    ///     protected override SetupFields()
+    ///     {
+    ///         // Field initialization should be done here, not in the constructor.
+    ///     }
+    /// }
+    /// </code>
     /// </summary>
     public abstract class ObservableClass
     {
         /// <summary>
-        /// A type id that is unique to the inherited class
+        /// A unique name for this instance of the class.
         /// </summary>
-        public int Type { get; protected set; }
-        /// <summary>
-        /// A unique id for this instance of the class.
-        /// </summary>
-        public int ID { get; protected set; }
-        /// <summary>
-        /// Gets an <see cref="ObservableField"/> based on the ID. There is no checking, will throw errors on invalid id.
-        /// </summary>
-        /// <param name="fieldID">The id of the field to retrieve</param>
-        /// <returns>The <see cref="ObservableField"/></returns>
-        public ObservableField GetField(int fieldID) => Fields[fieldID];
+        public string Name { get; set; }
+
         /// <summary>
         /// Gets a field based on the ID and casts it to a type that inherits from <see cref="ObservableField"/>. There is no checking, will throw errors on invalid id.
         /// </summary>
         /// <param name="fieldID">The id of the field to retrieve</param>
         /// <typeparam name="T">The type to cast the field to</typeparam>
         /// <returns>The <see cref="ObservableField"/> of type T</returns>
-        public T GetField<T>(int fieldID) where T : ObservableField => (T)Fields[fieldID];
+        public T GetField<T>(string fieldName) where T : Observable => (T)Fields[fieldName];
 
-        protected readonly Dictionary<int, ObservableField> Fields = new();
-        protected bool IsLoaded;
+        public T GetFieldValue<T>(string fieldName) where T : struct => GetField<Observable<T>>(fieldName).Value;
+
+        public void SetFieldValue<T>(string fieldName, T value) where T : struct => GetField<Observable<T>>(fieldName).Value = value;
+
+        protected readonly Dictionary<string, Observable> Fields = new();
+        protected bool IsLoaded = false;
 
         /// <summary>
         /// This event is fired when the <see cref="ObservableField"/>s of the class change.
         /// </summary>
-        public event Action<ObservableClass> Dirtied;
+        public event Action<ObservableClass, Observable> Dirtied;
 
-        protected ObservableClass(int uniqueId)
+        protected ObservableClass(string className)
         {
-            ID = uniqueId;
-            IsLoaded = false;
+            Name = className;
+            SetupFields();
         }
 
-        protected ObservableClass(int containerType, int uniqueId)
-        {
-            Type = containerType;
-            ID = uniqueId;
-            IsLoaded = false;
-        }
+        #region - Fields -
+        /// <summary>
+        /// This method should add all the default fields to the derived class.
+        /// </summary>
+        protected abstract void SetupFields();
 
-        #region - Field Management -
-        public void AddField(int fieldID, ObservableFieldType type, bool saveValue, object value = null)
+        public void AddField<T>(string fieldName, bool saveValue, T value, Action<Observable<T>, T> callback = null) where T : struct
         {
-            var field = value == null ? AddFieldByType(fieldID, type, saveValue) : AddFieldByType(fieldID, type, saveValue, value);
-            if (field != null)
+            if (Fields.TryAdd(fieldName, new Observable<T>(fieldName, saveValue, value).WithChanged(callback).WithDirtied(MarkDirty)))
             {
-                Fields[fieldID] = field;
-                MarkDirty(Fields[fieldID]);
+                MarkDirty(Fields[fieldName]);
             }
             else
             {
-                Debug.Log($"Class {Type} - {ID} Failed To Add Field: {type} {fieldID}");
+                Debug.LogError($"Field [{fieldName}] already added to class {Name}");
             }
         }
 
-        public void AddField(ObservableField field)
+        public void AddField(Observable field)
         {
-            Fields[field.FieldID] = field;
-            MarkDirty(field);
-        }
-
-        protected ObservableField AddFieldByType(int fieldID, ObservableFieldType type, bool saveValue, object value)
-        {
-            return type switch
+            if (Fields.TryAdd(field.Name, field))
             {
-                ObservableFieldType.Boolean => new BoolObservable(this, fieldID, saveValue, Convert.ToBoolean(value)),
-                ObservableFieldType.Int8 => new ByteObservable(this, fieldID, saveValue, Convert.ToByte(value)),
-                ObservableFieldType.Int16 => new ShortObservable(this, fieldID, saveValue, Convert.ToInt16(value)),
-                ObservableFieldType.UInt16 => new UShortObservable(this, fieldID, saveValue, Convert.ToUInt16(value)),
-                ObservableFieldType.Int32 => new IntObservable(this, fieldID, saveValue, Convert.ToInt32(value)),
-                ObservableFieldType.UInt32 => new UIntObservable(this, fieldID, saveValue, Convert.ToUInt32(value)),
-                ObservableFieldType.Single => new FloatObservable(this, fieldID, saveValue, Convert.ToSingle(value)),
-                ObservableFieldType.Int64 => new LongObservable(this, fieldID, saveValue, Convert.ToInt64(value)),
-                ObservableFieldType.UInt64 => new ULongObservable(this, fieldID, saveValue, Convert.ToUInt64(value)),
-                ObservableFieldType.Double => new DoubleObservable(this, fieldID, saveValue, Convert.ToDouble(value)),
-                ObservableFieldType.Vector2 => new Vector2Observable(this, fieldID, saveValue, (Vector2)value),
-                ObservableFieldType.Vector2Int => new Vector2IntObservable(this, fieldID, saveValue, (Vector2Int)value),
-                ObservableFieldType.Vector3 => new Vector3Observable(this, fieldID, saveValue, (Vector3)value),
-                ObservableFieldType.Vector3Int => new Vector3IntObservable(this, fieldID, saveValue, (Vector3Int)value),
-                ObservableFieldType.Color => new ColorObservable(this, fieldID, saveValue, (Color)value),
-                ObservableFieldType.Quaternion => new QuaternionObservable(this, fieldID, saveValue, (Quaternion)value),
-                ObservableFieldType.String => new StringObservable(this, fieldID, saveValue, Convert.ToString(value)),
-                _ => null,
-            };
-        }
-
-        protected ObservableField AddFieldByType(int fieldID, ObservableFieldType type, bool saveValue)
-        {
-
-            return type switch
+                field.WithDirtied(MarkDirty);
+                MarkDirty(field);
+            }
+            else
             {
-                ObservableFieldType.Boolean => new BoolObservable(this, fieldID, saveValue, false),
-                ObservableFieldType.Int8 => new ByteObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Int16 => new ShortObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.UInt16 => new UShortObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Int32 => new IntObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.UInt32 => new UIntObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Single => new FloatObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Int64 => new LongObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.UInt64 => new ULongObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Double => new DoubleObservable(this, fieldID, saveValue, 0),
-                ObservableFieldType.Vector2 => new Vector2Observable(this, fieldID, saveValue, Vector2.zero),
-                ObservableFieldType.Vector2Int => new Vector2IntObservable(this, fieldID, saveValue, Vector2Int.zero),
-                ObservableFieldType.Vector3 => new Vector3Observable(this, fieldID, saveValue, Vector3.zero),
-                ObservableFieldType.Vector3Int => new Vector3IntObservable(this, fieldID, saveValue, Vector3Int.zero),
-                ObservableFieldType.Color => new ColorObservable(this, fieldID, saveValue, Color.white),
-                ObservableFieldType.Quaternion => new QuaternionObservable(this, fieldID, saveValue, Quaternion.identity),
-                ObservableFieldType.String => new StringObservable(this, fieldID, saveValue, ""),
-                _ => null,
-            };
+                Debug.LogError($"Field [{field.Name}] already added to class {Name}");
+            }
         }
 
-        internal virtual void MarkDirty(ObservableField field)
+        public void RemoveField(string fieldName)
         {
-            Dirtied?.Invoke(this);
+            if (Fields.TryGetValue(fieldName, out var field))
+            {
+                field.ClearCallbacks();
+                Fields.Remove(fieldName);
+            }
+        }
+
+        internal virtual void MarkDirty(Observable field)
+        {
+            Dirtied?.Invoke(this, field);
         }
         #endregion
 
-        #region - Saving & Loading -
+        #region - Saving and Loading -
+        public string SaveAsJson()
+        {
+            var save = Save();
+            return JsonConvert.SerializeObject(save);
+        }
+
         public SavedObservableClass Save()
         {
-            List<SavedObservableField> holder = new();
+            List<SavedObservable> holder = new();
             foreach (var field in Fields.Values)
             {
                 if (field.SaveValue)
@@ -159,94 +144,54 @@ namespace VaporObservables
                     holder.Add(field.Save());
                 }
             }
-            return new SavedObservableClass(Type, ID, holder);
+            return new SavedObservableClass(Name, GetType(), holder);
         }
 
-        public void Load(SavedObservableClass save, bool createMissingFields = true, bool forceReload = false)
+        public static SavedObservableClass Load(string json)
         {
-            if (IsLoaded && !forceReload) { return; }
+            return JsonConvert.DeserializeObject<SavedObservableClass>(json);
+        }
 
-            if(save.SavedFields != null)
+        public void Load(SavedObservableClass load)
+        {
+            if (!IsLoaded)
             {
-                foreach (var field in save.SavedFields)
+                //var valueType = Type.GetType(load.ClassType);
+                //var result = Activator.CreateInstance(valueType, new object[] { load.Name }) as ObservableClass;
+                if (load.SavedFields != null)
                 {
-                    if (Fields.ContainsKey(field.ID))
+                    foreach (var field in load.SavedFields)
                     {
-                        SetFromObject(field.ID, field.Value);
-                    }
-                    else
-                    {
-                        if (!createMissingFields) { continue; }
-                        AddField(field.ID, field.Type, true);
-                        SetFromObject(field.ID, field.Value);
+                        var obs = Observable.Load(field);
+                        if (Fields.ContainsKey(field.Name))
+                        {
+                            Fields[field.Name].SetValueBoxed(obs.GetValueBoxed());
+                        }
+                        else
+                        {
+                            AddField(obs);
+                        }
                     }
                 }
-            }
-            IsLoaded = true;
-        }
-
-        protected void SetFromObject(int fieldID, object value)
-        {
-            if (value == null) { return; }
-            if (!Fields.ContainsKey(fieldID)) { return; }
-
-            switch (Fields[fieldID].Type)
-            {
-                case ObservableFieldType.Boolean:
-                    GetField<BoolObservable>(fieldID).Value = (bool)value;
-                    break;
-                case ObservableFieldType.Int8:
-                    GetField<ByteObservable>(fieldID).Value = (byte)value;
-                    break;
-                case ObservableFieldType.Int16:
-                    GetField<ShortObservable>(fieldID).Value = (short)value;
-                    break;
-                case ObservableFieldType.UInt16:
-                    GetField<UShortObservable>(fieldID).Value = (ushort)value;
-                    break;
-                case ObservableFieldType.Int32:
-                    GetField<IntObservable>(fieldID).Value = (int)value;
-                    break;
-                case ObservableFieldType.UInt32:
-                    GetField<UIntObservable>(fieldID).Value = (uint)value;
-                    break;
-                case ObservableFieldType.Single:
-                    GetField<FloatObservable>(fieldID).Value = (float)value;
-                    break;
-                case ObservableFieldType.Int64:
-                    GetField<LongObservable>(fieldID).Value = (long)value;
-                    break;
-                case ObservableFieldType.UInt64:
-                    GetField<ULongObservable>(fieldID).Value = (ulong)value;
-                    break;
-                case ObservableFieldType.Double:
-                    GetField<DoubleObservable>(fieldID).Value = (double)value;
-                    break;
-                case ObservableFieldType.Vector2:
-                    GetField<Vector2Observable>(fieldID).Value = (Vector2)value;
-                    break;
-                case ObservableFieldType.Vector2Int:
-                    GetField<Vector2IntObservable>(fieldID).Value = (Vector2Int)value;
-                    break;
-                case ObservableFieldType.Vector3:
-                    GetField<Vector3Observable>(fieldID).Value = (Vector3)value;
-                    break;
-                case ObservableFieldType.Vector3Int:
-                    GetField<Vector3IntObservable>(fieldID).Value = (Vector3Int)value;
-                    break;
-                case ObservableFieldType.Color:
-                    GetField<ColorObservable>(fieldID).Value = (Color)value;
-                    break;
-                case ObservableFieldType.Quaternion:
-                    GetField<QuaternionObservable>(fieldID).Value = (Quaternion)value;
-                    break;
-                case ObservableFieldType.String:
-                    GetField<StringObservable>(fieldID).Value = (string)value;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                IsLoaded = true;
             }
         }
         #endregion
+    }
+
+    public class ObservableClass<T> : ObservableClass where T : IObservedClass
+    {
+        public T ObservedClass { get; }
+
+        public ObservableClass(string className, T observedClass) : base(className)
+        {
+            ObservedClass = observedClass;
+            ObservedClass.SetupFields(this);
+        }
+
+        protected override void SetupFields()
+        {
+
+        }
     }
 }

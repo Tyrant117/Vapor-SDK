@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace VaporXR.Interactors
 
         void PreprocessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase);
         void ProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase);
-        void GetValidTargets(List<IXRInteractable> targets);
+        void GetValidTargets(List<IVXRInteractable> targets);
         void OnRegistered(InteractorRegisteredEventArgs args);
         void OnUnregistered(InteractorUnregisteredEventArgs args);
         bool TryGetSelectInteractor(out IVXRSelectInteractor interactor);

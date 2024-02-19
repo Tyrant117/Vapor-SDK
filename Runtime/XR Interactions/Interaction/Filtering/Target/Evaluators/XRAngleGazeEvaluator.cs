@@ -69,7 +69,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IXRInteractable target)
+        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
         {
             var cachedGazeTransform = gazeTransform;
             if (cachedGazeTransform == null || m_MaxAngle <= 0f)

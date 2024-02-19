@@ -216,7 +216,7 @@ namespace VaporXR.Locomotion.Teleportation
                 // Are we still selecting this object and within the tolerated normal threshold?
                 if (!rayInteractor.TryGetCurrent3DRaycastHit(out raycastHit) ||
                     !InteractionManager.TryGetInteractableForCollider(raycastHit.collider, out var hitInteractable) ||
-                    hitInteractable != (IXRInteractable)this ||
+                    hitInteractable != (IVXRInteractable)this ||
                     (m_FilterSelectionByHitNormal && Vector3.Angle(transform.up, raycastHit.normal) > m_UpNormalToleranceDegrees))
                 {
                     return;
@@ -240,8 +240,8 @@ namespace VaporXR.Locomotion.Teleportation
                 {
                     using (m_TeleportingEventArgs.Get(out var args))
                     {
-                        args.interactorObject = interactor;
-                        args.interactableObject = this;
+                        args.InteractorObject = interactor;
+                        args.InteractableObject = this;
                         args.teleportRequest = teleportRequest;
                         m_Teleporting.Invoke(args);
                     }
@@ -320,7 +320,7 @@ namespace VaporXR.Locomotion.Teleportation
         {
             if (m_TeleportTrigger == TeleportTrigger.OnSelectEntered)
             {
-                SendTeleportRequest(args.interactorObject);
+                SendTeleportRequest(args.InteractorObject);
             }
 
             base.OnSelectEntered(args);
@@ -329,9 +329,9 @@ namespace VaporXR.Locomotion.Teleportation
         /// <inheritdoc />
         public override void OnSelectExited(SelectExitEventArgs args)
         {
-            if (m_TeleportTrigger == TeleportTrigger.OnSelectExited && !args.isCanceled)
+            if (m_TeleportTrigger == TeleportTrigger.OnSelectExited && !args.IsCanceled)
             {
-                SendTeleportRequest(args.interactorObject);
+                SendTeleportRequest(args.InteractorObject);
             }
 
             base.OnSelectExited(args);
@@ -367,7 +367,7 @@ namespace VaporXR.Locomotion.Teleportation
                 interactor.Composite is VXRRayCompositeInteractor rayInteractor && rayInteractor != null &&
                 rayInteractor.TryGetCurrent3DRaycastHit(out var raycastHit) &&
                 InteractionManager.TryGetInteractableForCollider(raycastHit.collider, out var hitInteractable) &&
-                hitInteractable == (IXRInteractable)this)
+                hitInteractable == (IVXRInteractable)this)
             {
                 // The ray interactor should only be able to select if its current hit is this interactable
                 // and the hit normal is within the tolerated threshold.

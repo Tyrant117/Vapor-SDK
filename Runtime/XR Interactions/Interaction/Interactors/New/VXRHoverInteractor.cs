@@ -32,7 +32,7 @@ namespace VaporXR.Interactors
         /// </summary>
         public virtual bool IsHoverActive => HoverActive.Invoke();
 
-        private readonly HashSetList<IXRHoverInteractable> _interactablesHovered = new();
+        private readonly HashSetList<IVXRHoverInteractable> _interactablesHovered = new();
         /// <summary>
         /// (Read Only) The list of Interactables that are currently being hovered over (may by empty).
         /// </summary>
@@ -42,8 +42,8 @@ namespace VaporXR.Interactors
         /// when enumerating the list.
         /// </remarks>
         /// <seealso cref="HasHover"/>
-        /// <seealso cref="IXRHoverInteractable.InteractorsHovering"/>
-        public List<IXRHoverInteractable> InteractablesHovered => (List<IXRHoverInteractable>)_interactablesHovered.AsList();
+        /// <seealso cref="IVXRHoverInteractable.InteractorsHovering"/>
+        public List<IVXRHoverInteractable> InteractablesHovered => (List<IVXRHoverInteractable>)_interactablesHovered.AsList();
 
         /// <summary>
         /// (Read Only) Indicates whether this Interactor is currently hovering an Interactable.
@@ -55,7 +55,7 @@ namespace VaporXR.Interactors
         /// </example>
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        /// <seealso cref="IXRHoverInteractable.IsHovered"/>
+        /// <seealso cref="IVXRHoverInteractable.IsHovered"/>
         public bool HasHover => _interactablesHovered.Count > 0;
 
         private readonly ExposedRegistrationList<IXRHoverFilter> _hoverFilters = new() { BufferChanges = false };
@@ -102,8 +102,8 @@ namespace VaporXR.Interactors
         /// </summary>
         /// <param name="interactable">Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the interactable can be hovered over this frame.</returns>
-        /// <seealso cref="IXRHoverInteractable.IsHoverableBy"/>
-        public virtual bool CanHover(IXRHoverInteractable interactable)
+        /// <seealso cref="IVXRHoverInteractable.IsHoverableBy"/>
+        public virtual bool CanHover(IVXRHoverInteractable interactable)
         {
             return ProcessHoverFilters(interactable) && (Composite == null || Composite.CanHover(interactable));
         }
@@ -118,7 +118,7 @@ namespace VaporXR.Interactors
         /// In other words, returns whether <see cref="InteractablesHovered"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        public bool IsHovering(IXRHoverInteractable interactable) => _interactablesHovered.Contains(interactable);
+        public bool IsHovering(IVXRHoverInteractable interactable) => _interactablesHovered.Contains(interactable);
 
         /// <summary>
         /// Determines whether this Interactor is currently hovering the Interactable.
@@ -130,7 +130,7 @@ namespace VaporXR.Interactors
         /// In other words, returns whether <see cref="InteractablesHovered"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesHovered"/>
-        public bool IsHovering(IXRInteractable interactable) => interactable is IXRHoverInteractable hoverable && IsHovering(hoverable);
+        public bool IsHovering(IVXRInteractable interactable) => interactable is IVXRHoverInteractable hoverable && IsHovering(hoverable);
 
         /// <summary>
         /// Returns the processing value of the filters in <see cref="HoverFilters"/> for this Interactor and the
@@ -141,7 +141,7 @@ namespace VaporXR.Interactors
         /// Returns <see langword="true"/> if all processed filters also return <see langword="true"/>, or if
         /// <see cref="HoverFilters"/> is empty. Otherwise, returns <see langword="false"/>.
         /// </returns>
-        protected bool ProcessHoverFilters(IXRHoverInteractable interactable)
+        protected bool ProcessHoverFilters(IVXRHoverInteractable interactable)
         {
             return XRFilterUtility.Process(_hoverFilters, this, interactable);
         }
@@ -156,7 +156,7 @@ namespace VaporXR.Interactors
                 {
                     _hand.RequestHandPose(HandPoseType.Hover, this, pose.Value, duration: duration);
                 }
-                else
+                else if (_hoverPose != null)
                 {
                     _hand.RequestHandPose(HandPoseType.Hover, this, _hoverPose.Value, duration: _hoverPoseDuration);
                 }

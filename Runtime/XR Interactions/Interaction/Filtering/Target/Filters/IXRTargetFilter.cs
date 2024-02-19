@@ -51,6 +51,6 @@ namespace VaporXR
         /// <remarks>
         /// It's recommended to call this from an implementation of <see cref="IXRInteractor.GetValidTargets"/>.
         /// </remarks>>
-        void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results);
+        void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results);
     }
 }

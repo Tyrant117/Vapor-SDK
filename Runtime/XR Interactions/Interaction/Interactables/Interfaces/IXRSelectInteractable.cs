@@ -10,7 +10,7 @@ namespace VaporXR
     /// an Interactor component can select.
     /// </summary>
     /// <seealso cref="VXRBaseInteractor"/>
-    public interface IXRSelectInteractable : IXRInteractable
+    public interface IXRSelectInteractable : IVXRInteractable
     {
         /// <summary>
         /// The event that is called only when the first Interactor begins selecting
@@ -118,7 +118,7 @@ namespace VaporXR
         /// <returns>Returns the world pose of the attachment point during the moment of selection,
         /// and otherwise the identity <see cref="Pose"/> if it was not selected by it during the current selection stack.</returns>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
-        /// <seealso cref="IXRInteractable.GetAttachTransform"/>
+        /// <seealso cref="IVXRInteractable.GetAttachTransform"/>
         /// <seealso cref="VXRBaseInteractor.GetAttachPoseOnSelect"/>
         Pose GetAttachPoseOnSelect(IVXRInteractor interactor);
 
@@ -129,7 +129,7 @@ namespace VaporXR
         /// <returns>Returns the local pose of the attachment point during the moment of selection,
         /// and otherwise the identity <see cref="Pose"/> if it was not selected by it during the current selection stack.</returns>
         /// <seealso cref="GetAttachPoseOnSelect"/>
-        /// <seealso cref="IXRInteractable.GetAttachTransform"/>
+        /// <seealso cref="IVXRInteractable.GetAttachTransform"/>
         /// <seealso cref="VXRBaseInteractor.GetLocalAttachPoseOnSelect"/>
         Pose GetLocalAttachPoseOnSelect(IVXRInteractor interactor);
 
@@ -183,9 +183,9 @@ namespace VaporXR
     }
 
     /// <summary>
-    /// Extension methods for <see cref="IXRSelectInteractable"/>.
+    /// Extension methods for <see cref="IVXRSelectInteractable"/>.
     /// </summary>
-    /// <seealso cref="IXRSelectInteractable"/>
+    /// <seealso cref="IVXRSelectInteractable"/>
     public static class XRSelectInteractableExtensions
     {
         /// <summary>
@@ -197,8 +197,8 @@ namespace VaporXR
         /// <remarks>
         /// Equivalent to <code>interactorsSelecting.Count > 0 ? interactorsSelecting[0] : null</code>
         /// </remarks>
-        /// <seealso cref="IXRSelectInteractable.InteractorsSelecting"/>
-        public static IVXRSelectInteractor GetOldestInteractorSelecting(this IXRSelectInteractable interactable) =>
+        /// <seealso cref="IVXRSelectInteractable.InteractorsSelecting"/>
+        public static IVXRSelectInteractor GetOldestInteractorSelecting(this IVXRSelectInteractable interactable) =>
             interactable?.InteractorsSelecting.Count > 0 ? interactable.InteractorsSelecting[0] : null;
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsSelectedByRight"/>
         /// <seealso cref="IXRInteractor.Handedness"/>
-        public static bool IsSelectedByLeft(this IXRSelectInteractable interactable) =>
+        public static bool IsSelectedByLeft(this IVXRSelectInteractable interactable) =>
             IsSelectedBy(interactable, InteractorHandedness.Left);
 
         /// <summary>
@@ -228,10 +228,10 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IsSelectedByLeft"/>
         /// <seealso cref="IXRInteractor.Handedness"/>
-        public static bool IsSelectedByRight(this IXRSelectInteractable interactable) =>
+        public static bool IsSelectedByRight(this IVXRSelectInteractable interactable) =>
             IsSelectedBy(interactable, InteractorHandedness.Right);
 
-        private static bool IsSelectedBy(IXRSelectInteractable interactable, InteractorHandedness handedness)
+        private static bool IsSelectedBy(IVXRSelectInteractable interactable, InteractorHandedness handedness)
         {
             var interactorsSelecting = interactable.InteractorsSelecting;
             for (var i = 0; i < interactorsSelecting.Count; ++i)
@@ -247,7 +247,7 @@ namespace VaporXR
     /// <summary>
     /// Options for the selection policy of an Interactable.
     /// </summary>
-    /// <seealso cref="IXRSelectInteractable.SelectMode"/>
+    /// <seealso cref="IVXRSelectInteractable.SelectMode"/>
     public enum InteractableSelectMode
     {
         /// <summary>

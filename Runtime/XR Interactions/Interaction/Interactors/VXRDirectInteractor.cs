@@ -76,7 +76,7 @@ namespace VaporXR
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        protected List<IXRInteractable> UnsortedValidTargets { get; } = new List<IXRInteractable>();
+        protected List<IVXRInteractable> UnsortedValidTargets { get; } = new List<IVXRInteractable>();
         #endregion
 
         #region Fields
@@ -106,7 +106,7 @@ namespace VaporXR
         private readonly RaycastHit[] _sphereCastHits = new RaycastHit[25];
         private bool _firstFrame = true;
         private bool _contactsSortedThisFrame;
-        private readonly List<IXRInteractable> _sortedValidTargets = new();
+        private readonly List<IVXRInteractable> _sortedValidTargets = new();
         #endregion
 
         #region - Initialization -
@@ -330,7 +330,7 @@ namespace VaporXR
             }
         }
         
-        private void OnContactAdded(IXRInteractable interactable)
+        private void OnContactAdded(IVXRInteractable interactable)
         {
             if (UnsortedValidTargets.Contains(interactable))
                 return;
@@ -339,7 +339,7 @@ namespace VaporXR
             _contactsSortedThisFrame = false;
         }
 
-        private void OnContactRemoved(IXRInteractable interactable)
+        private void OnContactRemoved(IVXRInteractable interactable)
         {
             if (UnsortedValidTargets.Remove(interactable))
                 _contactsSortedThisFrame = false;
@@ -360,21 +360,21 @@ namespace VaporXR
         #endregion
 
         #region - Hovering -
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(IVXRHoverInteractable interactable)
         {
             return base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable));
         }
         #endregion
 
         #region - Selection -
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(IVXRSelectInteractable interactable)
         {
             return base.CanSelect(interactable) && (!HasSelection || IsSelecting(interactable));
         }
         #endregion
 
         #region - Helpers
-        public override void GetValidTargets(List<IXRInteractable> targets)
+        public override void GetValidTargets(List<IVXRInteractable> targets)
         {
             targets.Clear();
 

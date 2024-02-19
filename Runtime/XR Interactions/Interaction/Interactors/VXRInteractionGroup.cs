@@ -139,10 +139,10 @@ namespace VaporXR
         /// </summary>
         private readonly Dictionary<IXRGroupMember, HashSet<IXRGroupMember>> _interactionOverridesMap = new();
 
-        private readonly List<IXRInteractable> _validTargets = new();
+        private readonly List<IVXRInteractable> _validTargets = new();
 
-        private static readonly List<IXRSelectInteractable> s_InteractablesSelected = new();
-        private static readonly List<IXRHoverInteractable> s_InteractablesHovered = new();
+        private static readonly List<IVXRSelectInteractable> s_InteractablesSelected = new();
+        private static readonly List<IVXRHoverInteractable> s_InteractablesHovered = new();
         #endregion
 
         #region Events
@@ -849,7 +849,7 @@ namespace VaporXR
             m_RegisteredInteractionManager.GetValidTargets(selectInteractor, _validTargets);
             foreach (var target in _validTargets)
             {
-                if (!(target is IXRSelectInteractable selectInteractable))
+                if (!(target is IVXRSelectInteractable selectInteractable))
                     continue;
 
                 if (m_RegisteredInteractionManager.CanSelect(selectInteractor, selectInteractable))
@@ -1051,7 +1051,7 @@ namespace VaporXR
             m_RegisteredInteractionManager.GetValidTargets(overridingInteractor, _validTargets);
             foreach (var target in _validTargets)
             {
-                if (!(target is IXRSelectInteractable selectInteractable) ||
+                if (!(target is IVXRSelectInteractable selectInteractable) ||
                     !m_RegisteredInteractionManager.CanSelect(overridingInteractor, selectInteractable))
                 {
                     continue;
@@ -1060,7 +1060,7 @@ namespace VaporXR
                 if (interactingSelectInteractor != null && interactingSelectInteractor.IsSelecting(selectInteractable))
                     return true;
 
-                if (interactingHoverInteractor != null && target is IXRHoverInteractable hoverInteractable &&
+                if (interactingHoverInteractor != null && target is IVXRHoverInteractable hoverInteractable &&
                     interactingHoverInteractor.IsHovering(hoverInteractable))
                 {
                     return true;
@@ -1158,7 +1158,7 @@ namespace VaporXR
         public void OnFocusEntering(FocusEnterEventArgs args)
         {
             FocusInteractable = args.interactableObject;
-            FocusInteractor = args.interactorObject;
+            FocusInteractor = args.InteractorObject;
         }
 
         /// <inheritdoc />

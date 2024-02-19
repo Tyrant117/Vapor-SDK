@@ -14,12 +14,12 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public IVXRInteractor interactorObject { get; set; }
+        public IVXRInteractor InteractorObject { get; set; }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
         /// </summary>
-        public IXRInteractable interactableObject { get; set; }
+        public IVXRInteractable InteractableObject { get; set; }
     }
 
     #region Teleport
@@ -68,17 +68,17 @@ namespace VaporXR
         /// </summary>
         public new IVXRHoverInteractor interactorObject
         {
-            get => (IVXRHoverInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRHoverInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
         /// </summary>
-        public new IXRHoverInteractable interactableObject
+        public new IVXRHoverInteractable interactableObject
         {
-            get => (IXRHoverInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IVXRHoverInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
 
         /// <summary>
@@ -105,17 +105,17 @@ namespace VaporXR
         /// </summary>
         public new IVXRHoverInteractor interactorObject
         {
-            get => (IVXRHoverInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRHoverInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
         /// </summary>
-        public new IXRHoverInteractable interactableObject
+        public new IVXRHoverInteractable interactableObject
         {
-            get => (IXRHoverInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IVXRHoverInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
 
         /// <summary>
@@ -151,25 +151,25 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new IVXRSelectInteractor interactorObject
+        public new IVXRSelectInteractor InteractorObject
         {
-            get => (IVXRSelectInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRSelectInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
         /// </summary>
-        public new IXRSelectInteractable interactableObject
+        public new IVXRSelectInteractable InteractableObject
         {
-            get => (IXRSelectInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IVXRSelectInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
 
         /// <summary>
         /// The Interaction Manager associated with the interaction event.
         /// </summary>
-        public VXRInteractionManager manager { get; set; }
+        public VXRInteractionManager Manager { get; set; }
     }
 
     /// <summary>
@@ -188,32 +188,39 @@ namespace VaporXR
         /// <summary>
         /// The Interactor associated with the interaction event.
         /// </summary>
-        public new IVXRSelectInteractor interactorObject
+        public new IVXRSelectInteractor InteractorObject
         {
-            get => (IVXRSelectInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRSelectInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
         /// The Interactable associated with the interaction event.
         /// </summary>
-        public new IXRSelectInteractable interactableObject
+        public IVXRSelectInteractable GetinteractableObject()
         {
-            get => (IXRSelectInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            return (IVXRSelectInteractable)base.InteractableObject;
+        }
+
+        /// <summary>
+        /// The Interactable associated with the interaction event.
+        /// </summary>
+        public void SetinteractableObject(IVXRSelectInteractable value)
+        {
+            base.InteractableObject = value;
         }
 
         /// <summary>
         /// The Interaction Manager associated with the interaction event.
         /// </summary>
-        public VXRInteractionManager manager { get; set; }
+        public VXRInteractionManager Manager { get; set; }
 
         /// <summary>
         /// Whether the selection was ended due to being canceled, such as from
         /// either the Interactor or Interactable being unregistered due to being
         /// disabled or destroyed.
         /// </summary>
-        public bool isCanceled { get; set; }
+        public bool IsCanceled { get; set; }
     }
 
     #endregion
@@ -243,8 +250,8 @@ namespace VaporXR
         /// </summary>
         public new IXRFocusInteractable interactableObject
         {
-            get => (IXRFocusInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IXRFocusInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
 
         /// <summary>
@@ -276,8 +283,8 @@ namespace VaporXR
         /// </summary>
         public new IXRFocusInteractable interactableObject
         {
-            get => (IXRFocusInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IXRFocusInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
 
         /// <summary>
@@ -320,8 +327,8 @@ namespace VaporXR
         /// </summary>
         public new IVXRInteractor interactorObject
         {
-            get => (IVXRInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
@@ -329,8 +336,8 @@ namespace VaporXR
         /// </summary>
         public new IXRActivateInteractable interactableObject
         {
-            get => (IXRActivateInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IXRActivateInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
     }
 
@@ -357,8 +364,8 @@ namespace VaporXR
         /// </summary>
         public new IVXRInteractor interactorObject
         {
-            get => (IVXRInteractor)base.interactorObject;
-            set => base.interactorObject = value;
+            get => (IVXRInteractor)base.InteractorObject;
+            set => base.InteractorObject = value;
         }
 
         /// <summary>
@@ -366,8 +373,8 @@ namespace VaporXR
         /// </summary>
         public new IXRActivateInteractable interactableObject
         {
-            get => (IXRActivateInteractable)base.interactableObject;
-            set => base.interactableObject = value;
+            get => (IXRActivateInteractable)base.InteractableObject;
+            set => base.InteractableObject = value;
         }
     }
 
@@ -426,7 +433,7 @@ namespace VaporXR
         /// <summary>
         /// The Interactable that was registered.
         /// </summary>
-        public IXRInteractable interactableObject { get; set; }
+        public IVXRInteractable interactableObject { get; set; }
     }
 
     /// <summary>
@@ -459,7 +466,7 @@ namespace VaporXR
         /// <summary>
         /// The Interactable that was unregistered.
         /// </summary>
-        public IXRInteractable interactableObject { get; set; }
+        public IVXRInteractable interactableObject { get; set; }
     }
 
     #endregion

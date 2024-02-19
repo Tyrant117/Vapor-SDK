@@ -17,10 +17,10 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The specific Interactable as context to get the attachment point for.</param>
         /// <returns>Returns the attachment point <see cref="Transform"/>.</returns>
-        /// <seealso cref="IXRInteractable.GetAttachTransform"/>
+        /// <seealso cref="IVXRInteractable.GetAttachTransform"/>
         /// <remarks>
         /// This should typically return the Transform of a child GameObject or the <see cref="transform"/> itself.
         /// </remarks>
-        Transform GetAttachTransform(IXRInteractable interactable);
+        Transform GetAttachTransform(IVXRInteractable interactable);
     }
 }

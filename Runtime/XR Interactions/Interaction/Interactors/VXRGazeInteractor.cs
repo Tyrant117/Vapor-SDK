@@ -29,7 +29,7 @@ namespace VaporXR
             FixedSize,
 
             ///<summary>
-            /// Gaze assistance area will be sized based on the <see cref="Collider.bounds"/> of the <see cref="IXRInteractable"/>
+            /// Gaze assistance area will be sized based on the <see cref="Collider.bounds"/> of the <see cref="IVXRInteractable"/>
             /// this <see cref="VXRGazeInteractor"/> is hovering over and scaled by <see cref="VXRGazeInteractor.GazeAssistanceColliderScale"/>.
             /// </summary>
             ColliderSize,
@@ -170,8 +170,8 @@ namespace VaporXR
         /// <summary>
         /// Updates the <see cref="GazeAssistanceSnapVolume"/> based on a target interactable.
         /// </summary>
-        /// <param name="interactable">The <see cref="IXRInteractable"/> this <see cref="VXRGazeInteractor"/> is processing and using to update the <see cref="GazeAssistanceSnapVolume"/>.</param>
-        protected virtual void UpdateSnapVolumeInteractable(IXRInteractable interactable)
+        /// <param name="interactable">The <see cref="IVXRInteractable"/> this <see cref="VXRGazeInteractor"/> is processing and using to update the <see cref="GazeAssistanceSnapVolume"/>.</param>
+        protected virtual void UpdateSnapVolumeInteractable(IVXRInteractable interactable)
         {
             if (_gazeAssistanceSnapVolume == null)
                 return;
@@ -179,7 +179,7 @@ namespace VaporXR
             var snapVolumePosition = Vector3.zero;
             var snapVolumeScale = _gazeAssistanceColliderScale;
             var snapColliderSize = 0f;
-            IXRInteractable snapInteractable = null;
+            IVXRInteractable snapInteractable = null;
             Collider snapToCollider = null;
 
             // Currently assumes no gaze assistance for interactables that are not our abstract base class
@@ -248,19 +248,19 @@ namespace VaporXR
 
         #region - Interaction -
         /// <summary>
-        /// Checks to see if this <see cref="VXRGazeInteractor"/> can interact with an <see cref="IXRInteractable"/>.
+        /// Checks to see if this <see cref="VXRGazeInteractor"/> can interact with an <see cref="IVXRInteractable"/>.
         /// </summary>
-        /// <param name="interactable">The <see cref="IXRInteractable"/> to check if this <see cref="VXRGazeInteractor"/> can interact with.</param>
+        /// <param name="interactable">The <see cref="IVXRInteractable"/> to check if this <see cref="VXRGazeInteractor"/> can interact with.</param>
         /// <returns>Returns <see langword="true"/> if this <see cref="VXRGazeInteractor"/> can interact with <see cref="interactable"/>, otherwise returns <see langword="false"/>.</returns>
-        private bool CanInteract(IXRInteractable interactable)
+        private bool CanInteract(IVXRInteractable interactable)
         {
-            return interactable is IXRHoverInteractable hoverInteractable && InteractionManager.CanHover(this, hoverInteractable) ||
-                   interactable is IXRSelectInteractable selectInteractable && InteractionManager.CanSelect(this, selectInteractable);
+            return interactable is IVXRHoverInteractable hoverInteractable && InteractionManager.CanHover(this, hoverInteractable) ||
+                   interactable is IVXRSelectInteractable selectInteractable && InteractionManager.CanSelect(this, selectInteractable);
         }
         #endregion
 
         #region - Selection -
-        protected override float GetHoverTimeToSelect(IXRInteractable interactable)
+        protected override float GetHoverTimeToSelect(IVXRInteractable interactable)
         {
             if (interactable is IXROverridesGazeAutoSelect { OverrideGazeTimeToSelect: true } overrideProvider)
                 return overrideProvider.GazeTimeToSelect;
@@ -268,7 +268,7 @@ namespace VaporXR
             return base.GetHoverTimeToSelect(interactable);
         }
 
-        protected override float GetTimeToAutoDeselect(IXRInteractable interactable)
+        protected override float GetTimeToAutoDeselect(IVXRInteractable interactable)
         {
             if (interactable is IXROverridesGazeAutoSelect { OverrideTimeToAutoDeselectGaze: true } overrideProvider)
                 return overrideProvider.TimeToAutoDeselectGaze;

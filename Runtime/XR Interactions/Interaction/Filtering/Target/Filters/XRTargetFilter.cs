@@ -32,14 +32,14 @@ namespace VaporXR
         /// <summary>
         /// Reusable mapping of Interactables to their final score (used for sorting).
         /// </summary>
-        static readonly Dictionary<IXRInteractable, float> s_InteractableFinalScoreMap =
-            new Dictionary<IXRInteractable, float>();
+        static readonly Dictionary<IVXRInteractable, float> s_InteractableFinalScoreMap =
+            new Dictionary<IVXRInteractable, float>();
 
         /// <summary>
         /// Used to avoid GC Alloc that would happen if using <see cref="InteractableScoreDescendingComparison"/> directly
         /// as argument to <see cref="List{T}.Sort(Comparison{T})"/>.
         /// </summary>
-        static readonly Comparison<IXRInteractable> s_InteractableScoreComparison = InteractableScoreDescendingComparison;
+        static readonly Comparison<IVXRInteractable> s_InteractableScoreComparison = InteractableScoreDescendingComparison;
 
 #if UNITY_EDITOR
         /// <summary>
@@ -52,11 +52,11 @@ namespace VaporXR
         /// (Editor Only) Reusable mapping of Interactables to their individual evaluators' scores (used to forward debug data to editors).
         /// The same index in the evaluator's score list (the Dictionary's key value) maps to the the evaluator it represents in the list returned by <see cref="GetEnabledEvaluators"/>.
         /// </summary>
-        static readonly Dictionary<IXRInteractable, List<float>> s_InteractableScoreListMap =
-            new Dictionary<IXRInteractable, List<float>>();
+        static readonly Dictionary<IVXRInteractable, List<float>> s_InteractableScoreListMap =
+            new Dictionary<IVXRInteractable, List<float>>();
 #endif
 
-        static int InteractableScoreDescendingComparison(IXRInteractable x, IXRInteractable y)
+        static int InteractableScoreDescendingComparison(IVXRInteractable x, IVXRInteractable y)
         {
             var xFinalScore = s_InteractableFinalScoreMap[x];
             var yFinalScore = s_InteractableFinalScoreMap[y];
@@ -71,8 +71,8 @@ namespace VaporXR
 #if UNITY_EDITOR
         internal static readonly List<XRTargetFilter> enabledFilters = new();
 
-        internal event Action<IVXRInteractor, List<IXRInteractable>, List<IXRInteractable>, Dictionary<IXRInteractable, float>,
-            Dictionary<IXRInteractable, List<float>>> processingCompleted;
+        internal event Action<IVXRInteractor, List<IVXRInteractable>, List<IVXRInteractable>, Dictionary<IVXRInteractable, float>,
+            Dictionary<IVXRInteractable, List<float>>> processingCompleted;
 #endif
 
         List<IVXRInteractor> m_LinkedInteractors = new();
@@ -496,7 +496,7 @@ namespace VaporXR
         /// This final score is then used to sort (in descending order) the Interactables in the results list.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Throws when this filter is currently processing and filtering Interactables.</exception>
-        public override void Process(IVXRInteractor interactor, List<IXRInteractable> targets, List<IXRInteractable> results)
+        public override void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results)
         {
 #if UNITY_EDITOR
             Debug.Assert(s_InteractableScoreListMap.Count == 0, this);

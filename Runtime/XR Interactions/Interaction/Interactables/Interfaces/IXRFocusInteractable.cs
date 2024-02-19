@@ -7,7 +7,7 @@ namespace VaporXR
     /// An interface that represents an Interactable component which
     /// an Interactor component can persistently select.
     /// </summary>
-    public interface IXRFocusInteractable : IXRInteractable
+    public interface IXRFocusInteractable : IVXRInteractable
     {
         /// <summary>
         /// The event that is called only when the first Interaction Group gains focus on

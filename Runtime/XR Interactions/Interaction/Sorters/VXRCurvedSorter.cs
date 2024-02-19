@@ -148,7 +148,7 @@ namespace VaporXR
         private RaycastHit _raycastHit;
         private RaycastResult _uiRaycastHit;
         private bool _isUIHitClosest;
-        private IXRInteractable _raycastInteractable;
+        private IVXRInteractable _raycastInteractable;
 
         /// <summary>
         /// A polygonal chain represented by a list of endpoints which form line segments
@@ -186,7 +186,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override IXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
         {
             EvaluateContacts();
 
@@ -196,7 +196,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -433,7 +433,7 @@ namespace VaporXR
             return false;
         }
 
-        protected override void OnContactAdded(IXRInteractable interactable)
+        protected override void OnContactAdded(IVXRInteractable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -443,7 +443,7 @@ namespace VaporXR
             PossibleTargets.Add(interactable);
         }
 
-        protected override void OnContactRemoved(IXRInteractable interactable)
+        protected override void OnContactRemoved(IVXRInteractable interactable)
         {
             PossibleTargets.Remove(interactable);
         }

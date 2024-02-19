@@ -9,7 +9,7 @@ namespace VaporXR
     /// An interface that represents an Interactor component that can select
     /// an Interactable component.
     /// </summary>
-    /// <seealso cref="IXRSelectInteractable"/>
+    /// <seealso cref="IVXRSelectInteractable"/>
     //public interface IXRSelectInteractor : IXRInteractor
     //{
     //    /// <summary>
@@ -190,7 +190,7 @@ namespace VaporXR
         /// Equivalent to <code>interactablesSelected.Count > 0 ? interactablesSelected[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRSelectInteractor.InteractablesSelected"/>
-        public static IXRSelectInteractable GetOldestInteractableSelected(this VXRBaseInteractor interactor) =>
+        public static IVXRSelectInteractable GetOldestInteractableSelected(this VXRBaseInteractor interactor) =>
             interactor.InteractablesSelected.Count > 0 ? interactor.InteractablesSelected[0] : null;
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace VaporXR
         /// Equivalent to <code>interactablesSelected.Count > 0 ? interactablesSelected[0] : null</code>
         /// </remarks>
         /// <seealso cref="IXRSelectInteractor.InteractablesSelected"/>
-        public static IXRSelectInteractable GetOldestInteractableSelected(this IVXRSelectInteractor interactor) =>
+        public static IVXRSelectInteractable GetOldestInteractableSelected(this IVXRSelectInteractor interactor) =>
             interactor.InteractablesSelected.Count > 0 ? interactor.InteractablesSelected[0] : null;
     }
 }

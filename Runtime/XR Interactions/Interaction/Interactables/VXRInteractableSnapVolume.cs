@@ -39,11 +39,11 @@ namespace VaporXR
         }
 
         [SerializeField]
-        [RequireInterface(typeof(IXRInteractable))]
+        [RequireInterface(typeof(IVXRInteractable))]
         Object m_InteractableObject;
 
         /// <summary>
-        /// The <see cref="IXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/> serialized as a Unity <see cref="Object"/>.
+        /// The <see cref="IVXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/> serialized as a Unity <see cref="Object"/>.
         /// If not set, Unity will find it up the hierarchy.
         /// </summary>
         /// <remarks>
@@ -55,7 +55,7 @@ namespace VaporXR
             set
             {
                 m_InteractableObject = value;
-                interactable = value as IXRInteractable;
+                interactable = value as IVXRInteractable;
             }
         }
 
@@ -124,7 +124,7 @@ namespace VaporXR
 
         /// <summary>
         /// (Optional) The collider that will be used to find the closest point to snap to. If this is <see langword="null"/>,
-        /// then the associated <see cref="IXRInteractable"/> transform's position or this GameObject's transform position
+        /// then the associated <see cref="IVXRInteractable"/> transform's position or this GameObject's transform position
         /// will be used as the snap point.
         /// </summary>
         /// <seealso cref="snapCollider"/>
@@ -134,12 +134,12 @@ namespace VaporXR
             set => m_SnapToCollider = value;
         }
 
-        IXRInteractable m_Interactable;
+        IVXRInteractable m_Interactable;
 
         /// <summary>
-        /// The runtime <see cref="IXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/>.
+        /// The runtime <see cref="IVXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/>.
         /// </summary>
-        public IXRInteractable interactable
+        public IVXRInteractable interactable
         {
             get => m_Interactable;
             set
@@ -151,20 +151,20 @@ namespace VaporXR
             }
         }
 
-        private IXRInteractable m_BoundInteractable;
-        private IXRSelectInteractable m_BoundSelectInteractable;
+        private IVXRInteractable m_BoundInteractable;
+        private IVXRSelectInteractable m_BoundSelectInteractable;
         private VXRInteractionManager m_RegisteredInteractionManager;
 
         [Conditional("UNITY_EDITOR")]
         protected virtual void Reset()
         {
 #if UNITY_EDITOR
-            m_InteractableObject = GetComponentInParent<IXRInteractable>() as Object;
+            m_InteractableObject = GetComponentInParent<IVXRInteractable>() as Object;
             m_SnapCollider = FindSnapCollider(gameObject);
             if (m_InteractableObject != null)
             {
                 // Initialize with a Collider component on the Interactable
-                var col = ((IXRInteractable)m_InteractableObject).transform.GetComponent<Collider>();
+                var col = ((IVXRInteractable)m_InteractableObject).transform.GetComponent<Collider>();
                 if (col != null && col.enabled && !col.isTrigger)
 
                     m_SnapToCollider = col;
@@ -192,10 +192,10 @@ namespace VaporXR
             RegisterWithInteractionManager();
 
             // Try to find interactable in parent if necessary
-            if (m_InteractableObject != null && m_InteractableObject is IXRInteractable serializedInteractable)
+            if (m_InteractableObject != null && m_InteractableObject is IVXRInteractable serializedInteractable)
                 interactable = serializedInteractable;
             else
-                interactable = m_Interactable ??= GetComponentInParent<IXRInteractable>();
+                interactable = m_Interactable ??= GetComponentInParent<IVXRInteractable>();
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace VaporXR
             return m_SnapToCollider.ClosestPoint(point);
         }
 
-        void SetBoundInteractable(IXRInteractable source)
+        void SetBoundInteractable(IVXRInteractable source)
         {
             Debug.Assert(Application.isPlaying);
 
@@ -371,7 +371,7 @@ namespace VaporXR
             }
 
             m_BoundInteractable = source;
-            m_BoundSelectInteractable = source as IXRSelectInteractable;
+            m_BoundSelectInteractable = source as IVXRSelectInteractable;
 
             if (m_BoundSelectInteractable != null)
             {
