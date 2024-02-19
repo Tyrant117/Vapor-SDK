@@ -23,6 +23,13 @@ namespace VaporXR.Interactables
         [RichTextTooltip("")]
         private InteractableFocusMode _focusMode = InteractableFocusMode.Single;
 
+        [FoldoutGroup("Posing"), SerializeField]
+        private bool _overrideSelectPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideSelectPose")]
+        private HandPoseDatum _selectPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideSelectPose")]
+        private float _selectPoseDuration;
+
         [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRSelectFilter))]
         [RichTextTooltip("The select filters that this object uses to automatically populate the <mth>SelectFilters</mth> List at startup (optional, may be empty)." +
             "\nAll objects in this list should implement the <itf>IXRSelectFilter</itf> interface.")]
@@ -439,6 +446,15 @@ namespace VaporXR.Interactables
             {
                 FirstInteractionGroupFocusing = null;
             }
+        }
+        #endregion
+
+        #region - Posing -
+        public bool TryGetOverrideHoverPose(out HandPoseDatum pose, out float duration)
+        {
+            pose = _selectPose;
+            duration = _selectPoseDuration;
+            return _overrideSelectPose;
         }
         #endregion
     }

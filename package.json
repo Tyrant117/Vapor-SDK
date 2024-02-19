@@ -1,6 +1,6 @@
 {
   "name": "com.carbonfibergames.vaporsdk",
-  "version": "0.2.23",
+  "version": "0.2.24",
   "displayName": "Vapor SDK",
   "description": "A collection of tools for developing applications in Unity.",
   "unity": "2022.3",
@@ -15,6 +15,7 @@
   "dependencies": {
     "com.unity.editorcoroutines": "1.0.0",
     "com.unity.inputsystem": "1.7.0",
-    "com.unity.textmeshpro": "3.0.7"
+    "com.unity.textmeshpro": "3.0.7",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
 }

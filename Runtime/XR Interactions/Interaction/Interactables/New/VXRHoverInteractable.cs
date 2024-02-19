@@ -20,7 +20,7 @@ namespace VaporXR.Interactables
         [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideHoverPose")]
         private float _hoverPoseDuration;
 
-        [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRHoverFilter)), ShowIf("$CanHover")]
+        [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRHoverFilter))]
         [RichTextTooltip("The hover filters that this object uses to automatically populate the <mth>HoverFilters</mth> List at startup (optional, may be empty)." +
             "\nAll objects in this list should implement the <itf>IXRHoverFilter</itf> interface.")]
         private List<Object> _startingHoverFilters = new();

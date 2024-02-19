@@ -6,6 +6,7 @@ using Unity.XR.CoreUtils.Bindings.Variables;
 using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
 using VaporInspector;
+using VaporXR.Interactables;
 using VaporXR.Utilities;
 using Object = UnityEngine.Object;
 
@@ -333,6 +334,7 @@ namespace VaporXR.Interactors
             Debug.Log($"{Handedness} Hand Select Entered: {args.InteractableObject}");
 
             SelectEntered?.Invoke(args);
+            OnSelectPoseEntered(args);
         }
 
         /// <summary>
@@ -390,6 +392,7 @@ namespace VaporXR.Interactors
                 _attachPoseOnSelect.Clear();
                 _localAttachPoseOnSelect.Clear();
             }
+            OnSelectPoseExited(args);
         }
         #endregion
 
@@ -451,11 +454,11 @@ namespace VaporXR.Interactors
             return _localAttachPoseOnSelect.TryGetValue(interactable, out var pose) ? pose : Pose.identity;
         }
 
-        private void OnSelectPoseEntered(HoverEnterEventArgs args)
+        private void OnSelectPoseEntered(SelectEnterEventArgs args)
         {
             if (_posingEnabled)
             {
-                if (args.interactableObject is VXRHoverInteractable interactable && interactable.TryGetOverrideHoverPose(out var pose, out var duration))
+                if (args.InteractableObject is VXRSelectInteractable interactable && interactable.TryGetOverrideHoverPose(out var pose, out var duration))
                 {
                     _hand.RequestHandPose(HandPoseType.Grab, this, pose.Value, duration: duration);
                 }
@@ -466,7 +469,7 @@ namespace VaporXR.Interactors
             }
         }
 
-        private void OnSelectPoseExited(HoverExitEventArgs args)
+        private void OnSelectPoseExited(SelectExitEventArgs args)
         {
             if (_posingEnabled)
             {

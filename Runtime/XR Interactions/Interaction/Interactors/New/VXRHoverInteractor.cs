@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
 using VaporInspector;
+using VaporXR.Interactables;
 using VaporXR.Utilities;
 using Object = UnityEngine.Object;
 

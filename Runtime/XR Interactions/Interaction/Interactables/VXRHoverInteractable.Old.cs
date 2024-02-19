@@ -5,7 +5,7 @@ using VaporInspector;
 
 namespace VaporXR
 {
-    public class VXRHoverInteractable : VXRBaseInteractable
+    public class VXRHoverInteractableOld : VXRBaseInteractable
     {
         #region Inspector
         [FoldoutGroup("Posing"), SerializeField]
