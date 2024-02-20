@@ -45,7 +45,7 @@ namespace VaporXR
         #region - Hovering -
         public override bool CanHover(IVXRHoverInteractable interactable)
         {
-            return base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable));
+            return base.CanHover(interactable) && (!HasSelection || IsSelecting(interactable.Composite.Select));
         }
         #endregion
 

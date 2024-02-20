@@ -77,7 +77,7 @@ namespace VaporXR
             _contactMonitor.contactAdded += OnContactAdded;
             _contactMonitor.contactRemoved += OnContactRemoved;
 
-            _contactMonitor.ResolveUnassociatedColliders();
+            //_contactMonitor.ResolveUnassociatedColliders();
             ResetCollidersAndValidTargets();
         }
 
@@ -91,16 +91,16 @@ namespace VaporXR
 
         public void OnInteractableRegistered(InteractableRegisteredEventArgs args)
         {
-            _contactMonitor.ResolveUnassociatedColliders(args.interactableObject);
-            if (_contactMonitor.IsContacting(args.interactableObject) && !PossibleTargets.Contains(args.interactableObject))
-            {
-                PossibleTargets.Add(args.interactableObject);
-            }
+            //_contactMonitor.ResolveUnassociatedColliders(args.interactableObject);
+            //if (_contactMonitor.IsContacting(args.interactableObject) && !PossibleTargets.Contains(args.interactableObject))
+            //{
+            //    PossibleTargets.Add(args.interactableObject);
+            //}
         }
 
         public void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
         {
-            PossibleTargets.Remove(args.interactableObject);
+            //PossibleTargets.Remove(args.interactableObject);
         }
         #endregion
 

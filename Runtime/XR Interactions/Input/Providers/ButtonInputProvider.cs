@@ -303,7 +303,7 @@ namespace VaporXR
 
             bool _IsAxis2DPressed()
             {
-                var isActuated = _buttonAxis2DButton != null ? _buttonAxis2DButton.ReadValue() : true;
+                var isActuated = !_buttonAxis2DButton.IsValid || _buttonAxis2DButton.ReadValue();
                 CurrentDirectionVector = isActuated ? _buttonAxis2DReader.ReadValue() : Vector2.zero;
                 _currentValue = isActuated ? CurrentDirectionVector.magnitude : 0;
                 if (!isActuated || CurrentValue < Threshold)

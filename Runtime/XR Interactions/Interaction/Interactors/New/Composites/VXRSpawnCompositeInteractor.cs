@@ -104,7 +104,7 @@ namespace VaporXR
 
         #region Fields
         private readonly XRSocketGrabTransformer m_SocketGrabTransformer = new();
-        private readonly HashSetList<VXRGrabInteractable> m_InteractablesWithSocketTransformer = new();
+        private readonly HashSetList<VXRGrabCompositeInteractable> m_InteractablesWithSocketTransformer = new();
 
         private bool _infiniteStock;
         private float m_LastRemoveTime = -1f;
@@ -186,7 +186,7 @@ namespace VaporXR
 
         private void OnSelectEntered(SelectEnterEventArgs args)
         {
-            if (args.InteractableObject is VXRGrabInteractable grabInteractable)
+            if (args.InteractableObject.Composite is VXRGrabCompositeInteractable grabInteractable)
             {
                 StartSocketSnapping(grabInteractable);
             }
@@ -195,7 +195,7 @@ namespace VaporXR
         private void OnSelectExited(SelectExitEventArgs args)
         {
             m_LastRemoveTime = Time.time;
-            if (args.GetinteractableObject() is VXRGrabInteractable grabInteractable)
+            if (args.GetinteractableObject().Composite is VXRGrabCompositeInteractable grabInteractable)
             {
                 EndSocketSnapping(grabInteractable);
             }
@@ -213,7 +213,7 @@ namespace VaporXR
         /// Otherwise, it adds the specified grab interactable to the socket grab transformer and adds it to the global and local interactables with socket transformer lists.
         /// </remarks>
         /// <seealso cref="EndSocketSnapping"/>
-        protected virtual bool StartSocketSnapping(VXRGrabInteractable grabInteractable)
+        protected virtual bool StartSocketSnapping(VXRGrabCompositeInteractable grabInteractable)
         {
             Debug.Log($"Started Spawn Snapping: {grabInteractable.name}");
             // If we've already started socket snapping this interactable, do nothing
@@ -249,7 +249,7 @@ namespace VaporXR
         /// Removes the specified grab interactable from the local interactables with socket transformer list and removes it from the socket grab transformer.
         /// </remarks>
         /// <seealso cref="StartSocketSnapping"/>
-        protected virtual bool EndSocketSnapping(VXRGrabInteractable grabInteractable)
+        protected virtual bool EndSocketSnapping(VXRGrabCompositeInteractable grabInteractable)
         {
             Debug.Log($"End Spawn Snapping: {grabInteractable.name}");
             grabInteractable.RemoveSingleGrabTransformer(m_SocketGrabTransformer);

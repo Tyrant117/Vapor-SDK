@@ -190,7 +190,7 @@ namespace VaporXR.Interactors
         /// In other words, returns whether <see cref="InteractablesSelected"/> contains <paramref name="interactable"/>.
         /// </remarks>
         /// <seealso cref="InteractablesSelected"/>
-        public bool IsSelecting(IVXRInteractable interactable) => interactable is IVXRSelectInteractable hoverable && IsSelecting(hoverable);
+        public bool IsSelecting(IVXRInteractable interactable) => interactable is IVXRSelectInteractable selectable && IsSelecting(selectable);
 
         /// <summary>
         /// Returns the processing value of the filters in <see cref="SelectFilters"/> for this Interactor and the
