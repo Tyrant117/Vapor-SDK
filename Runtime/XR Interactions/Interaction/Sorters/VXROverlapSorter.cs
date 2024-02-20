@@ -12,7 +12,6 @@ namespace VaporXR
     {
         private const int MaxOverlapHits = 25;
 
-
         #region Inspector
 #pragma warning disable IDE0051 // Remove unused private members
         private bool IsOverlapModeSphere => _overlapMode == OverlapDetectionModeType.Sphere;

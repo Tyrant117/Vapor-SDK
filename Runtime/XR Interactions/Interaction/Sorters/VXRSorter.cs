@@ -89,7 +89,7 @@ namespace VaporXR
             ResetCollidersAndValidTargets();
         }
 
-        internal void OnInteractableRegistered(InteractableRegisteredEventArgs args)
+        public void OnInteractableRegistered(InteractableRegisteredEventArgs args)
         {
             _contactMonitor.ResolveUnassociatedColliders(args.interactableObject);
             if (_contactMonitor.IsContacting(args.interactableObject) && !PossibleTargets.Contains(args.interactableObject))
@@ -98,7 +98,7 @@ namespace VaporXR
             }
         }
 
-        internal void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
+        public void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
         {
             PossibleTargets.Remove(args.interactableObject);
         }
