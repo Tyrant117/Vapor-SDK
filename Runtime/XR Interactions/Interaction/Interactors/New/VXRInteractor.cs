@@ -204,8 +204,10 @@ namespace VaporXR.Interactors
                                  $" {this} was expecting to communicate with \"{_interactionManager}\" but was registered with \"{args.manager}\".", this);
             }
 
+            args.manager.interactableRegistered += OnInteractableRegistered;
+            args.manager.interactableUnregistered += OnInteractableUnregistered;
             Registered?.Invoke(args);
-        }
+        }        
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -224,7 +226,40 @@ namespace VaporXR.Interactors
                                  $" {this} was expecting to communicate with \"{_registeredInteractionManager}\" but was unregistered from \"{args.manager}\".", this);
             }
 
+            args.manager.interactableRegistered -= OnInteractableRegistered;
+            args.manager.interactableUnregistered -= OnInteractableUnregistered;
+
             Unregistered?.Invoke(args);
+        }
+
+        private void OnInteractableRegistered(InteractableRegisteredEventArgs args)
+        {
+            if (_useOverrideSorter)
+            {
+                _overrideSorter.OnInteractableRegistered(args);
+            }
+            else
+            {
+                foreach (var sorter in Sorters)
+                {
+                    sorter.OnInteractableRegistered(args);
+                }
+            }
+        }
+
+        private void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
+        {
+            if (_useOverrideSorter)
+            {
+                _overrideSorter.OnInteractableUnregistered(args);
+            }
+            else
+            {
+                foreach (var sorter in Sorters)
+                {
+                    sorter.OnInteractableUnregistered(args);
+                }
+            }
         }
 
         protected virtual void OnDisable()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Vapor.Utilities;
@@ -76,6 +77,7 @@ namespace VaporXR
             _contactMonitor.contactAdded += OnContactAdded;
             _contactMonitor.contactRemoved += OnContactRemoved;
 
+            _contactMonitor.ResolveUnassociatedColliders();
             ResetCollidersAndValidTargets();
         }
 
@@ -85,6 +87,20 @@ namespace VaporXR
             _contactMonitor.contactRemoved -= OnContactRemoved;
 
             ResetCollidersAndValidTargets();
+        }
+
+        internal void OnInteractableRegistered(InteractableRegisteredEventArgs args)
+        {
+            _contactMonitor.ResolveUnassociatedColliders(args.interactableObject);
+            if (_contactMonitor.IsContacting(args.interactableObject) && !PossibleTargets.Contains(args.interactableObject))
+            {
+                PossibleTargets.Add(args.interactableObject);
+            }
+        }
+
+        internal void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
+        {
+            PossibleTargets.Remove(args.interactableObject);
         }
         #endregion
 
@@ -159,7 +175,7 @@ namespace VaporXR
         /// <summary>
         /// Clears current valid targets and stayed colliders.
         /// </summary>
-        protected abstract void ResetCollidersAndValidTargets();
+        protected abstract void ResetCollidersAndValidTargets();                
         #endregion
     }
 }
