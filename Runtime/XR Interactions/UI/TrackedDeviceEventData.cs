@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using VaporXR.Interaction;
 
 namespace VaporXR.UI
 {
@@ -36,7 +37,7 @@ namespace VaporXR.UI
         /// <summary>
         /// (Read Only) The Interactor that triggered this event, or <see langword="null"/> if no interactor was responsible.
         /// </summary>
-        public IUIInteractor interactor
+        public GraphicInteractorModule interactor
         {
             get
             {

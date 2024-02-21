@@ -5,6 +5,7 @@ using Unity.XR.CoreUtils.Bindings.Variables;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR.UI
@@ -171,17 +172,17 @@ namespace VaporXR.UI
         XRPokeLogic m_PokeLogic;
 
         [NonSerialized]
-        static readonly Dictionary<IUIInteractor, TrackedDeviceGraphicRaycaster> s_InteractorRaycasters = new Dictionary<IUIInteractor, TrackedDeviceGraphicRaycaster>();
+        static readonly Dictionary<GraphicInteractorModule, TrackedDeviceGraphicRaycaster> s_InteractorRaycasters = new();
 
         [NonSerialized]
-        static readonly Dictionary<TrackedDeviceGraphicRaycaster, HashSet<IUIInteractor>> s_PokeHoverRaycasters = new Dictionary<TrackedDeviceGraphicRaycaster, HashSet<IUIInteractor>>();
+        static readonly Dictionary<TrackedDeviceGraphicRaycaster, HashSet<GraphicInteractorModule>> s_PokeHoverRaycasters = new();
 
         /// <summary>
         /// Checks if poke interactor is interacting with any raycaster in the scene. 
         /// </summary>
         /// <param name="interactor">Poke ui interactor to check.</param>
         /// <returns>True if any poke interactor is hovering or selecting a graphic in the scene.</returns>
-        internal static bool IsPokeInteractingWithUI(IUIInteractor interactor)
+        internal static bool IsPokeInteractingWithUI(GraphicInteractorModule interactor)
         {
             foreach (var pokeUIInteractorSet in s_PokeHoverRaycasters.Values)
             {
@@ -200,7 +201,7 @@ namespace VaporXR.UI
         /// <param name="interactor">The <see cref="IUIInteractor"/> to check.</param>
         /// <param name="data">The <see cref="VaporXR.PokeStateData"/> associated with the <see cref="IUIInteractor"/> if it is found.</param>
         /// <returns>Returns <see langword="true"/> if the <see cref="IUIInteractor"/> is found and its associated <see cref="VaporXR.PokeStateData"/> is retrieved successfully, otherwise returns <see langword="false"/>.</returns>
-        internal static bool TryGetPokeStateDataForInteractor(IUIInteractor interactor, out PokeStateData data)
+        internal static bool TryGetPokeStateDataForInteractor(GraphicInteractorModule interactor, out PokeStateData data)
         {
             foreach (var kvp in s_PokeHoverRaycasters)
             {
@@ -241,7 +242,7 @@ namespace VaporXR.UI
         /// </summary>
         /// <param name="interactor">The <see cref="IUIInteractor"/> to check against, typically a <see cref="XRPokeInteractor"/>.</param>
         /// <returns>Returns <see langword="true"/> if the <see cref="IUIInteractor"/> meets requirements for poke with any <see cref="TrackedDeviceGraphicRaycaster"/>.</returns>
-        internal static bool HasPokeSelect(IUIInteractor interactor)
+        internal static bool HasPokeSelect(GraphicInteractorModule interactor)
         {
             return s_InteractorRaycasters.TryGetValue(interactor, out var raycaster) && raycaster != null;
         }
@@ -277,7 +278,7 @@ namespace VaporXR.UI
 #if PHYSICS2D_MODULE_PRESENT
             m_LocalPhysicsScene2D = gameObject.scene.GetPhysicsScene2D();
 #endif
-            s_PokeHoverRaycasters.Add(this, new HashSet<IUIInteractor>());
+            s_PokeHoverRaycasters.Add(this, new HashSet<GraphicInteractorModule>());
             SetupPoke();
         }
 

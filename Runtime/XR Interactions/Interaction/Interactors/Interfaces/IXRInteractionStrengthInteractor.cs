@@ -1,4 +1,5 @@
 using Unity.XR.CoreUtils.Bindings.Variables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -24,7 +25,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="interactable">The specific interactable to get the interaction strength between.</param>
         /// <returns>Returns a value <c>[0.0, 1.0]</c> of the interaction strength.</returns>
-        float GetInteractionStrength(IVXRInteractable interactable);
+        float GetInteractionStrength(Interactable interactable);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method to signal to update the interaction strength.

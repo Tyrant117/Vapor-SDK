@@ -1,6 +1,6 @@
 ﻿using Unity.XR.CoreUtils;
 using UnityEngine;
-using VaporXR.Interactables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -12,7 +12,7 @@ namespace VaporXR
     public class XRSingleGrabFreeTransformer : XRBaseGrabTransformer
     {
         /// <inheritdoc />
-        public override void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        public override void Process(GrabInteractableModule grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             switch (updatePhase)
             {
@@ -26,12 +26,12 @@ namespace VaporXR
             }
         }
 
-        internal static void UpdateTarget(IVXRGrabCompositeInteractable grabInteractable, ref Pose targetPose)
+        internal static void UpdateTarget(GrabInteractableModule grabInteractable, ref Pose targetPose)
         {
-            var interactor = grabInteractable.Select.InteractorsSelecting[0];
-            var interactorAttachPose = interactor.GetAttachTransform(grabInteractable.Select).GetWorldPose();
+            var interactor = grabInteractable.Interactable.InteractorsSelecting[0];
+            var interactorAttachPose = interactor.GetAttachTransform(grabInteractable.Interactable).GetWorldPose();
             var thisTransformPose = grabInteractable.transform.GetWorldPose();
-            var thisAttachTransform = grabInteractable.Select.GetAttachTransform(interactor);
+            var thisAttachTransform = grabInteractable.Interactable.GetAttachTransform(interactor);
 
             // Calculate offset of the grab interactable's position relative to its attach transform
             var attachOffset = thisTransformPose.position - thisAttachTransform.position;

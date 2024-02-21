@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -57,6 +58,6 @@ namespace VaporXR
         /// Unity automatically clears and updates this list every frame if <see cref="TargetPriorityMode"/> has a
         /// value different from <see cref="TargetPriorityMode.None"/>, in this case a valid list must be returned.
         /// </remarks>
-        List<IVXRSelectInteractable> TargetsForSelection { get; }
+        List<Interactable> TargetsForSelection { get; }
     }
 }

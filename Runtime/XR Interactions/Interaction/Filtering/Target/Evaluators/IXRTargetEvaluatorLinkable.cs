@@ -1,4 +1,4 @@
-﻿using VaporXR.Interactors;
+﻿using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -29,7 +29,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="OnUnlink"/>
         /// <seealso cref="IXRTargetFilter.Link"/>
-        void OnLink(IVXRInteractor interactor);
+        void OnLink(IInteractor interactor);
 
         /// <summary>
         /// Called by the Target Filter when it unlinks from the given Interactor.
@@ -47,6 +47,6 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="OnLink"/>
         /// <seealso cref="IXRTargetFilter.Unlink"/>
-        void OnUnlink(IVXRInteractor interactor);
+        void OnUnlink(IInteractor interactor);
     }
 }

@@ -9,7 +9,8 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using Vapor.Utilities;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -148,7 +149,7 @@ namespace VaporXR
         private RaycastHit _raycastHit;
         private RaycastResult _uiRaycastHit;
         private bool _isUIHitClosest;
-        private IVXRInteractable _raycastInteractable;
+        private Interactable _raycastInteractable;
 
         /// <summary>
         /// A polygonal chain represented by a list of endpoints which form line segments
@@ -186,7 +187,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
         {
             EvaluateContacts();
 
@@ -196,7 +197,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -433,7 +434,7 @@ namespace VaporXR
             return false;
         }
 
-        protected override void OnContactAdded(IVXRInteractable interactable)
+        protected override void OnContactAdded(Interactable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -443,7 +444,7 @@ namespace VaporXR
             PossibleTargets.Add(interactable);
         }
 
-        protected override void OnContactRemoved(IVXRInteractable interactable)
+        protected override void OnContactRemoved(Interactable interactable)
         {
             PossibleTargets.Remove(interactable);
         }

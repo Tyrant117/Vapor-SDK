@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -14,8 +15,8 @@ namespace VaporXR
     [Serializable]
     public class XRLastSelectedEvaluator : XRTargetEvaluator, IXRTargetEvaluatorLinkable
     {
-        readonly Dictionary<IVXRInteractable, float> m_InteractableSelectionTimeMap =
-            new Dictionary<IVXRInteractable, float>();
+        readonly Dictionary<Interactable, float> m_InteractableSelectionTimeMap =
+            new Dictionary<Interactable, float>();
 
         [Tooltip("Any Interactable which was last selected over Max Time seconds ago will receive a normalized score of 0.")]
         [SerializeField]
@@ -32,21 +33,21 @@ namespace VaporXR
 
         void OnSelect(SelectEnterEventArgs args)
         {
-            if (enabled && args.InteractableObject is IVXRInteractable interactable)
+            if (enabled && args.InteractableObject is Interactable interactable)
                 m_InteractableSelectionTimeMap[interactable] = Time.time;
         }
 
         /// <inheritdoc />
-        public virtual void OnLink(IVXRInteractor interactor)
+        public virtual void OnLink(Interaction.IInteractor interactor)
         {
-            if (interactor is IVXRSelectInteractor selectInteractor)
+            if (interactor is Interaction.ISelectInteractor selectInteractor)
                 selectInteractor.SelectEntered += (OnSelect);
         }
 
         /// <inheritdoc />
-        public virtual void OnUnlink(IVXRInteractor interactor)
+        public virtual void OnUnlink(Interaction.IInteractor interactor)
         {
-            if (interactor is IVXRSelectInteractor selectInteractor)
+            if (interactor is Interaction.ISelectInteractor selectInteractor)
                 selectInteractor.SelectEntered -= (OnSelect);
         }
 
@@ -58,7 +59,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
+        protected override float CalculateNormalizedScore(Interaction.IInteractor interactor, Interactable target)
         {
             // We return .5 as the lowest value - zeroing out the score will flatten out the value, messing with other evaluators
             if (!m_InteractableSelectionTimeMap.TryGetValue(target, out var time) || m_MaxTime <= 0f)

@@ -1,4 +1,4 @@
-using VaporXR.Interactables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -48,6 +48,6 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="IXRGrabTransformer.OnGrab"/>
         /// <seealso cref="XRGrabInteractable.Drop"/>
-        void OnDrop(IVXRGrabCompositeInteractable grabInteractable, DropEventArgs args);
+        void OnDrop(GrabInteractableModule grabInteractable, DropEventArgs args);
     }
 }

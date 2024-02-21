@@ -3,7 +3,7 @@ using Unity.XR.CoreUtils;
 using Unity.Collections;
 using UnityEngine;
 using Vapor.Utilities;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -147,7 +147,7 @@ namespace VaporXR
 
         VXROrigin m_XROrigin;
         GameObject m_ReticleInstance;
-        IVXRSelectInteractor m_Interactor;
+        Interactor m_Interactor;
         Vector3 m_TargetEndPoint;
         Vector3 m_TargetEndNormal;
         PhysicsScene m_LocalPhysicsScene;
@@ -271,7 +271,7 @@ namespace VaporXR
             var raycastPos = Vector3.zero;
             var raycastNormal = Vector3.zero;
 
-            if (m_Interactor.Composite is VXRRayCompositeInteractor rayInteractor)
+            if (m_Interactor.TryGetModule<RayInteractorModule>(out var rayInteractor))
             {
                 if (rayInteractor.TryGetCurrentRaycast(out var raycastHit, out _, out var uiRaycastHit, out _, out var isUIHitClosest))
                 {

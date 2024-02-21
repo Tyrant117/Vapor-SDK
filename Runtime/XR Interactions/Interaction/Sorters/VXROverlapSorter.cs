@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -42,7 +43,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
         {
             EvaluateContacts();
 
@@ -52,7 +53,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -202,7 +203,7 @@ namespace VaporXR
             _firstFrame = false;
         }
 
-        protected override void OnContactAdded(IVXRInteractable interactable)
+        protected override void OnContactAdded(Interactable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -213,7 +214,7 @@ namespace VaporXR
             _overlapContactsSortedThisFrame = false;
         }
 
-        protected override void OnContactRemoved(IVXRInteractable interactable)
+        protected override void OnContactRemoved(Interactable interactable)
         {
             if (PossibleTargets.Remove(interactable))
             {

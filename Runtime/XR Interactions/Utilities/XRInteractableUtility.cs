@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VaporXR.Interaction;
 
 namespace VaporXR.Utilities
 {
@@ -60,7 +61,7 @@ namespace VaporXR.Utilities
         /// </remarks>
         /// <seealso cref="DistanceInfo"/>
         /// <seealso cref="TryGetClosestPointOnCollider"/>
-        public static bool TryGetClosestInteractionPoint(IVXRInteractable interactable, Vector3 position, out DistanceInfo distanceInfo)
+        public static bool TryGetClosestInteractionPoint(Interactable interactable, Vector3 position, out DistanceInfo distanceInfo)
         {
             Vector3 closestColliderPosition = default;
             var minColDistanceSqr = float.MaxValue;
@@ -107,7 +108,7 @@ namespace VaporXR.Utilities
         /// </remarks>
         /// <seealso cref="DistanceInfo"/>
         /// <seealso cref="TryGetClosestPointOnCollider"/>
-        public static bool TryGetClosestCollider(IVXRInteractable interactable, Vector3 position, out DistanceInfo distanceInfo)
+        public static bool TryGetClosestCollider(Interactable interactable, Vector3 position, out DistanceInfo distanceInfo)
         {
             Vector3 closestColliderPosition = default;
             var minColDistanceSqr = float.MaxValue;
@@ -161,7 +162,7 @@ namespace VaporXR.Utilities
         /// <seealso cref="DistanceInfo"/>
         /// <seealso cref="TryGetClosestCollider"/>
         /// <seealso cref="Collider.ClosestPoint"/>
-        public static bool TryGetClosestPointOnCollider(IVXRInteractable interactable, Vector3 position, out DistanceInfo distanceInfo)
+        public static bool TryGetClosestPointOnCollider(Interactable interactable, Vector3 position, out DistanceInfo distanceInfo)
         {
             Vector3 closestPoint = default;
             Collider closestPointCollider = null;

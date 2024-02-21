@@ -5,7 +5,8 @@ using UnityEngine;
 using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using Debug = UnityEngine.Debug;
 
 namespace VaporXR
@@ -39,11 +40,11 @@ namespace VaporXR
         }
 
         [SerializeField]
-        [RequireInterface(typeof(IVXRInteractable))]
+        [RequireInterface(typeof(Interactable))]
         Object m_InteractableObject;
 
         /// <summary>
-        /// The <see cref="IVXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/> serialized as a Unity <see cref="Object"/>.
+        /// The <see cref="Interactable"/> associated with this <see cref="XRInteractableSnapVolume"/> serialized as a Unity <see cref="Object"/>.
         /// If not set, Unity will find it up the hierarchy.
         /// </summary>
         /// <remarks>
@@ -55,7 +56,7 @@ namespace VaporXR
             set
             {
                 m_InteractableObject = value;
-                interactable = value as IVXRInteractable;
+                interactable = value as Interactable;
             }
         }
 
@@ -124,7 +125,7 @@ namespace VaporXR
 
         /// <summary>
         /// (Optional) The collider that will be used to find the closest point to snap to. If this is <see langword="null"/>,
-        /// then the associated <see cref="IVXRInteractable"/> transform's position or this GameObject's transform position
+        /// then the associated <see cref="Interactable"/> transform's position or this GameObject's transform position
         /// will be used as the snap point.
         /// </summary>
         /// <seealso cref="snapCollider"/>
@@ -134,12 +135,12 @@ namespace VaporXR
             set => m_SnapToCollider = value;
         }
 
-        IVXRInteractable m_Interactable;
+        Interactable m_Interactable;
 
         /// <summary>
-        /// The runtime <see cref="IVXRInteractable"/> associated with this <see cref="XRInteractableSnapVolume"/>.
+        /// The runtime <see cref="Interactable"/> associated with this <see cref="XRInteractableSnapVolume"/>.
         /// </summary>
-        public IVXRInteractable interactable
+        public Interactable interactable
         {
             get => m_Interactable;
             set
@@ -151,20 +152,19 @@ namespace VaporXR
             }
         }
 
-        private IVXRInteractable m_BoundInteractable;
-        private IVXRSelectInteractable m_BoundSelectInteractable;
+        private Interactable m_BoundInteractable;
         private VXRInteractionManager m_RegisteredInteractionManager;
 
         [Conditional("UNITY_EDITOR")]
         protected virtual void Reset()
         {
 #if UNITY_EDITOR
-            m_InteractableObject = GetComponentInParent<IVXRInteractable>() as Object;
+            m_InteractableObject = GetComponentInParent<Interactable>() as Object;
             m_SnapCollider = FindSnapCollider(gameObject);
             if (m_InteractableObject != null)
             {
                 // Initialize with a Collider component on the Interactable
-                var col = ((IVXRInteractable)m_InteractableObject).transform.GetComponent<Collider>();
+                var col = ((Interactable)m_InteractableObject).transform.GetComponent<Collider>();
                 if (col != null && col.enabled && !col.isTrigger)
 
                     m_SnapToCollider = col;
@@ -192,10 +192,10 @@ namespace VaporXR
             RegisterWithInteractionManager();
 
             // Try to find interactable in parent if necessary
-            if (m_InteractableObject != null && m_InteractableObject is IVXRInteractable serializedInteractable)
+            if (m_InteractableObject != null && m_InteractableObject is Interactable serializedInteractable)
                 interactable = serializedInteractable;
             else
-                interactable = m_Interactable ??= GetComponentInParent<IVXRInteractable>();
+                interactable = m_Interactable ??= GetComponentInParent<Interactable>();
         }
 
         /// <summary>
@@ -357,27 +357,20 @@ namespace VaporXR
             return m_SnapToCollider.ClosestPoint(point);
         }
 
-        void SetBoundInteractable(IVXRInteractable source)
+        void SetBoundInteractable(Interactable source)
         {
             Debug.Assert(Application.isPlaying);
 
             if (m_BoundInteractable == source)
                 return;
 
-            if (m_BoundSelectInteractable != null)
-            {
-                m_BoundSelectInteractable.FirstSelectEntered -= OnFirstSelectEntered;
-                m_BoundSelectInteractable.LastSelectExited -= OnLastSelectExited;
-            }
+            m_BoundInteractable.FirstSelectEntered -= OnFirstSelectEntered;
+            m_BoundInteractable.LastSelectExited -= OnLastSelectExited;
 
             m_BoundInteractable = source;
-            m_BoundSelectInteractable = source as IVXRSelectInteractable;
 
-            if (m_BoundSelectInteractable != null)
-            {
-                m_BoundSelectInteractable.FirstSelectEntered += OnFirstSelectEntered;
-                m_BoundSelectInteractable.LastSelectExited += OnLastSelectExited;
-            }
+            m_BoundInteractable.FirstSelectEntered += OnFirstSelectEntered;
+            m_BoundInteractable.LastSelectExited += OnLastSelectExited;
 
             // Refresh the snap collider enabled state (which is what the callbacks do)
             RefreshSnapColliderEnabled();
@@ -385,7 +378,7 @@ namespace VaporXR
 
         private void RefreshSnapColliderEnabled()
         {
-            var isSelected = m_BoundSelectInteractable is { IsSelected: true };
+            var isSelected = m_BoundInteractable is { IsSelected: true };
             if (m_DisableSnapColliderWhenSelected)
                 SetSnapColliderEnabled(!isSelected);
             else

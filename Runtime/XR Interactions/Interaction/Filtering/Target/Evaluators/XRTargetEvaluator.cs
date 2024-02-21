@@ -1,7 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -279,7 +280,7 @@ namespace VaporXR
         /// </returns>
         /// <seealso cref="XRTargetFilter"/>
         /// <seealso cref="VXRBaseInteractor.GetValidTargets"/>
-        public float GetWeightedScore(IVXRInteractor interactor, IVXRInteractable target)
+        public float GetWeightedScore(Interaction.IInteractor interactor, Interactable target)
         {
             return m_Weight.Evaluate(CalculateNormalizedScore(interactor, target));
         }
@@ -308,7 +309,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="XRTargetFilter"/>
         /// <seealso cref="VXRBaseInteractor.GetValidTargets"/>
-        protected abstract float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target);
+        protected abstract float CalculateNormalizedScore(Interaction.IInteractor interactor, Interactable target);
 
         /// <summary>
         /// Call this to dispose this Target Evaluator. This removes the evaluator from its filter.

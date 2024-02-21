@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -32,14 +33,14 @@ namespace VaporXR
         /// Use this to do any code initialization for the given Interactor.
         /// </summary>
         /// <param name="interactor">The Interactor being linked to this filter.</param>
-        void Link(IVXRInteractor interactor);
+        void Link(Interaction.IInteractor interactor);
 
         /// <summary>
         /// Called by Unity when the given Interactor unlinks from this filter.
         /// Use this to do any code cleanup for the given Interactor.
         /// </summary>
         /// <param name="interactor">The Interactor being unlinked from this filter.</param>
-        void Unlink(IVXRInteractor interactor);
+        void Unlink(Interaction.IInteractor interactor);
 
         /// <summary>
         /// Called by the linked Interactor to filter the Interactables that it could possibly interact with this frame.
@@ -51,6 +52,6 @@ namespace VaporXR
         /// <remarks>
         /// It's recommended to call this from an implementation of <see cref="IXRInteractor.GetValidTargets"/>.
         /// </remarks>>
-        void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results);
+        void Process(Interaction.IInteractor interactor, List<Interactable> targets, List<Interactable> results);
     }
 }

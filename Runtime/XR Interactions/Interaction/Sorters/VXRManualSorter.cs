@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -14,7 +15,7 @@ namespace VaporXR
         private bool _contactsSortedThisFrame;
 
         #region - Interaction -
-        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
         {
             // Determine the Interactables that this Interactor could possibly interact with this frame
             GetValidTargets(interactor, _frameValidTargets, filter);
@@ -22,7 +23,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -63,16 +64,16 @@ namespace VaporXR
 
         #region - Contacts -
         protected override void EvaluateContacts() { }
-        protected override void OnContactAdded(IVXRInteractable interactable) { }
-        protected override void OnContactRemoved(IVXRInteractable interactable) { }
+        protected override void OnContactAdded(Interactable interactable) { }
+        protected override void OnContactRemoved(Interactable interactable) { }
 
-        public override void ManualAddTarget(IVXRInteractable interactable)
+        public override void ManualAddTarget(Interactable interactable)
         {
             base.ManualAddTarget(interactable);
             _contactsSortedThisFrame = false;
         }
 
-        public override bool ManualRemoveTarget(IVXRInteractable interactable)
+        public override bool ManualRemoveTarget(Interactable interactable)
         {
             if (base.ManualRemoveTarget(interactable))
             {

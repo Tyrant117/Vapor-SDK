@@ -9,7 +9,7 @@ using UnityEngine;
 using Vapor.Utilities;
 using VaporXR.Utilities.Tweenables;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -344,10 +344,8 @@ namespace VaporXR
         private IAdvancedLineRenderable _advancedLineRenderable;
         private bool _hasAdvancedLineRenderable;
 
-        private IVXRSelectInteractor _lineRenderableAsSelectInteractor;
-        private VXRHoverInteractor _lineRenderableAsHoverInteractor;
-        private VXRInteractor _lineRenderableAsBaseInteractor;
-        private VXRRayCompositeInteractor _lineRenderableAsRayInteractor;
+        private Interactor _lineRenderableAsInteractor;
+        private RayInteractorModule _lineRenderableAsRayInteractor;
 
         // Reusable list of target points
         private NativeArray<Vector3> _targetPoints;
@@ -413,25 +411,13 @@ namespace VaporXR
 
             if (_lineRenderable != null)
             {
-                if(_lineRenderable is VXRRayCompositeInteractor rayInteractor)
+                if(_lineRenderable is RayInteractorModule rayInteractor)
                 {
                     _lineRenderableAsRayInteractor = rayInteractor;
                     _hasRayInteractor = true;
-
-                    if (rayInteractor.Hover != null)
-                    {
-                        _lineRenderableAsBaseInteractor = rayInteractor.Hover;
-                        _hasBaseInteractor = true;
-
-                        _lineRenderableAsHoverInteractor = rayInteractor.Hover;
-                        _hasHoverInteractor = true;
-                    }
-
-                    if (rayInteractor.Select != null)
-                    {
-                        _lineRenderableAsSelectInteractor = rayInteractor.Select;
-                        _hasSelectInteractor = true;
-                    }                    
+                    _lineRenderableAsInteractor = rayInteractor.Interactor;
+                    _hasHoverInteractor = true;
+                    _hasSelectInteractor = true;                
                 }
             }
 
@@ -575,7 +561,7 @@ namespace VaporXR
                 return;
             }
 
-            var hasSelection = _hasSelectInteractor && _lineRenderableAsSelectInteractor.HasSelection;
+            var hasSelection = _hasSelectInteractor && _lineRenderableAsInteractor.HasSelection;
 
             // Using a straight line type because it's likely the straight line won't gracefully follow an object not in it's path.
             var hasStraightRayCast = _hasRayInteractor && _lineRenderableAsRayInteractor.LineType == LineModeType.StraightLine;
@@ -691,13 +677,13 @@ namespace VaporXR
                 // We use regular valid state visuals if not hovering because the blocked state does not apply
                 // (e.g. we could have a valid target that is UI and therefore not hoverable or selectable as an interactable).
                 var useBlockedVisuals = false;
-                if (!hasSelection && _hasBaseInteractor && _lineRenderableAsHoverInteractor.HasHover)
+                if (!hasSelection && _hasBaseInteractor && _lineRenderableAsInteractor.HasHover)
                 {
-                    var interactionManager = _lineRenderableAsBaseInteractor.InteractionManager;
+                    var interactionManager = _lineRenderableAsInteractor.InteractionManager;
                     var canSelectSomething = false;
-                    foreach (var interactable in _lineRenderableAsHoverInteractor.InteractablesHovered)
+                    foreach (var interactable in _lineRenderableAsInteractor.InteractablesHovered)
                     {
-                        if (interactable is IVXRSelectInteractable selectInteractable && interactionManager.IsSelectPossible(_lineRenderableAsSelectInteractor, selectInteractable))
+                        if (interactionManager.IsSelectPossible(_lineRenderableAsInteractor, interactable))
                         {
                             canSelectSomething = true;
                             break;
@@ -824,15 +810,15 @@ namespace VaporXR
         private void FindClosestInteractableAttachPoint(in Vector3 lineOrigin, out Vector3 closestPoint)
         {
             // Use the selected interactable closest to the start of the line.
-            var interactablesSelected = _lineRenderableAsSelectInteractor.InteractablesSelected;
-            closestPoint = interactablesSelected[0].GetAttachTransform(_lineRenderableAsSelectInteractor).position;
+            var interactablesSelected = _lineRenderableAsInteractor.InteractablesSelected;
+            closestPoint = interactablesSelected[0].GetAttachTransform(_lineRenderableAsInteractor).position;
 
             if (interactablesSelected.Count > 1)
             {
                 var closestSqDistance = Vector3.SqrMagnitude(closestPoint - lineOrigin);
                 for (var i = 1; i < interactablesSelected.Count; ++i)
                 {
-                    var endPoint = interactablesSelected[i].GetAttachTransform(_lineRenderableAsSelectInteractor).position;
+                    var endPoint = interactablesSelected[i].GetAttachTransform(_lineRenderableAsInteractor).position;
                     var sqDistance = Vector3.SqrMagnitude(endPoint - lineOrigin);
                     if (sqDistance < closestSqDistance)
                     {
@@ -896,12 +882,12 @@ namespace VaporXR
                         hitCollider = raycastHit.collider;
 
                     if (hitCollider != _previousCollider && hitCollider != null)
-                        _lineRenderableAsBaseInteractor.InteractionManager.TryGetInteractableForCollider(hitCollider, out _, out _xrInteractableSnapVolume);
+                        _lineRenderableAsInteractor.InteractionManager.TryGetInteractableForCollider(hitCollider, out _, out _xrInteractableSnapVolume);
 
                     if (_xrInteractableSnapVolume != null)
                     {
                         // If we have a selection, get the closest point to the attach transform position on the snap to collider 
-                        targetEndPoint = _lineRenderableAsRayInteractor.HasSelection
+                        targetEndPoint = _lineRenderableAsInteractor.HasSelection
                             ? _xrInteractableSnapVolume.GetClosestPointOfAttachTransform(_lineRenderableAsRayInteractor)
                             : _xrInteractableSnapVolume.GetClosestPoint(targetEndPoint);
 
@@ -962,9 +948,9 @@ namespace VaporXR
             if (_reticleToUse != null)
             {
                 _reticleToUse.transform.position = _reticlePos;
-                if (_hasHoverInteractor && _lineRenderableAsHoverInteractor.GetOldestInteractableHovered() is IXRReticleDirectionProvider reticleDirectionProvider)
+                if (_hasHoverInteractor && _lineRenderableAsInteractor.GetOldestInteractableHovered() is IXRReticleDirectionProvider reticleDirectionProvider)
                 {
-                    reticleDirectionProvider.GetReticleDirection(_lineRenderableAsHoverInteractor, _reticleNormal, out var reticleUp, out var reticleForward);
+                    reticleDirectionProvider.GetReticleDirection(_lineRenderableAsInteractor, _reticleNormal, out var reticleUp, out var reticleForward);
                     Quaternion lookRotation;
                     if (reticleForward.HasValue)
                         BurstMathUtility.LookRotationWithForwardProjectedOnPlane(reticleForward.Value, reticleUp, out lookRotation);

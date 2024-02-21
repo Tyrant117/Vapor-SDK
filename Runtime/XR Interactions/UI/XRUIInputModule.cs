@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.Pool;
+using VaporXR.Interaction;
 using TouchPhase = UnityEngine.TouchPhase;
 
 namespace VaporXR.UI
@@ -16,10 +17,10 @@ namespace VaporXR.UI
     {
         struct RegisteredInteractor
         {
-            public IUIInteractor interactor;
+            public GraphicInteractorModule interactor;
             public TrackedDeviceModel model;
 
-            public RegisteredInteractor(IUIInteractor interactor, int deviceIndex)
+            public RegisteredInteractor(GraphicInteractorModule interactor, int deviceIndex)
             {
                 this.interactor = interactor;
                 model = new TrackedDeviceModel(deviceIndex);
@@ -414,7 +415,7 @@ namespace VaporXR.UI
         /// Calling this will enable it to start interacting with UI.
         /// </summary>
         /// <param name="interactor">The <see cref="IUIInteractor"/> to use.</param>
-        public void RegisterInteractor(IUIInteractor interactor)
+        public void RegisterInteractor(GraphicInteractorModule interactor)
         {
             for (var i = 0; i < m_RegisteredInteractors.Count; i++)
             {
@@ -430,7 +431,7 @@ namespace VaporXR.UI
         /// This cancels all UI Interaction and makes the <see cref="IUIInteractor"/> no longer able to affect UI.
         /// </summary>
         /// <param name="interactor">The <see cref="IUIInteractor"/> to stop using.</param>
-        public void UnregisterInteractor(IUIInteractor interactor)
+        public void UnregisterInteractor(GraphicInteractorModule interactor)
         {
             for (var i = 0; i < m_RegisteredInteractors.Count; i++)
             {
@@ -451,7 +452,7 @@ namespace VaporXR.UI
         /// <param name="pointerId">A unique integer representing an object that can point at UI.</param>
         /// <returns>Returns the interactor associated with <paramref name="pointerId"/>.
         /// Returns <see langword="null"/> if no Interactor is associated (e.g. if it's a mouse event).</returns>
-        public IUIInteractor GetInteractor(int pointerId)
+        public GraphicInteractorModule GetInteractor(int pointerId)
         {
             for (var i = 0; i < m_RegisteredInteractors.Count; i++)
             {
@@ -468,7 +469,7 @@ namespace VaporXR.UI
         /// <param name="interactor">The <see cref="IUIInteractor"/> you want the model for.</param>
         /// <param name="model">The returned model that reflects the UI state of the <paramref name="interactor"/>.</param>
         /// <returns>Returns <see langword="true"/> if the model was able to retrieved. Otherwise, returns <see langword="false"/>.</returns>
-        public bool GetTrackedDeviceModel(IUIInteractor interactor, out TrackedDeviceModel model)
+        public bool GetTrackedDeviceModel(GraphicInteractorModule interactor, out TrackedDeviceModel model)
         {
             for (var i = 0; i < m_RegisteredInteractors.Count; i++)
             {
@@ -514,20 +515,20 @@ namespace VaporXR.UI
                     {
                         using (m_UIHoverEventArgs.Get(out var args))
                         {
-                            args.interactorObject = registeredInteractor.interactor;
-                            args.deviceModel = registeredInteractor.model;
-                            if (args.interactorObject != null && args.interactorObject is IUIHoverInteractor hoverInteractor)
+                            args.InteractorObject = registeredInteractor.interactor;
+                            args.DeviceModel = registeredInteractor.model;
+                            if (args.InteractorObject != null)
                             {
                                 if (oldTarget != null)
                                 {
-                                    args.uiObject = oldTarget;
-                                    hoverInteractor.OnUIHoverExited(args);
+                                    args.UiObject = oldTarget;
+                                    args.InteractorObject.OnUIHoverExited(args);
                                 }
 
                                 if (newTarget != null)
                                 {
-                                    args.uiObject = newTarget;
-                                    hoverInteractor.OnUIHoverEntered(args);
+                                    args.UiObject = newTarget;
+                                    args.InteractorObject.OnUIHoverEntered(args);
                                 }
                             }
                         }

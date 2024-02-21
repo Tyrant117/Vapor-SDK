@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -58,9 +59,7 @@ namespace VaporXR
             set => m_TintRenderers = value;
         }
 
-        IVXRInteractable m_Interactable;
-        IVXRHoverInteractable m_HoverInteractable;
-        IVXRSelectInteractable m_SelectInteractable;
+        Interactable m_Interactable;
 
         MaterialPropertyBlock m_TintPropertyBlock;
 
@@ -78,23 +77,14 @@ namespace VaporXR
         /// </summary>
         protected void Awake()
         {
-            m_Interactable = GetComponent<IVXRInteractable>();
+            m_Interactable = GetComponent<Interactable>();
             if (m_Interactable is Object unityObject && unityObject != null)
             {
-                m_HoverInteractable = m_Interactable as IVXRHoverInteractable;
-                m_SelectInteractable = m_Interactable as IVXRSelectInteractable;
+                m_Interactable.FirstHoverEntered += OnFirstHoverEntered;
+                m_Interactable.LastHoverExited += OnLastHoverExited;
 
-                if (m_HoverInteractable != null)
-                {
-                    m_HoverInteractable.FirstHoverEntered += OnFirstHoverEntered;
-                    m_HoverInteractable.LastHoverExited += OnLastHoverExited;
-                }
-
-                if (m_SelectInteractable != null)
-                {
-                    m_SelectInteractable.FirstSelectEntered += OnFirstSelectEntered;
-                    m_SelectInteractable.LastSelectExited += OnLastSelectExited;
-                }
+                m_Interactable.FirstSelectEntered += OnFirstSelectEntered;
+                m_Interactable.LastSelectExited += OnLastSelectExited;
             }
             else
                 Debug.LogWarning($"Could not find required interactable component on {gameObject} for tint visual." +
@@ -114,10 +104,13 @@ namespace VaporXR
             m_TintPropertyBlock = new MaterialPropertyBlock();
 
             // Set initial tint to on if already hovered or selected
-            if (m_TintOnHover && (m_HoverInteractable?.IsHovered ?? false) ||
-                m_TintOnSelection && (m_SelectInteractable?.IsSelected ?? false))
+            if (m_Interactable != null)
             {
-                SetTint(true);
+                if ((m_TintOnHover && m_Interactable.IsHovered) ||
+                    (m_TintOnSelection && m_Interactable.IsSelected))
+                {
+                    SetTint(true);
+                }
             }
         }
 
@@ -128,17 +121,11 @@ namespace VaporXR
         {
             if (m_Interactable is Object unityObject && unityObject != null)
             {
-                if (m_HoverInteractable != null)
-                {
-                    m_HoverInteractable.FirstHoverEntered -= OnFirstHoverEntered;
-                    m_HoverInteractable.LastHoverExited -= OnLastHoverExited;
-                }
+                m_Interactable.FirstHoverEntered -= OnFirstHoverEntered;
+                m_Interactable.LastHoverExited -= OnLastHoverExited;
 
-                if (m_SelectInteractable != null)
-                {
-                    m_SelectInteractable.FirstSelectEntered -= OnFirstSelectEntered;
-                    m_SelectInteractable.LastSelectExited -= OnLastSelectExited;
-                }
+                m_Interactable.FirstSelectEntered -= OnFirstSelectEntered;
+                m_Interactable.LastSelectExited -= OnLastSelectExited;
             }
         }
 
@@ -216,7 +203,7 @@ namespace VaporXR
         void OnLastHoverExited(HoverExitEventArgs args)
         {
             if (m_TintOnHover)
-                SetTint(m_TintOnSelection && (m_SelectInteractable?.IsSelected ?? false));
+                SetTint(m_TintOnSelection && m_Interactable.IsSelected);
         }
 
         void OnFirstSelectEntered(SelectEnterEventArgs args)
@@ -228,10 +215,10 @@ namespace VaporXR
         void OnLastSelectExited(SelectExitEventArgs args)
         {
             if (m_TintOnSelection)
-                SetTint(m_TintOnHover && (m_HoverInteractable?.IsHovered ?? false));
+                SetTint(m_TintOnHover && m_Interactable.IsHovered);
         }
 
-        struct ShaderPropertyLookup
+        readonly struct ShaderPropertyLookup
         {
             public static readonly int emissionColor = Shader.PropertyToID("_EmissionColor");
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR.Locomotion.Teleportation
@@ -36,6 +36,8 @@ namespace VaporXR.Locomotion.Teleportation
             get => m_DestinationEvaluationSettings;
             set => m_DestinationEvaluationSettings = value;
         }
+
+        public bool CanActivate { get; set; }
 
         /// <summary>
         /// The filter used to evaluate a teleportation destination from the list of anchors. This is the same as
@@ -113,19 +115,34 @@ namespace VaporXR.Locomotion.Teleportation
             m_DefaultAnchorFilterCache = DefaultDestinationFilterCache.SubscribeAndGetInstance(this);
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            Interactable.HoverEntered += OnHoverEntered;
+            Interactable.HoverExited += OnHoverExited;
+
+            Interactable.OverrideAttachTransform += GetAttachTransform;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            Interactable.HoverEntered -= OnHoverEntered;
+            Interactable.HoverExited -= OnHoverExited;
+
+            Interactable.OverrideAttachTransform -= GetAttachTransform;
+        }
+
         /// <inheritdoc />
         protected void OnDestroy()
         {
             DefaultDestinationFilterCache.Unsubscribe(this);
         }
 
-        /// <inheritdoc />
-        public override void OnHoverEntered(HoverEnterEventArgs args)
+        protected virtual void OnHoverEntered(HoverEnterEventArgs args)
         {
-            base.OnHoverEntered(args);
-
             // Only evaluate destination upon first hover
-            if (InteractorsHovering.Count != 1)
+            if (Interactable.InteractorsHovering.Count != 1)
                 return;
 
             ClearDestinationAnchor();
@@ -140,23 +157,20 @@ namespace VaporXR.Locomotion.Teleportation
             }
         }
 
-        /// <inheritdoc />
-        public override void OnHoverExited(HoverExitEventArgs args)
+        protected virtual void OnHoverExited(HoverExitEventArgs args)
         {
-            base.OnHoverExited(args);
-            if (!IsHovered)
+            if (!Interactable.IsHovered)
             {
                 m_WaitingToEvaluateDestination = false;
                 ClearDestinationAnchor();
             }
         }
 
-        /// <inheritdoc />
-        public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+        public override void PreProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
-            base.ProcessInteractable(updatePhase);
+            base.PreProcessInteractable(updatePhase);
 
-            if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic || !IsHovered)
+            if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic || !Interactable.IsHovered)
                 return;
 
             var settings = m_DestinationEvaluationSettings.Value;
@@ -220,14 +234,14 @@ namespace VaporXR.Locomotion.Teleportation
             destinationAnchorChanged?.Invoke(this);
         }
 
-        /// <inheritdoc />
-        public override Transform GetAttachTransform(IAttachPoint attachPoint)
+        private Transform GetAttachTransform(IAttachPoint attachPoint)
         {
-            return destinationAnchor != null ? destinationAnchor : base.GetAttachTransform(attachPoint);
+            //TODO: Need to make this select a best attach point from the interactable.
+            return destinationAnchor != null ? destinationAnchor : Interactable.transform;
         }
 
         /// <inheritdoc />
-        protected override bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
+        protected override bool GenerateTeleportRequest(Interactor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (destinationAnchor == null)
                 return false;

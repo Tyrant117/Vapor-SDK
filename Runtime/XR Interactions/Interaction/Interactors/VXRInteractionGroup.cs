@@ -7,7 +7,8 @@ using UnityEngine.Serialization;
 using Vapor.Utilities;
 using VaporEvents;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -116,22 +117,24 @@ namespace VaporXR
         }
         
         /// <inheritdoc />
-        public IVXRInteractor ActiveInteractor { get; private set; }
+        public Interactor ActiveInteractor { get; private set; }
         
         /// <inheritdoc />
-        public IVXRInteractor FocusInteractor { get; private set; }
+        public Interactor FocusInteractor { get; private set; }
         
         /// <inheritdoc />
-        public IXRFocusInteractable FocusInteractable { get; private set; }
+        public Interactable FocusInteractable { get; private set; }
         
         // Used by custom editor to check if we can edit the starting configuration
         public bool isRegisteredWithInteractionManager => m_RegisteredInteractionManager != null;
         public bool hasRegisteredStartingMembers { get; private set; }
+
+        Interactable IXRInteractionGroup.FocusInteractable => throw new NotImplementedException();
         #endregion
 
         #region Fields
-        private readonly RegistrationList<IXRGroupMember> _groupMembers = new RegistrationList<IXRGroupMember>();
-        private readonly List<IXRGroupMember> _tempGroupMembers = new List<IXRGroupMember>();
+        private readonly RegistrationList<IXRGroupMember> _groupMembers = new();
+        private readonly List<IXRGroupMember> _tempGroupMembers = new();
         private bool _isProcessingGroupMembers;
         
         /// <summary>
@@ -139,10 +142,10 @@ namespace VaporXR
         /// </summary>
         private readonly Dictionary<IXRGroupMember, HashSet<IXRGroupMember>> _interactionOverridesMap = new();
 
-        private readonly List<IVXRInteractable> _validTargets = new();
+        private readonly List<Interactable> _validTargets = new();
 
-        private static readonly List<IVXRSelectInteractable> s_InteractablesSelected = new();
-        private static readonly List<IVXRHoverInteractable> s_InteractablesHovered = new();
+        private static readonly List<Interactable> s_InteractablesSelected = new();
+        private static readonly List<Interactable> s_InteractablesHovered = new();
         #endregion
 
         #region Events
@@ -353,11 +356,11 @@ namespace VaporXR
         /// <inheritdoc />
         void IXRInteractionGroup.OnRegistered(InteractionGroupRegisteredEventArgs args)
         {
-            if (args.manager != _interactionManager)
+            if (args.Manager != _interactionManager)
                 Debug.LogWarning($"An Interaction Group was registered with an unexpected {nameof(VXRInteractionManager)}." +
-                                 $" {this} was expecting to communicate with \"{_interactionManager}\" but was registered with \"{args.manager}\".", this);
+                                 $" {this} was expecting to communicate with \"{_interactionManager}\" but was registered with \"{args.Manager}\".", this);
 
-            m_RegisteredInteractionManager = args.manager;
+            m_RegisteredInteractionManager = args.Manager;
 
             _groupMembers.Flush();
             _isProcessingGroupMembers = true;
@@ -394,9 +397,9 @@ namespace VaporXR
         /// <inheritdoc />
         void IXRInteractionGroup.OnUnregistered(InteractionGroupUnregisteredEventArgs args)
         {
-            if (args.manager != m_RegisteredInteractionManager)
+            if (args.Manager != m_RegisteredInteractionManager)
                 Debug.LogWarning($"An Interaction Group was unregistered from an unexpected {nameof(VXRInteractionManager)}." +
-                                 $" {this} was expecting to communicate with \"{m_RegisteredInteractionManager}\" but was unregistered from \"{args.manager}\".", this);
+                                 $" {this} was expecting to communicate with \"{m_RegisteredInteractionManager}\" but was unregistered from \"{args.Manager}\".", this);
 
             m_RegisteredInteractionManager = null;
             unregistered?.Invoke(args);
@@ -441,7 +444,7 @@ namespace VaporXR
 
         private bool ValidateAddGroupMember(IXRGroupMember groupMember)
         {
-            if (!(groupMember is VXRBaseInteractor || groupMember is IXRInteractionGroup))
+            if (!(groupMember is Interactor || groupMember is IXRInteractionGroup))
             {
                 Debug.LogError($"Group member {groupMember} must be either an Interactor or an Interaction Group.", this);
                 return false;
@@ -479,7 +482,7 @@ namespace VaporXR
             return false;
         }
 
-        private bool GroupMemberIsOrContainsInteractor(IXRGroupMember groupMember, IVXRInteractor interactor)
+        private bool GroupMemberIsOrContainsInteractor(IXRGroupMember groupMember, Interactor interactor)
         {
             if (ReferenceEquals(groupMember, interactor))
                 return true;
@@ -554,10 +557,10 @@ namespace VaporXR
                 return;
             }
 
-            if (!(overrideGroupMember is VXRBaseInteractor || overrideGroupMember is IXRInteractionOverrideGroup))
+            if (!(overrideGroupMember is Interactor || overrideGroupMember is IXRInteractionOverrideGroup))
             {
                 Debug.LogError($"Override group member {overrideGroupMember} must implement either " +
-                    $"{nameof(VXRBaseInteractor)} or {nameof(IXRInteractionOverrideGroup)}.", this);
+                    $"{nameof(Interactor)} or {nameof(IXRInteractionOverrideGroup)}.", this);
 
                 return;
             }
@@ -738,7 +741,7 @@ namespace VaporXR
             // Re-register the interactor or group so the manager can update its status as part of a group
             switch (groupMember)
             {
-                case VXRInteractor interactor:
+                case Interactor interactor:
                     if (m_RegisteredInteractionManager.IsRegistered(interactor))
                     {
                         m_RegisteredInteractionManager.UnregisterInteractor(interactor);
@@ -772,7 +775,7 @@ namespace VaporXR
 
                 switch (groupMember)
                 {
-                    case VXRInteractor interactor:
+                    case Interactor interactor:
                         if (!m_RegisteredInteractionManager.IsRegistered(interactor))
                             continue;
 
@@ -801,7 +804,7 @@ namespace VaporXR
 
                 switch (groupMember)
                 {
-                    case VXRInteractor interactor:
+                    case Interactor interactor:
                         if (!m_RegisteredInteractionManager.IsRegistered(interactor))
                             continue;
 
@@ -823,9 +826,9 @@ namespace VaporXR
         void IXRInteractionGroup.UpdateGroupMemberInteractions()
         {
             // Prioritize previous active interactor if it can select this frame
-            IVXRInteractor prePrioritizedInteractor = null;
+            Interactor prePrioritizedInteractor = null;
             if (ActiveInteractor != null && m_RegisteredInteractionManager.IsRegistered(ActiveInteractor) &&
-                ActiveInteractor is IVXRSelectInteractor activeSelectInteractor &&
+                ActiveInteractor is Interactor activeSelectInteractor &&
                 CanStartOrContinueAnySelect(activeSelectInteractor))
             {
                 prePrioritizedInteractor = ActiveInteractor;
@@ -835,7 +838,7 @@ namespace VaporXR
             ActiveInteractor = interactorThatPerformedInteraction;
         }
 
-        bool CanStartOrContinueAnySelect(IVXRSelectInteractor selectInteractor)
+        bool CanStartOrContinueAnySelect(Interactor selectInteractor)
         {
             if (selectInteractor.KeepSelectedTargetValid)
             {
@@ -849,7 +852,7 @@ namespace VaporXR
             m_RegisteredInteractionManager.GetValidTargets(selectInteractor, _validTargets);
             foreach (var target in _validTargets)
             {
-                if (!(target is IVXRSelectInteractable selectInteractable))
+                if (!(target is Interactable selectInteractable))
                     continue;
 
                 if (m_RegisteredInteractionManager.CanSelect(selectInteractor, selectInteractable))
@@ -860,7 +863,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        void IXRInteractionGroup.UpdateGroupMemberInteractions(IVXRInteractor prePrioritizedInteractor, out IVXRInteractor interactorThatPerformedInteraction)
+        void IXRInteractionGroup.UpdateGroupMemberInteractions(Interactor prePrioritizedInteractor, out Interactor interactorThatPerformedInteraction)
         {
             if (((IXRInteractionOverrideGroup)this).ShouldOverrideActiveInteraction(out var overridingInteractor))
             {
@@ -876,7 +879,7 @@ namespace VaporXR
 
                 switch (groupMember)
                 {
-                    case VXRInteractor interactor:
+                    case Interactor interactor:
                         if (!m_RegisteredInteractionManager.IsRegistered(interactor))
                             continue;
 
@@ -909,7 +912,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        bool IXRInteractionOverrideGroup.ShouldOverrideActiveInteraction(out IVXRSelectInteractor overridingInteractor)
+        bool IXRInteractionOverrideGroup.ShouldOverrideActiveInteraction(out Interactor overridingInteractor)
         {
             overridingInteractor = null;
             if (ActiveInteractor == null ||
@@ -948,7 +951,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> if <paramref name="interactor"/> has overrides or a member Group
         /// containing <paramref name="interactor"/> has overrides, <see langword="false"/> otherwise.
         /// </returns>
-        bool TryGetOverridesForContainedInteractor(IVXRInteractor interactor, out HashSet<IXRGroupMember> overrideGroupMembers)
+        bool TryGetOverridesForContainedInteractor(Interactor interactor, out HashSet<IXRGroupMember> overrideGroupMembers)
         {
             overrideGroupMembers = null;
             if (!(interactor is IXRGroupMember interactorAsGroupMember))
@@ -983,8 +986,8 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        bool IXRInteractionOverrideGroup.ShouldAnyMemberOverrideInteraction(IVXRInteractor interactingInteractor,
-            out IVXRSelectInteractor overridingInteractor)
+        bool IXRInteractionOverrideGroup.ShouldAnyMemberOverrideInteraction(Interactor interactingInteractor,
+            out Interactor overridingInteractor)
         {
             overridingInteractor = null;
             var shouldOverride = false;
@@ -1005,13 +1008,13 @@ namespace VaporXR
             return shouldOverride;
         }
 
-        private bool ShouldGroupMemberOverrideInteraction(IVXRInteractor interactingInteractor,
-            IXRGroupMember overrideGroupMember, out IVXRSelectInteractor overridingInteractor)
+        private bool ShouldGroupMemberOverrideInteraction(Interactor interactingInteractor,
+            IXRGroupMember overrideGroupMember, out Interactor overridingInteractor)
         {
             overridingInteractor = null;
             switch (overrideGroupMember)
             {
-                case IVXRSelectInteractor interactor:
+                case Interactor interactor:
                     if (!m_RegisteredInteractionManager.IsRegistered(interactor))
                         return false;
 
@@ -1044,14 +1047,14 @@ namespace VaporXR
         /// <param name="overridingInteractor">The interactor that is capable of overriding the interaction of <paramref name="interactingInteractor"/>.</param>
         /// <returns>True if <paramref name="overridingInteractor"/> should override the active interaction of
         /// <paramref name="interactingInteractor"/>, false otherwise.</returns>
-        private bool ShouldInteractorOverrideInteraction(IVXRInteractor interactingInteractor, IVXRSelectInteractor overridingInteractor)
+        private bool ShouldInteractorOverrideInteraction(Interactor interactingInteractor, Interactor overridingInteractor)
         {
-            var interactingSelectInteractor = interactingInteractor as IVXRSelectInteractor;
-            var interactingHoverInteractor = interactingInteractor as IVXRHoverInteractor;
+            var interactingSelectInteractor = interactingInteractor as Interactor;
+            var interactingHoverInteractor = interactingInteractor as Interaction.IHoverInteractor;
             m_RegisteredInteractionManager.GetValidTargets(overridingInteractor, _validTargets);
             foreach (var target in _validTargets)
             {
-                if (!(target is IVXRSelectInteractable selectInteractable) ||
+                if (!(target is Interactable selectInteractable) ||
                     !m_RegisteredInteractionManager.CanSelect(overridingInteractor, selectInteractable))
                 {
                     continue;
@@ -1060,7 +1063,7 @@ namespace VaporXR
                 if (interactingSelectInteractor != null && interactingSelectInteractor.IsSelecting(selectInteractable))
                     return true;
 
-                if (interactingHoverInteractor != null && target is IVXRHoverInteractable hoverInteractable &&
+                if (interactingHoverInteractor != null && target is Interactable hoverInteractable &&
                     interactingHoverInteractor.IsHovering(hoverInteractable))
                 {
                     return true;
@@ -1070,63 +1073,62 @@ namespace VaporXR
             return false;
         }
 
-        private void UpdateInteractorInteractions(VXRInteractor interactor, bool preventInteraction, out bool performedInteraction)
+        private void UpdateInteractorInteractions(Interactor interactor, bool preventInteraction, out bool performedInteraction)
         {
             performedInteraction = false;
 
             using (VXRInteractionManager.s_GetValidTargetsMarker.Auto())
                 m_RegisteredInteractionManager.GetValidTargets(interactor, _validTargets);
             
-            var selectInteractor = interactor as IVXRSelectInteractor;
-            var hoverInteractor = interactor as VXRHoverInteractor;
-
-            if (selectInteractor != null)
+            if (interactor != null)
             {
                 using (VXRInteractionManager.s_EvaluateInvalidSelectionsMarker.Auto())
                 {
                     if (preventInteraction)
-                        ClearAllInteractorSelections(selectInteractor);
+                        ClearAllInteractorSelections(interactor);
                     else
-                        m_RegisteredInteractionManager.ClearInteractorSelection(selectInteractor, _validTargets);
+                        m_RegisteredInteractionManager.ClearInteractorSelection(interactor, _validTargets);
                 }
             }
 
-            if (hoverInteractor != null)
+            if (interactor != null)
             {
                 using (VXRInteractionManager.s_EvaluateInvalidHoversMarker.Auto())
                 {
                     if (preventInteraction)
-                        ClearAllInteractorHovers(hoverInteractor);
+                        ClearAllInteractorHovers(interactor);
                     else
-                        m_RegisteredInteractionManager.ClearInteractorHover(hoverInteractor, _validTargets);
+                        m_RegisteredInteractionManager.ClearInteractorHover(interactor, _validTargets);
                 }
             }
 
             if (preventInteraction)
                 return;
 
-            if (selectInteractor != null)
+            if (interactor != null)
             {
                 using (VXRInteractionManager.s_EvaluateValidSelectionsMarker.Auto())
-                    m_RegisteredInteractionManager.InteractorSelectValidTargets(selectInteractor, _validTargets);
+                    m_RegisteredInteractionManager.InteractorSelectValidTargets(interactor, _validTargets);
 
                 // Alternatively check if the base interactor is interacting with UGUI
                 // TODO move this api call to IUIInteractor for XRI 3.0
-                if (selectInteractor.HasSelection || (interactor is IUIInteractor baseInteractor && baseInteractor.IsInteractingWithUI))
+                if (interactor.HasSelection || (interactor.TryGetComponent<GraphicInteractorModule>(out var uiInteractor) && uiInteractor.IsInteractingWithUI))
+                {
                     performedInteraction = true;
+                }
             }
 
-            if (hoverInteractor != null)
+            if (interactor != null)
             {
                 using (VXRInteractionManager.s_EvaluateValidHoversMarker.Auto())
-                    m_RegisteredInteractionManager.InteractorHoverValidTargets(hoverInteractor, _validTargets);
+                    m_RegisteredInteractionManager.InteractorHoverValidTargets(interactor, _validTargets);
 
-                if (hoverInteractor.HasHover)
+                if (interactor.HasHover)
                     performedInteraction = true;
             }
         }
 
-        private void ClearAllInteractorSelections(IVXRSelectInteractor selectInteractor)
+        private void ClearAllInteractorSelections(Interactor selectInteractor)
         {
             if (selectInteractor.InteractablesSelected.Count == 0)
                 return;
@@ -1140,7 +1142,7 @@ namespace VaporXR
             }
         }
 
-        private void ClearAllInteractorHovers(VXRHoverInteractor hoverInteractor)
+        private void ClearAllInteractorHovers(Interactor hoverInteractor)
         {
             if (hoverInteractor.InteractablesHovered.Count == 0)
                 return;
@@ -1157,14 +1159,14 @@ namespace VaporXR
         /// <inheritdoc />
         public void OnFocusEntering(FocusEnterEventArgs args)
         {
-            FocusInteractable = args.interactableObject;
+            FocusInteractable = args.InteractableObject;
             FocusInteractor = args.InteractorObject;
         }
 
         /// <inheritdoc />
         public void OnFocusExiting(FocusExitEventArgs args)
         {
-            if (FocusInteractable == args.interactableObject)
+            if (FocusInteractable == args.InteractableObject)
             {
                 FocusInteractable = null;
                 FocusInteractor = null;

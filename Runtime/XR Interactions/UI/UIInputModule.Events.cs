@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using VaporXR.Interaction;
 
 namespace VaporXR.UI
 {
@@ -131,18 +132,18 @@ namespace VaporXR.UI
         /// <summary>
         /// The <see cref="IUIInteractor"/> that is hovering.
         /// </summary>
-        public IUIInteractor interactorObject { get; set; }
+        public GraphicInteractorModule InteractorObject { get; set; }
 
         /// <summary>
         /// The <see cref="TrackedDeviceModel"/> corresponding to the controller or hand
         /// interacting with the UI element that is being hovered over.
         /// </summary>
-        public TrackedDeviceModel deviceModel { get; set; }
+        public TrackedDeviceModel DeviceModel { get; set; }
 
         /// <summary>
         /// The UI element that is being hovered over.
         /// </summary>
-        public GameObject uiObject { get; set; }
+        public GameObject UiObject { get; set; }
     }
     #endregion
 }

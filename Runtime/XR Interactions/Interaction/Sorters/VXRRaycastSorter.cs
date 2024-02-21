@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -63,7 +63,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
         {
             EvaluateContacts();
 
@@ -73,7 +73,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
@@ -279,7 +279,7 @@ namespace VaporXR
             }
         }
 
-        protected override void OnContactAdded(IVXRInteractable interactable)
+        protected override void OnContactAdded(Interactable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -289,7 +289,7 @@ namespace VaporXR
             PossibleTargets.Add(interactable);
         }
 
-        protected override void OnContactRemoved(IVXRInteractable interactable)
+        protected override void OnContactRemoved(Interactable interactable)
         {
             PossibleTargets.Remove(interactable);
         }
@@ -301,5 +301,48 @@ namespace VaporXR
             _contactMonitor.UpdateStayedColliders(_stayedColliders);
         }
         #endregion
+
+        private void OnDrawGizmosSelected()
+        {
+            var transformData = _attachPoint != null ? _attachPoint : transform;
+            var gizmoStart = transformData.position;
+            var gizmoEnd = gizmoStart + (transformData.forward * _maxRaycastDistance);
+            Gizmos.color = new Color(58 / 255f, 122 / 255f, 248 / 255f, 237 / 255f);
+
+            switch (_hitDetectionType)
+            {
+                case HitDetectionModeType.Raycast:
+                    // Draw the raycast line
+                    Gizmos.DrawLine(gizmoStart, gizmoEnd);
+                    break;
+
+                case HitDetectionModeType.SphereCast:
+                    {
+                        var gizmoUp = transformData.up * _sphereCastRadius;
+                        var gizmoSide = transformData.right * _sphereCastRadius;
+                        Gizmos.DrawWireSphere(gizmoStart, _sphereCastRadius);
+                        Gizmos.DrawLine(gizmoStart + gizmoSide, gizmoEnd + gizmoSide);
+                        Gizmos.DrawLine(gizmoStart - gizmoSide, gizmoEnd - gizmoSide);
+                        Gizmos.DrawLine(gizmoStart + gizmoUp, gizmoEnd + gizmoUp);
+                        Gizmos.DrawLine(gizmoStart - gizmoUp, gizmoEnd - gizmoUp);
+                        Gizmos.DrawWireSphere(gizmoEnd, _sphereCastRadius);
+                        break;
+                    }
+
+                case HitDetectionModeType.ConeCast:
+                    {
+                        var coneRadius = Mathf.Tan(_coneCastAngle * Mathf.Deg2Rad * 0.5f) * _maxRaycastDistance;
+                        var gizmoUp = transformData.up * coneRadius;
+                        var gizmoSide = transformData.right * coneRadius;
+                        Gizmos.DrawLine(gizmoStart, gizmoEnd);
+                        Gizmos.DrawLine(gizmoStart, gizmoEnd + gizmoSide);
+                        Gizmos.DrawLine(gizmoStart, gizmoEnd - gizmoSide);
+                        Gizmos.DrawLine(gizmoStart, gizmoEnd + gizmoUp);
+                        Gizmos.DrawLine(gizmoStart, gizmoEnd - gizmoUp);
+                        Gizmos.DrawWireSphere(gizmoEnd, coneRadius);
+                        break;
+                    }
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -17,6 +17,6 @@ namespace VaporXR
         /// <param name="optionalReticleForward">The returned forward direction which will be projected onto the plane
         /// defined by <paramref name="reticleUp"/> to determine the reticle's actual forward direction. This will be
         /// <see langword="null"/> if the provider does not specify forward directionality.</param>
-        void GetReticleDirection(VXRInteractor interactor, Vector3 hitNormal, out Vector3 reticleUp, out Vector3? optionalReticleForward);
+        void GetReticleDirection(Interactor interactor, Vector3 hitNormal, out Vector3 reticleUp, out Vector3? optionalReticleForward);
     }
 }

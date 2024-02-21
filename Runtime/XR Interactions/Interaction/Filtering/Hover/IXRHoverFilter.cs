@@ -1,5 +1,6 @@
 ﻿using System;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -53,7 +54,7 @@ namespace VaporXR
         /// Returns <see langword="true"/> when the given Interactor can hover the given Interactable. Otherwise,
         /// returns <see langword="false"/>.
         /// </returns>
-        bool Process(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable);
+        bool Process(Interaction.IHoverInteractor interactor, Interactable interactable);
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ namespace VaporXR
         /// <summary>
         /// The delegate to be invoked when processing this filter.
         /// </summary>
-        public Func<IVXRHoverInteractor, IVXRHoverInteractable, bool> DelegateToProcess { get; set; }
+        public Func<Interaction.IHoverInteractor, Interactable, bool> DelegateToProcess { get; set; }
 
         /// <inheritdoc />
         public bool CanProcess { get; set; } = true;
@@ -75,7 +76,7 @@ namespace VaporXR
         /// Creates a new hover filter delegate.
         /// </summary>
         /// <param name="delegateToProcess">The delegate to be invoked when processing this filter.</param>
-        public XRHoverFilterDelegate(Func<IVXRHoverInteractor, IVXRHoverInteractable, bool> delegateToProcess)
+        public XRHoverFilterDelegate(Func<Interaction.IHoverInteractor, Interactable, bool> delegateToProcess)
         {
             if (delegateToProcess == null)
                 throw new ArgumentException(nameof(delegateToProcess));
@@ -84,7 +85,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool Process(IVXRHoverInteractor interactor, IVXRHoverInteractable interactable)
+        public bool Process(Interaction.IHoverInteractor interactor, Interactable interactable)
         {
             return DelegateToProcess.Invoke(interactor, interactable);
         }

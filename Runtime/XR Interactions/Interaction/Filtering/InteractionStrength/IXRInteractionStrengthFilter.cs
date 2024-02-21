@@ -1,5 +1,6 @@
 using System;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -37,7 +38,7 @@ namespace VaporXR
         /// <param name="interactable">The Interactable interacting with the interactor.</param>
         /// <param name="interactionStrength">The input interaction strength.</param>
         /// <returns>Returns the modified interaction strength that is the result of passing the interaction strength through the filter.</returns>
-        float Process(IVXRSelectInteractor interactor, IVXRInteractable interactable, float interactionStrength);
+        float Process(Interactor interactor, Interactable interactable, float interactionStrength);
     }
 
     /// <summary>
@@ -50,7 +51,7 @@ namespace VaporXR
         /// <summary>
         /// The delegate to be invoked when processing this filter.
         /// </summary>
-        public Func<IVXRSelectInteractor, IVXRInteractable, float, float> delegateToProcess { get; set; }
+        public Func<Interactor, Interactable, float, float> delegateToProcess { get; set; }
 
         /// <inheritdoc />
         public bool CanProcess { get; set; } = true;
@@ -59,7 +60,7 @@ namespace VaporXR
         /// Creates a new interaction strength filter delegate.
         /// </summary>
         /// <param name="delegateToProcess">The delegate to be invoked when processing this filter.</param>
-        public XRInteractionStrengthFilterDelegate(Func<IVXRSelectInteractor, IVXRInteractable, float, float> delegateToProcess)
+        public XRInteractionStrengthFilterDelegate(Func<Interactor, Interactable, float, float> delegateToProcess)
         {
             if (delegateToProcess == null)
                 throw new ArgumentException(nameof(delegateToProcess));
@@ -68,7 +69,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public float Process(IVXRSelectInteractor interactor, IVXRInteractable interactable, float interactionStrength)
+        public float Process(Interactor interactor, Interactable interactable, float interactionStrength)
         {
             return delegateToProcess.Invoke(interactor, interactable, interactionStrength);
         }

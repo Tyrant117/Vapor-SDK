@@ -2,7 +2,8 @@
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using Vapor.Utilities;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -69,7 +70,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
+        protected override float CalculateNormalizedScore(Interaction.IInteractor interactor, Interactable target)
         {
             var cachedGazeTransform = gazeTransform;
             if (cachedGazeTransform == null || m_MaxAngle <= 0f)
@@ -77,7 +78,7 @@ namespace VaporXR
 
             // Gets the target position
             Vector3 targetPosition;
-            if (target is VXRBaseInteractable targetAsBaseInteractable)
+            if (target is Interactable targetAsBaseInteractable)
             {
                 var distanceInfo = targetAsBaseInteractable.GetDistance(cachedGazeTransform.position);
                 targetPosition = distanceInfo.point;

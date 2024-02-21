@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -37,7 +38,7 @@ namespace VaporXR
         /// <remarks>
         /// This is similar to the implementation of the default algorithm to get valid targets in <see cref="XRDirectInteractor"/>.
         /// </remarks>
-        protected override float CalculateNormalizedScore(IVXRInteractor interactor, IVXRInteractable target)
+        protected override float CalculateNormalizedScore(Interaction.IInteractor interactor, Interactable target)
         {
             if (Mathf.Approximately(m_MaxDistance, 0f))
                 return 0f;

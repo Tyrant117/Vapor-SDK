@@ -3,7 +3,7 @@ using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings;
 using Unity.XR.CoreUtils.Bindings.Variables;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 using Debug = UnityEngine.Debug;
 
 namespace VaporXR
@@ -16,12 +16,12 @@ namespace VaporXR
     {
         [SerializeField]
         [Tooltip("The interactable associated with this poke filter.")]
-        VXRBaseInteractable m_Interactable;
+        Interactable m_Interactable;
 
         /// <summary>
         /// The <see cref="XRBaseInteractable"/> associated with this poke filter.
         /// </summary>
-        public VXRBaseInteractable pokeInteractable
+        public Interactable pokeInteractable
         {
             get => m_Interactable;
             set
@@ -75,9 +75,9 @@ namespace VaporXR
         /// <seealso cref="IXRInteractionStrengthFilter.CanProcess"/>
         public virtual bool CanProcess => isActiveAndEnabled && m_PokeLogic != null;
 
-        XRPokeLogic m_PokeLogic = new XRPokeLogic();
+        XRPokeLogic m_PokeLogic = new();
 
-        readonly BindingsGroup m_BindingsGroup = new BindingsGroup();
+        readonly BindingsGroup m_BindingsGroup = new();
 
         /// <summary>
         /// See <see cref="MonoBehaviour"/>.
@@ -112,7 +112,7 @@ namespace VaporXR
                 m_Interactable = FindPokeInteractable();
                 if (m_Interactable == null)
                 {
-                    Debug.LogWarning($"Could not find associated {nameof(VXRBaseInteractable)} in scene." +
+                    Debug.LogWarning($"Could not find associated {nameof(Interactable)} in scene." +
                         $"This {nameof(VXRPokeFilter)} will be disabled.", this);
                     enabled = false;
                 }
@@ -204,9 +204,9 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public bool Process(IVXRSelectInteractor interactor, IVXRSelectInteractable interactable)
+        public bool Process(Interactor interactor, Interactable interactable)
         {
-            if (interactor.Composite is VXRPokeCompositeInteractor pokeInteractor)
+            if (interactor.TryGetComponent<PokeInteractorModule>(out var pokeInteractor))
             {
                 var pokeTransform = interactable.GetAttachTransform(pokeInteractor);
                 return m_PokeLogic.MeetsRequirementsForSelectAction(
@@ -221,10 +221,10 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public float Process(IVXRSelectInteractor interactor, IVXRInteractable interactable, float interactionStrength)
+        public float Process(Interactor interactor, Interactable interactable, float interactionStrength)
         {
             var pokeAmount = 0f;
-            if (interactor.Composite is VXRPokeCompositeInteractor)
+            if (interactor.TryGetComponent<PokeInteractorModule>(out var pokeInteractor))
             {
                 pokeAmount = PokeStateData?.Value.interactionStrength ?? 0f;
             }
@@ -237,7 +237,7 @@ namespace VaporXR
             if (m_PokeLogic == null)
                 return;
 
-            var interactor = (VXRInteractor)args.interactorObject;
+            var interactor = args.InteractorObject;
             var interactorAttachTransform = interactor.GetAttachTransform(m_Interactable);
             var interactableAttachTransform = m_Interactable.GetAttachTransform(interactor);
             m_PokeLogic.OnHoverEntered(interactor, interactorAttachTransform.GetWorldPose(), interactableAttachTransform);
@@ -248,12 +248,12 @@ namespace VaporXR
             if (m_PokeLogic == null)
                 return;
 
-            m_PokeLogic.OnHoverExited(args.interactorObject);
+            m_PokeLogic.OnHoverExited(args.InteractorObject);
         }
 
-        VXRBaseInteractable FindPokeInteractable()
+        Interactable FindPokeInteractable()
         {
-            return m_Interactable != null ? m_Interactable : GetComponentInParent<VXRBaseInteractable>();
+            return m_Interactable != null ? m_Interactable : GetComponentInParent<Interactable>();
         }
 
         Collider FindPokeCollider()

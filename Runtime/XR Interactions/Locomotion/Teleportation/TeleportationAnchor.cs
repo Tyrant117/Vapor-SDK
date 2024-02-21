@@ -1,5 +1,5 @@
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR.Locomotion.Teleportation
@@ -34,6 +34,18 @@ namespace VaporXR.Locomotion.Teleportation
                 m_TeleportAnchorTransform = transform;
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            Interactable.OverrideAttachTransform += GetAttachTransform;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            Interactable.OverrideAttachTransform -= GetAttachTransform;
+        }
+
         /// <inheritdoc />
         protected override void Reset()
         {
@@ -55,14 +67,13 @@ namespace VaporXR.Locomotion.Teleportation
             GizmoHelpers.DrawAxisArrows(m_TeleportAnchorTransform, 1f);
         }
 
-        /// <inheritdoc />
-        public override Transform GetAttachTransform(IAttachPoint attachPoint)
+        protected Transform GetAttachTransform(IAttachPoint attachPoint)
         {
             return m_TeleportAnchorTransform;
         }
 
         /// <inheritdoc />
-        protected override bool GenerateTeleportRequest(IVXRInteractor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
+        protected override bool GenerateTeleportRequest(Interactor interactor, RaycastHit raycastHit, ref TeleportRequest teleportRequest)
         {
             if (m_TeleportAnchorTransform == null)
             {

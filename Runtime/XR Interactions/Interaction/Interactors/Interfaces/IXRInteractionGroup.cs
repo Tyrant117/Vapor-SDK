@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -40,17 +41,17 @@ namespace VaporXR
         /// <summary>
         /// The Interactor in this Interaction Group or any of its member Groups that is currently performing interaction.
         /// </summary>
-        IVXRInteractor ActiveInteractor { get; }
+        Interactor ActiveInteractor { get; }
 
         /// <summary>
         /// The Interactor in this Interaction Group or any of its member Groups that initiated the last focus event.
         /// </summary>
-        IVXRInteractor FocusInteractor { get; }
+        Interactor FocusInteractor { get; }
 
         /// <summary>
         /// The Interactable that is currently being focused by an Interactor in this Interaction Group or any of its member Groups.
         /// </summary>
-        IXRFocusInteractable FocusInteractable { get; }
+        Interactable FocusInteractable { get; }
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method when this Interaction Group is registered with it.
@@ -198,7 +199,7 @@ namespace VaporXR
         /// After this method is called, <see cref="ActiveInteractor"/> should return the same reference as
         /// <paramref name="interactorThatPerformedInteraction"/>.
         /// </remarks>
-        void UpdateGroupMemberInteractions(IVXRInteractor prePrioritizedInteractor, out IVXRInteractor interactorThatPerformedInteraction);
+        void UpdateGroupMemberInteractions(Interactor prePrioritizedInteractor, out Interactor interactorThatPerformedInteraction);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method
@@ -209,7 +210,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="IXRFocusInteractable.OnFocusEntered(FocusEnterEventArgs)"/>
+        /// <seealso cref="Interactable.OnFocusEntered(FocusEnterEventArgs)"/>
         void OnFocusEntering(FocusEnterEventArgs args);
 
         /// <summary>
@@ -221,7 +222,7 @@ namespace VaporXR
         /// <remarks>
         /// <paramref name="args"/> is only valid during this method call, do not hold a reference to it.
         /// </remarks>
-        /// <seealso cref="IXRFocusInteractable.OnFocusExited(FocusExitEventArgs)"/>
+        /// <seealso cref="Interactable.OnFocusExited(FocusExitEventArgs)"/>
         void OnFocusExiting(FocusExitEventArgs args);
     }
 }

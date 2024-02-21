@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -66,7 +66,7 @@ namespace VaporXR
             private bool _initialized;
 
             private IXRRayProvider _rayProvider;
-            private IVXRSelectInteractor _selectInteractor;
+            private Interactor _selectInteractor;
 
             private bool _restoreVisuals;
             private VXRInteractorLineVisual _lineVisual;
@@ -90,7 +90,7 @@ namespace VaporXR
                     return;
 
                 _rayProvider = _interactor as IXRRayProvider;
-                _selectInteractor = _interactor as IVXRSelectInteractor;
+                _selectInteractor = _interactor as Interactor;
                 if (_rayProvider == null || _selectInteractor == null)
                 {
                     Debug.LogWarning("No ray and select interactor found!");
@@ -256,7 +256,7 @@ namespace VaporXR
 
         #region Inspector
         [SerializeField] [BoxGroup("Components")] [RichTextTooltip("Eye data source used as fallback data and to determine if fallback data should be used.")]
-        private VXRGazeInteractor _gazeInteractor;
+        private RayInteractorModule _gazeInteractor;
         
         [SerializeField] [BoxGroup("Components")] [RichTextTooltip("Interactors that can fall back to gaze data.")]
         private List<InteractorData> _rayInteractors = new();
@@ -286,7 +286,7 @@ namespace VaporXR
         /// <summary>
         /// Eye data source used as fallback data and to determine if fallback data should be used.
         /// </summary>
-        public VXRGazeInteractor GazeInteractor
+        public RayInteractorModule GazeInteractor
         {
             get => _gazeInteractor;
             set => _gazeInteractor = value;
@@ -399,7 +399,7 @@ namespace VaporXR
 
         private void Update()
         {
-            var gazeTransform = _gazeInteractor.RayOriginTransform;
+            var gazeTransform = _gazeInteractor.AttachPoint;
 
             foreach (var interactorData in _rayInteractors)
             {
@@ -415,7 +415,7 @@ namespace VaporXR
                 return;
             }
 
-            var gazeTransform = _gazeInteractor.RayOriginTransform;
+            var gazeTransform = _gazeInteractor.AttachPoint;
 
             if (_selectingInteractorData != null)
             {

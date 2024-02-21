@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using Vapor.Utilities;
+using VaporXR.Interaction;
 
 namespace VaporXR.UI
 {
@@ -12,19 +13,19 @@ namespace VaporXR.UI
     {
         private XRUIInputModule m_InputModule;
         private XRUIInputModule m_RegisteredInputModule;
-        private readonly IUIInteractor m_UiInteractor;
-        private readonly VXRBaseInteractor m_BaseInteractor;
-        
+        private readonly GraphicInteractorModule m_UiInteractor;
+        private readonly Interactor m_BaseInteractor;
+
         /// <summary>
         /// Initializes and returns an instance of <see cref="RegisteredUIInteractorCache"/>.
         /// </summary>
         /// <param name="uiInteractor">This is the interactor that will be registered with the UI Input Module.</param>
-        public RegisteredUIInteractorCache(IUIInteractor uiInteractor)
+        public RegisteredUIInteractorCache(GraphicInteractorModule uiInteractor)
         {
             // This constructor only requires the IUIInteractor reference
             // as only one XRUIInputModule may be present at one time.
             m_UiInteractor = uiInteractor;
-            m_BaseInteractor = uiInteractor as VXRBaseInteractor;
+            m_BaseInteractor = ((InteractorModule)uiInteractor).Interactor;
         }
         
         /// <summary>

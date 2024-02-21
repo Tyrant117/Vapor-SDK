@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -19,16 +20,16 @@ namespace VaporXR
         public virtual bool CanProcess => isActiveAndEnabled;
 
         /// <inheritdoc />
-        public virtual void Link(IVXRInteractor interactor)
+        public virtual void Link(Interaction.IInteractor interactor)
         {
         }
 
         /// <inheritdoc />
-        public virtual void Unlink(IVXRInteractor interactor)
+        public virtual void Unlink(Interaction.IInteractor interactor)
         {
         }
 
         /// <inheritdoc />
-        public abstract void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results);
+        public abstract void Process(Interaction.IInteractor interactor, List<Interactable> targets, List<Interactable> results);
     }
 }

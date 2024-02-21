@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Utilities;
 
 namespace VaporXR
@@ -17,20 +18,20 @@ namespace VaporXR
 
         #region Properties
         /// <summary>
-        /// The nearest <see cref="IVXRInteractable"/> object hit by the ray that was inserted into the valid targets
+        /// The nearest <see cref="Interactable"/> object hit by the ray that was inserted into the valid targets
         /// list when not selecting anything.
         /// </summary>
         /// <remarks>
         /// Updated during <see cref="PreprocessInteractor"/>.
         /// </remarks>
-        public IVXRInteractable CurrentNearestValidTarget { get; protected set; }
+        public Interactable CurrentNearestValidTarget { get; protected set; }
 
         /// <summary>
         /// The set of Interactables that this Interactor could possibly interact with this frame.
         /// This list is not sorted by priority.
         /// </summary>
         /// <seealso cref="IXRInteractor.GetValidTargets"/>
-        public List<IVXRInteractable> PossibleTargets { get; } = new();
+        public List<Interactable> PossibleTargets { get; } = new();
 
         public Transform AttachPoint { get => _attachPoint; set => _attachPoint = value; }
         #endregion
@@ -47,8 +48,8 @@ namespace VaporXR
         protected PhysicsScene _localPhysicsScene;
         protected bool _frameContactsEvaulated;
         
-        protected readonly List<IVXRInteractable> _sortedValidTargets = new();
-        protected readonly List<IVXRInteractable> _frameValidTargets = new();        
+        protected readonly List<Interactable> _sortedValidTargets = new();
+        protected readonly List<Interactable> _frameValidTargets = new();        
         #endregion
 
         #region - Initialization -
@@ -91,16 +92,16 @@ namespace VaporXR
 
         public void OnInteractableRegistered(InteractableRegisteredEventArgs args)
         {
-            //_contactMonitor.ResolveUnassociatedColliders(args.interactableObject);
-            //if (_contactMonitor.IsContacting(args.interactableObject) && !PossibleTargets.Contains(args.interactableObject))
-            //{
-            //    PossibleTargets.Add(args.interactableObject);
-            //}
+            _contactMonitor.ResolveUnassociatedColliders(args.InteractableObject);
+            if (_contactMonitor.IsContacting(args.InteractableObject) && !PossibleTargets.Contains(args.InteractableObject))
+            {
+                PossibleTargets.Add(args.InteractableObject);
+            }
         }
 
         public void OnInteractableUnregistered(InteractableUnregisteredEventArgs args)
         {
-            //PossibleTargets.Remove(args.interactableObject);
+            PossibleTargets.Remove(args.InteractableObject);
         }
         #endregion
 
@@ -123,11 +124,11 @@ namespace VaporXR
             }
         }
 
-        public abstract IVXRInteractable ProcessSorter(IVXRInteractor interactor, IXRTargetFilter filter = null);
+        public abstract Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null);
 
-        public abstract void GetValidTargets(IVXRInteractor interactor, List<IVXRInteractable> targets, IXRTargetFilter filter = null);        
+        public abstract void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null);        
 
-        public Transform GetAttachTransform(IVXRInteractable interactable)
+        public Transform GetAttachTransform(Interactable interactable)
         {
             return _attachPoint;
         }
@@ -139,9 +140,9 @@ namespace VaporXR
         /// <param name="interactor">The Interactor to check.</param>
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
-        /// <seealso cref="IVXRInteractor.InteractionLayers"/>
-        /// <seealso cref="IVXRInteractable.InteractionLayers"/>
-        protected static bool HasInteractionLayerOverlap(IVXRInteractor interactor, IVXRInteractable interactable)
+        /// <seealso cref="Interaction.IInteractor.InteractionLayers"/>
+        /// <seealso cref="Interactable.InteractionLayers"/>
+        protected static bool HasInteractionLayerOverlap(Interaction.IInteractor interactor, Interactable interactable)
         {
             return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
@@ -150,10 +151,10 @@ namespace VaporXR
         #region - Contacts -
         protected abstract void EvaluateContacts();       
 
-        protected abstract void OnContactAdded(IVXRInteractable interactable);
-        protected abstract void OnContactRemoved(IVXRInteractable interactable);
+        protected abstract void OnContactAdded(Interactable interactable);
+        protected abstract void OnContactRemoved(Interactable interactable);
 
-        public virtual void ManualAddTarget(IVXRInteractable interactable)
+        public virtual void ManualAddTarget(Interactable interactable)
         {
             if (PossibleTargets.Contains(interactable))
             {
@@ -163,7 +164,7 @@ namespace VaporXR
             PossibleTargets.Add(interactable);
         }
 
-        public virtual bool ManualRemoveTarget(IVXRInteractable interactable)
+        public virtual bool ManualRemoveTarget(Interactable interactable)
         {
             if (PossibleTargets.Remove(interactable))
             {

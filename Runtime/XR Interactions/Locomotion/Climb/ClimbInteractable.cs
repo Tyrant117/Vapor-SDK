@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Vapor.Utilities;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 using VaporXR.Locomotion.Teleportation;
 
 namespace VaporXR.Locomotion
@@ -12,7 +13,7 @@ namespace VaporXR.Locomotion
     [SelectionBase]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
-    public class ClimbInteractable : VXRBaseInteractable
+    public class ClimbInteractable : InteractableModule
     {
         const float k_DefaultMaxInteractionDistance = 0.1f;
 
@@ -39,7 +40,7 @@ namespace VaporXR.Locomotion
         /// <summary>
         /// Transform that defines the coordinate space for climb locomotion. Will use this GameObject's Transform by default.
         /// </summary>
-        public Transform climbTransform
+        public Transform ClimbTransform
         {
             get
             {
@@ -57,9 +58,9 @@ namespace VaporXR.Locomotion
         /// <summary>
         /// Controls whether to apply a distance check when validating hover and select interaction.
         /// </summary>
-        /// <seealso cref="maxInteractionDistance"/>
+        /// <seealso cref="MaxInteractionDistance"/>
         /// <seealso cref="XRBaseInteractable.distanceCalculationMode"/>
-        public bool filterInteractionByDistance
+        public bool FilterInteractionByDistance
         {
             get => m_FilterInteractionByDistance;
             set => m_FilterInteractionByDistance = value;
@@ -71,11 +72,11 @@ namespace VaporXR.Locomotion
 
         /// <summary>
         /// The maximum distance that an interactor can be from this interactable to begin hover or select.
-        /// Only applies when <see cref="filterInteractionByDistance"/> is <see langword="true"/>.
+        /// Only applies when <see cref="FilterInteractionByDistance"/> is <see langword="true"/>.
         /// </summary>
-        /// <seealso cref="filterInteractionByDistance"/>
+        /// <seealso cref="FilterInteractionByDistance"/>
         /// <seealso cref="XRBaseInteractable.distanceCalculationMode"/>
-        public float maxInteractionDistance
+        public float MaxInteractionDistance
         {
             get => m_MaxInteractionDistance;
             set => m_MaxInteractionDistance = value;
@@ -88,11 +89,11 @@ namespace VaporXR.Locomotion
 
         /// <summary>
         /// The teleport volume used to assist with movement to a specific destination after ending a climb (optional,
-        /// may be <see langword="null"/>). If there is a <see cref="ClimbTeleportInteractor"/> in the scene that
+        /// may be <see langword="null"/>). If there is a <see cref="ClimbTeleportInteractorModule"/> in the scene that
         /// references the same <see cref="ClimbProvider"/> as this interactable, it will interact with the volume while
         /// this interactable is being climbed.
         /// </summary>
-        public TeleportationMultiAnchorVolume climbAssistanceTeleportVolume
+        public TeleportationMultiAnchorVolume ClimbAssistanceTeleportVolume
         {
             get => m_ClimbAssistanceTeleportVolume;
             set => m_ClimbAssistanceTeleportVolume = value;
@@ -107,7 +108,7 @@ namespace VaporXR.Locomotion
         /// Optional override of climb locomotion settings specified in the climb provider. Only applies as
         /// an override if <see cref="Unity.XR.CoreUtils.Datums.DatumProperty{TValue, TDatum}.Value"/> is not <see langword="null"/>.
         /// </summary>
-        public ClimbSettingsDatumProperty climbSettingsOverride
+        public ClimbSettingsDatumProperty ClimbSettingsOverride
         {
             get => m_ClimbSettingsOverride;
             set => m_ClimbSettingsOverride = value;
@@ -116,51 +117,64 @@ namespace VaporXR.Locomotion
         protected virtual void OnValidate()
         {
             if (m_ClimbTransform == null)
+            {
                 m_ClimbTransform = transform;
+            }
         }
 
         protected virtual void Reset()
         {
-            SelectMode = InteractableSelectMode.Multiple;
+            Interactable.SelectMode = InteractableSelectMode.Multiple;
             m_ClimbTransform = transform;
         }
 
-        /// <inheritdoc />
         protected override void Awake()
         {
             base.Awake();
             if (m_ClimbProvider == null)
+            {
                 ComponentLocatorUtility<ClimbProvider>.TryFindComponent(out m_ClimbProvider);
+            }
         }
 
-        /// <inheritdoc />
-        public override bool IsHoverableBy(IVXRHoverInteractor interactor)
+        protected virtual void OnEnable()
+        {
+            Interactable.SelectEntered += OnSelectEntered;
+            Interactable.SelectExited += OnSelectExited;
+        }
+
+        protected virtual void OnDisable()
+        {
+            Interactable.SelectEntered -= OnSelectEntered;
+            Interactable.SelectExited -= OnSelectExited;
+        }
+
+        public override bool IsHoverableBy(Interactor interactor)
         {
             return base.IsHoverableBy(interactor) && (!m_FilterInteractionByDistance ||
-                GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
+                Interactable.GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
         }
 
-        /// <inheritdoc />
-        public override bool IsSelectableBy(IVXRSelectInteractor interactor)
+        public override bool IsSelectableBy(Interactor interactor)
         {
-            return base.IsSelectableBy(interactor) && (IsSelectedBy(interactor) || !m_FilterInteractionByDistance ||
-                GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
+            return base.IsSelectableBy(interactor) && (Interactable.IsSelectedBy(interactor) || !m_FilterInteractionByDistance ||
+                Interactable.GetDistanceSqrToInteractor(interactor) <= m_MaxInteractionDistance * m_MaxInteractionDistance);
         }
 
-        /// <inheritdoc />
-        public override void OnSelectEntered(SelectEnterEventArgs args)
+        public void OnSelectEntered(SelectEnterEventArgs args)
         {
-            base.OnSelectEntered(args);
             if (m_ClimbProvider != null || ComponentLocatorUtility<ClimbProvider>.TryFindComponent(out m_ClimbProvider))
+            {
                 m_ClimbProvider.StartClimbGrab(this, args.InteractorObject);
+            }
         }
 
-        /// <inheritdoc />
-        public override void OnSelectExited(SelectExitEventArgs args)
+        public void OnSelectExited(SelectExitEventArgs args)
         {
-            base.OnSelectExited(args);
             if (m_ClimbProvider != null)
+            {
                 m_ClimbProvider.FinishClimbGrab(args.InteractorObject);
+            }
         }
     }
 }

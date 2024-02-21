@@ -1,3 +1,8 @@
+# v0.3.0
+* Major revision to interactors and interactables.
+* Interactors and Interactables are now one components monobehaviours
+* Additional functionality should be added via Modules (InteractorModule) or (InteractableModule)
+
 # v0.2.22
 * Updated to include new input system
 * Overhauled the interactor system.

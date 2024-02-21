@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using VaporEvents;
 using VaporInspector;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
     public class VXRPoseSource : MonoBehaviour, IPoseSource
     {
         [BoxGroup("Components"), SerializeField, AutoReference]
-        private VXRBaseInteractable _interactable;
+        private Interactable _interactable;
 
         [FoldoutGroup("Hover"), SerializeField]
         private HandPoseDatum _hoverPose;
@@ -54,7 +55,7 @@ namespace VaporXR
 
         private void OnHoverEntered(HoverEnterEventArgs obj)
         {
-            switch (obj.interactorObject.Handedness)
+            switch (obj.InteractorObject.Handedness)
             {
                 case InteractorHandedness.None:
                     break;

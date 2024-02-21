@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -32,14 +33,14 @@ namespace VaporXR
         /// <summary>
         /// Reusable mapping of Interactables to their final score (used for sorting).
         /// </summary>
-        static readonly Dictionary<IVXRInteractable, float> s_InteractableFinalScoreMap =
-            new Dictionary<IVXRInteractable, float>();
+        static readonly Dictionary<Interactable, float> s_InteractableFinalScoreMap =
+            new Dictionary<Interactable, float>();
 
         /// <summary>
         /// Used to avoid GC Alloc that would happen if using <see cref="InteractableScoreDescendingComparison"/> directly
         /// as argument to <see cref="List{T}.Sort(Comparison{T})"/>.
         /// </summary>
-        static readonly Comparison<IVXRInteractable> s_InteractableScoreComparison = InteractableScoreDescendingComparison;
+        static readonly Comparison<Interactable> s_InteractableScoreComparison = InteractableScoreDescendingComparison;
 
 #if UNITY_EDITOR
         /// <summary>
@@ -52,11 +53,11 @@ namespace VaporXR
         /// (Editor Only) Reusable mapping of Interactables to their individual evaluators' scores (used to forward debug data to editors).
         /// The same index in the evaluator's score list (the Dictionary's key value) maps to the the evaluator it represents in the list returned by <see cref="GetEnabledEvaluators"/>.
         /// </summary>
-        static readonly Dictionary<IVXRInteractable, List<float>> s_InteractableScoreListMap =
-            new Dictionary<IVXRInteractable, List<float>>();
+        static readonly Dictionary<Interactable, List<float>> s_InteractableScoreListMap =
+            new Dictionary<Interactable, List<float>>();
 #endif
 
-        static int InteractableScoreDescendingComparison(IVXRInteractable x, IVXRInteractable y)
+        static int InteractableScoreDescendingComparison(Interactable x, Interactable y)
         {
             var xFinalScore = s_InteractableFinalScoreMap[x];
             var yFinalScore = s_InteractableFinalScoreMap[y];
@@ -71,11 +72,11 @@ namespace VaporXR
 #if UNITY_EDITOR
         internal static readonly List<XRTargetFilter> enabledFilters = new();
 
-        internal event Action<IVXRInteractor, List<IVXRInteractable>, List<IVXRInteractable>, Dictionary<IVXRInteractable, float>,
-            Dictionary<IVXRInteractable, List<float>>> processingCompleted;
+        internal event Action<Interaction.IInteractor, List<Interactable>, List<Interactable>, Dictionary<Interactable, float>,
+            Dictionary<Interactable, List<float>>> processingCompleted;
 #endif
 
-        List<IVXRInteractor> m_LinkedInteractors = new();
+        List<Interaction.IInteractor> m_LinkedInteractors = new();
 
         /// <summary>
         /// (Read Only) List of linked Interactors.
@@ -83,7 +84,7 @@ namespace VaporXR
         /// <remarks>
         /// Intended to be used by editors, debuggers and test classes.
         /// </remarks>
-        internal List<IVXRInteractor> linkedInteractors => m_LinkedInteractors;
+        internal List<Interaction.IInteractor> linkedInteractors => m_LinkedInteractors;
 
         [SerializeReference]
         List<XRTargetEvaluator> m_Evaluators = new();
@@ -112,13 +113,13 @@ namespace VaporXR
         /// Calls the methods in this invocation when this filter is linked to an Interactor.
         /// </summary>
         /// <seealso cref="Link"/>
-        public event Action<IVXRInteractor> interactorLinked;
+        public event Action<Interaction.IInteractor> interactorLinked;
 
         /// <summary>
         /// Calls the methods in this invocation when this filter is unlinked from an Interactor.
         /// </summary>
         /// <seealso cref="Unlink"/>
-        public event Action<IVXRInteractor> interactorUnlinked;
+        public event Action<Interaction.IInteractor> interactorUnlinked;
 
         /// <inheritdoc />
         public override bool CanProcess => !isProcessing && base.CanProcess;
@@ -242,7 +243,7 @@ namespace VaporXR
         /// <remarks>
         /// Clears <paramref name="results"/> before adding to it.
         /// </remarks>
-        public void GetLinkedInteractors(List<IVXRInteractor> results)
+        public void GetLinkedInteractors(List<Interaction.IInteractor> results)
         {
             if (results == null)
                 throw new ArgumentNullException(nameof(results));
@@ -455,7 +456,7 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public override void Link(IVXRInteractor interactor)
+        public override void Link(Interaction.IInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));
@@ -472,7 +473,7 @@ namespace VaporXR
         /// You cannot call this method while the filter is processing.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Throws when this filter is currently processing and filtering Interactables.</exception>
-        public override void Unlink(IVXRInteractor interactor)
+        public override void Unlink(Interaction.IInteractor interactor)
         {
             if (interactor == null)
                 throw new ArgumentNullException(nameof(interactor));
@@ -496,7 +497,7 @@ namespace VaporXR
         /// This final score is then used to sort (in descending order) the Interactables in the results list.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Throws when this filter is currently processing and filtering Interactables.</exception>
-        public override void Process(IVXRInteractor interactor, List<IVXRInteractable> targets, List<IVXRInteractable> results)
+        public override void Process(Interaction.IInteractor interactor, List<Interactable> targets, List<Interactable> results)
         {
 #if UNITY_EDITOR
             Debug.Assert(s_InteractableScoreListMap.Count == 0, this);

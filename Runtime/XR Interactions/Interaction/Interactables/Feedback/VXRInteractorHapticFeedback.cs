@@ -1,6 +1,6 @@
 using UnityEngine;
 using VaporInspector;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -10,7 +10,7 @@ namespace VaporXR
         #region Inspector
         [SerializeField, FoldoutGroup("Components"), AutoReference(searchParents: true)]
         [RichTextTooltip("The <cls>VXRBaseInteractor</cls> component to that the events are subscribed to.")]
-        private VXRBaseInteractor _interactorSourceObject;
+        private Interactor _interactorSourceObject;
 
         [SerializeField, FoldoutGroup("Components"), AutoReference(searchParents: true)]
         [RichTextTooltip("The <cls>HapticImpulsePlayer</cls> component to use to play haptic impulses.")]
@@ -133,11 +133,6 @@ namespace VaporXR
         #region - Initialization -
         protected void Awake()
         {
-            if (_interactorSourceObject == null)
-            {
-                _interactorSourceObject = GetComponentInParent<VXRBaseInteractor>(true);
-            }
-
             if (_playSelectEntered || _playSelectExited || _playSelectCanceled || _playHoverEntered || _playHoverExited || _playHoverCanceled)
             {
                 CreateHapticImpulsePlayer();
@@ -146,40 +141,30 @@ namespace VaporXR
 
         protected void OnEnable()
         {
-            Subscribe(_interactorSourceObject);
+            Subscribe();
         }
 
         protected void OnDisable()
         {
-            Unsubscribe(_interactorSourceObject);
+            Unsubscribe();
         }
 
-        private void Subscribe(VXRBaseInteractor interactor)
+        private void Subscribe()
         {
-            if (!interactor)
-            {
-                return;
-            }
+            _interactorSourceObject.HoverEntered += OnHoverEntered;
+            _interactorSourceObject.HoverExited += OnHoverExited;
 
-            interactor.HoverEntered += (OnHoverEntered);
-            interactor.HoverExited += (OnHoverExited);
-
-            interactor.SelectEntered += (OnSelectEntered);
-            interactor.SelectExited += (OnSelectExited);
+            _interactorSourceObject.SelectEntered += OnSelectEntered;
+            _interactorSourceObject.SelectExited += OnSelectExited;
         }
 
-        private void Unsubscribe(VXRBaseInteractor interactor)
+        private void Unsubscribe()
         {
-            if (!interactor)
-            {
-                return;
-            }
+            _interactorSourceObject.HoverEntered -= OnHoverEntered;
+            _interactorSourceObject.HoverExited -= OnHoverExited;
 
-            interactor.HoverEntered -= (OnHoverEntered);
-            interactor.HoverExited -= (OnHoverExited);
-
-            interactor.SelectEntered -= (OnSelectEntered);
-            interactor.SelectExited -= (OnSelectExited);
+            _interactorSourceObject.SelectEntered -= OnSelectEntered;
+            _interactorSourceObject.SelectExited -= OnSelectExited;
         }
         #endregion
 
@@ -225,14 +210,14 @@ namespace VaporXR
         #endregion
 
         #region - Hover -
-        private bool IsHoverHapticsAllowed(IVXRHoverInteractor interactor, IVXRInteractable interactable)
+        private bool IsHoverHapticsAllowed(Interactor interactor, Interactable interactable)
         {
             return _allowHoverHapticsWhileSelecting || !IsSelecting(interactor, interactable);
         }
         
         private void OnHoverEntered(HoverEnterEventArgs args)
         {
-            if (_playHoverEntered && IsHoverHapticsAllowed(args.interactorObject, args.interactableObject))
+            if (_playHoverEntered && IsHoverHapticsAllowed(args.InteractorObject, args.InteractableObject))
             {
                 SendHapticImpulse(_hoverEnteredData);
             }
@@ -240,17 +225,17 @@ namespace VaporXR
 
         private void OnHoverExited(HoverExitEventArgs args)
         {
-            if (!IsHoverHapticsAllowed(args.interactorObject, args.interactableObject))
+            if (!IsHoverHapticsAllowed(args.InteractorObject, args.InteractableObject))
             {
                 return;
             }
 
-            if (_playHoverCanceled && args.isCanceled)
+            if (_playHoverCanceled && args.IsCanceled)
             {
                 SendHapticImpulse(_hoverCanceledData);
             }
 
-            if (_playHoverExited && !args.isCanceled)
+            if (_playHoverExited && !args.IsCanceled)
             {
                 SendHapticImpulse(_hoverExitedData);
             }
@@ -279,12 +264,10 @@ namespace VaporXR
             }
         }
 
-        private static bool IsSelecting(IVXRHoverInteractor interactor, IVXRInteractable interactable)
+        private static bool IsSelecting(Interactor interactor, Interactable interactable)
         {
             return interactor != null &&
-                   interactor.Composite != null &&
-                   interactable is IVXRSelectInteractable selectable &&
-                   interactor.Composite.IsSelecting(selectable);
+                   interactor.IsSelecting(interactable);
         }
         #endregion
         

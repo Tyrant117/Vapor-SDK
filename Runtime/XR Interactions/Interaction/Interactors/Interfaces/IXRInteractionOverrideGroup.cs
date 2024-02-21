@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using VaporXR.Interactors;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -104,7 +104,7 @@ namespace VaporXR
         /// The implementation of this method should call <see cref="ShouldAnyMemberOverrideInteraction"/> on each
         /// override Group member that is an <see cref="IXRInteractionOverrideGroup"/>.
         /// </remarks>
-        bool ShouldOverrideActiveInteraction(out IVXRSelectInteractor overridingInteractor);
+        bool ShouldOverrideActiveInteraction(out Interactor overridingInteractor);
 
         /// <summary>
         /// Checks whether any member of the Group should override the interactions of <paramref name="interactingInteractor"/>.
@@ -121,7 +121,7 @@ namespace VaporXR
         /// The implementation of this method should call this method on each Group member that is an
         /// <see cref="IXRInteractionOverrideGroup"/>.
         /// </remarks>
-        bool ShouldAnyMemberOverrideInteraction(IVXRInteractor interactingInteractor,
-            out IVXRSelectInteractor overridingInteractor);
+        bool ShouldAnyMemberOverrideInteraction(Interactor interactingInteractor,
+            out Interactor overridingInteractor);
     }
 }

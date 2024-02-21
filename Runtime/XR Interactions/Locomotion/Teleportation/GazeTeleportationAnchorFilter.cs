@@ -100,7 +100,7 @@ namespace VaporXR.Locomotion.Teleportation
             if (m_AnchorWeights == null || m_AnchorWeights.Length != anchors.Count)
                 m_AnchorWeights = new float[anchors.Count];
 
-            var xrOrigin = teleportationVolume.teleportationProvider.Mediator.XROrigin;
+            var xrOrigin = teleportationVolume.TeleportationProvider.Mediator.XROrigin;
 
             if (m_EnableDistanceWeighting)
             {

@@ -15,7 +15,7 @@ namespace VaporXR.Locomotion.Teleportation
         {
             var anchorIndex = -1;
             var furthestSqDistance = -1f;
-            var userPosition = teleportationVolume.teleportationProvider.Mediator.XROrigin.GetCameraFloorWorldPosition();
+            var userPosition = teleportationVolume.TeleportationProvider.Mediator.XROrigin.GetCameraFloorWorldPosition();
             var anchors = teleportationVolume.anchorTransforms;
             for (var i = 0; i < anchors.Count; ++i)
             {

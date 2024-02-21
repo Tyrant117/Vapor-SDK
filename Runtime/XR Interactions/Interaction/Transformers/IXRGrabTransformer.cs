@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using VaporXR.Interactables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -31,7 +31,7 @@ namespace VaporXR
         /// </summary>
         /// <param name="grabInteractable">The XR Grab Interactable being linked to this transformer.</param>
         /// <seealso cref="OnUnlink"/>
-        void OnLink(IVXRGrabCompositeInteractable grabInteractable);
+        void OnLink(GrabInteractableModule grabInteractable);
 
         /// <summary>
         /// Called by Unity when the given Interactable is grabbed (in other words, when entering the Select state).
@@ -44,7 +44,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="OnGrabCountChanged"/>
         /// <seealso cref="XRGrabInteractable.Grab"/>
-        void OnGrab(IVXRGrabCompositeInteractable grabInteractable);
+        void OnGrab(GrabInteractableModule grabInteractable);
 
         /// <summary>
         /// Called by Unity each time the number of selections changes for the given Interactable
@@ -68,7 +68,7 @@ namespace VaporXR
         /// </code>
         /// </example>
         /// </remarks>
-        void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale);
+        void OnGrabCountChanged(GrabInteractableModule grabInteractable, Pose targetPose, Vector3 localScale);
 
         /// <summary>
         /// Called by the linked Interactable to calculate the target pose and scale.
@@ -93,7 +93,7 @@ namespace VaporXR
         /// </remarks>
         /// <seealso cref="XRGrabInteractable.ProcessInteractable"/>
         /// <seealso cref="XRInteractionUpdateOrder.UpdatePhase"/>
-        void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
+        void Process(GrabInteractableModule grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
 
         /// <summary>
         /// Called by Unity when the given Interactable unlinks from this grab transformer.
@@ -101,6 +101,6 @@ namespace VaporXR
         /// </summary>
         /// <param name="grabInteractable">The XR Grab Interactable being unlinked from this transformer.</param>
         /// <seealso cref="OnLink"/>
-        void OnUnlink(IVXRGrabCompositeInteractable grabInteractable);
+        void OnUnlink(GrabInteractableModule grabInteractable);
     }
 }

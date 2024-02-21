@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
-using VaporXR.Interactables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -69,13 +69,13 @@ namespace VaporXR
         /// </summary>
         protected void Start()
         {
-            if (TryGetComponent<VXRGrabInteractable>(out var grabInteractable))
+            if (TryGetComponent<GrabInteractableModule>(out var grabInteractable))
             {
                 // If the user has explicitly added this grab transformer to either
                 // of the starting lists, assume that automatic registration should be
                 // skipped.
-                if (grabInteractable.startingSingleGrabTransformers.Contains(this) ||
-                    grabInteractable.startingMultipleGrabTransformers.Contains(this))
+                if (grabInteractable.StartingSingleGrabTransformers.Contains(this) ||
+                    grabInteractable.StartingMultipleGrabTransformers.Contains(this))
                 {
                     return;
                 }
@@ -84,13 +84,13 @@ namespace VaporXR
                 // of the runtime lists, assume that this was added as part of the default
                 // grab transformer addition (or by code for some other reason) so automatic
                 // registration should be skipped.
-                for (var index = grabInteractable.singleGrabTransformersCount - 1; index >= 0; --index)
+                for (var index = grabInteractable.SingleGrabTransformersCount - 1; index >= 0; --index)
                 {
                     if (ReferenceEquals(grabInteractable.GetSingleGrabTransformerAt(index), this))
                         return;
                 }
 
-                for (var index = grabInteractable.multipleGrabTransformersCount - 1; index >= 0; --index)
+                for (var index = grabInteractable.MultipleGrabTransformersCount - 1; index >= 0; --index)
                 {
                     if (ReferenceEquals(grabInteractable.GetMultipleGrabTransformerAt(index), this))
                         return;
@@ -122,7 +122,7 @@ namespace VaporXR
         /// </summary>
         protected void OnDestroy()
         {
-            if (TryGetComponent<VXRGrabInteractable>(out var grabInteractable))
+            if (TryGetComponent<GrabInteractableModule>(out var grabInteractable))
             {
                 grabInteractable.RemoveSingleGrabTransformer(this);
                 grabInteractable.RemoveMultipleGrabTransformer(this);
@@ -130,25 +130,25 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public virtual void OnLink(IVXRGrabCompositeInteractable grabInteractable)
+        public virtual void OnLink(GrabInteractableModule grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public virtual void OnGrab(IVXRGrabCompositeInteractable grabInteractable)
+        public virtual void OnGrab(GrabInteractableModule grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public virtual void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale)
+        public virtual void OnGrabCountChanged(GrabInteractableModule grabInteractable, Pose targetPose, Vector3 localScale)
         {
         }
 
         /// <inheritdoc />
-        public abstract void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
+        public abstract void Process(GrabInteractableModule grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale);
 
         /// <inheritdoc />
-        public virtual void OnUnlink(IVXRGrabCompositeInteractable grabInteractable)
+        public virtual void OnUnlink(GrabInteractableModule grabInteractable)
         {
         }
     }

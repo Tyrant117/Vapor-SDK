@@ -4,7 +4,7 @@ using Unity.XR.CoreUtils;
 using Unity.Burst;
 using UnityEngine;
 using Vapor.Utilities;
-using VaporXR.Interactables;
+using VaporXR.Interaction;
 
 namespace VaporXR
 {
@@ -49,29 +49,29 @@ namespace VaporXR
         /// </summary>
         public IAttachPoint SocketInteractor { get; set; }
 
-        readonly Dictionary<IVXRInteractable, float3> m_InitialScale = new Dictionary<IVXRInteractable, float3>();
+        readonly Dictionary<Interactable, float3> m_InitialScale = new();
 
-        readonly Dictionary<IVXRInteractable, float3> m_InteractableBoundsSize = new Dictionary<IVXRInteractable, float3>();
+        readonly Dictionary<Interactable, float3> m_InteractableBoundsSize = new();
 
         /// <inheritdoc />
-        public void OnLink(IVXRGrabCompositeInteractable grabInteractable)
+        public void OnLink(GrabInteractableModule grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public void OnGrab(IVXRGrabCompositeInteractable grabInteractable)
+        public void OnGrab(GrabInteractableModule grabInteractable)
         {
         }
 
         /// <inheritdoc />
-        public void OnGrabCountChanged(IVXRGrabCompositeInteractable grabInteractable, Pose targetPose, Vector3 localScale)
+        public void OnGrabCountChanged(GrabInteractableModule grabInteractable, Pose targetPose, Vector3 localScale)
         {
             if (ScaleMode != SocketScaleMode.None)
-                RegisterInteractableScale(grabInteractable.Select, localScale);
+                RegisterInteractableScale(grabInteractable.Interactable, localScale);
         }
 
         /// <inheritdoc />
-        public void Process(IVXRGrabCompositeInteractable grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        public void Process(GrabInteractableModule grabInteractable, XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             switch (updatePhase)
             {
@@ -84,9 +84,9 @@ namespace VaporXR
                     }
                     else
                     {
-                        float3 initialScale = m_InitialScale[grabInteractable.Select];
-                        float3 initialBounds = m_InteractableBoundsSize[grabInteractable.Select];
-                        float3 targetScale = ComputeSocketTargetScale(grabInteractable.Select, initialScale);
+                        float3 initialScale = m_InitialScale[grabInteractable.Interactable];
+                        float3 initialBounds = m_InteractableBoundsSize[grabInteractable.Interactable];
+                        float3 targetScale = ComputeSocketTargetScale(grabInteractable.Interactable, initialScale);
 
                         UpdateTargetWithScale(grabInteractable, SocketInteractor, SocketSnappingRadius, initialScale, initialBounds, targetScale, ref targetPose, ref localScale);
                     }
@@ -96,9 +96,9 @@ namespace VaporXR
             }
         }
 
-        static void UpdateTargetWithoutScale(IVXRGrabCompositeInteractable grabInteractable, IAttachPoint attachPoint, float snappingRadius, ref Pose targetPose)
+        static void UpdateTargetWithoutScale(GrabInteractableModule grabInteractable, IAttachPoint attachPoint, float snappingRadius, ref Pose targetPose)
         {
-            var hasSocketPose = GetTargetPoseForInteractable(grabInteractable.Select, attachPoint, out var socketTargetPose);
+            var hasSocketPose = GetTargetPoseForInteractable(grabInteractable.Interactable, attachPoint, out var socketTargetPose);
             if (!hasSocketPose)
                 return;
 
@@ -108,9 +108,9 @@ namespace VaporXR
             targetPose = socketTargetPose;
         }
 
-        static void UpdateTargetWithScale(IVXRGrabCompositeInteractable grabInteractable, IAttachPoint attachPoint, float innerRadius, in float3 initialScale, in float3 initialBounds, in float3 targetScale, ref Pose targetPose, ref Vector3 localScale)
+        static void UpdateTargetWithScale(GrabInteractableModule grabInteractable, IAttachPoint attachPoint, float innerRadius, in float3 initialScale, in float3 initialBounds, in float3 targetScale, ref Pose targetPose, ref Vector3 localScale)
         {
-            var hasSocketPose = GetTargetPoseForInteractable(grabInteractable.Select, attachPoint, out var socketTargetPose);
+            var hasSocketPose = GetTargetPoseForInteractable(grabInteractable.Interactable, attachPoint, out var socketTargetPose);
             if (!hasSocketPose)
                 return;
 
@@ -137,18 +137,18 @@ namespace VaporXR
         }
 
         /// <inheritdoc />
-        public void OnUnlink(IVXRGrabCompositeInteractable grabInteractable)
+        public void OnUnlink(GrabInteractableModule grabInteractable)
         {
             // Ends the socket interaction for the provided interactable, resetting its scale to its initial value.
-            if (m_InitialScale.TryGetValue(grabInteractable.Select, out var initialScale))
+            if (m_InitialScale.TryGetValue(grabInteractable.Interactable, out var initialScale))
             {
                 grabInteractable.SetTargetLocalScale(initialScale);
-                m_InitialScale.Remove(grabInteractable.Select);
-                m_InteractableBoundsSize.Remove(grabInteractable.Select);
+                m_InitialScale.Remove(grabInteractable.Interactable);
+                m_InteractableBoundsSize.Remove(grabInteractable.Interactable);
             }
         }
 
-        bool RegisterInteractableScale(IVXRInteractable targetInteractable, Vector3 scale)
+        bool RegisterInteractableScale(Interactable targetInteractable, Vector3 scale)
         {
             if (m_InitialScale.ContainsKey(targetInteractable))
                 return false;
@@ -179,7 +179,7 @@ namespace VaporXR
         /// <param name="interactable">Interactable to place.</param>
         /// <param name="initialInteractableScale">Initial interactable local scale.</param>
         /// <returns>Returns the target local scale.</returns>
-        float3 ComputeSocketTargetScale(IVXRInteractable interactable, in float3 initialInteractableScale)
+        float3 ComputeSocketTargetScale(Interactable interactable, in float3 initialInteractableScale)
         {
             switch (ScaleMode)
             {
@@ -204,14 +204,16 @@ namespace VaporXR
             }
         }
 
-        static bool GetTargetPoseForInteractable(IVXRInteractable interactable, IAttachPoint attachPoint, out Pose targetPose)
+        static bool GetTargetPoseForInteractable(Interactable interactable, IAttachPoint attachPoint, out Pose targetPose)
         {
             targetPose = Pose.identity;
-            var grabInteractable = interactable as VXRGrabInteractable;
+            var grabInteractable = interactable.GetModule<GrabInteractableModule>();
             if (grabInteractable == null)
+            {
                 return false;
+            }
 
-            var interactorAttachTransform = attachPoint.GetAttachTransform(grabInteractable);
+            var interactorAttachTransform = attachPoint.GetAttachTransform(interactable);
             var interactableTransform = grabInteractable.transform;
             var interactableAttachTransform = grabInteractable.GetAttachTransform(attachPoint);
 
@@ -219,7 +221,7 @@ namespace VaporXR
             var attachOffset = interactableTransform.position - interactableAttachTransform.position;
 
             // Compute the new target world pose
-            if (grabInteractable.trackRotation)
+            if (grabInteractable.TrackRotation)
             {
                 // Transform that offset direction from world space to local space of the transform it's relative to.
                 // It will be applied to the interactor's attach position using the orientation of the Interactor's attach transform.
