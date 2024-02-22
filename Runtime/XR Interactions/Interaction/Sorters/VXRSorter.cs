@@ -145,9 +145,9 @@ namespace VaporXR
             }
         }
 
-        public abstract Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null);
+        public abstract Interactable ProcessSorter(Interactor interactor, IXRTargetFilter filter = null);
 
-        public abstract void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null);        
+        public abstract void GetValidTargets(Interactor interactor, List<Interactable> targets, IXRTargetFilter filter = null);
 
         public Transform GetAttachTransform(Interactable interactable)
         {
@@ -161,9 +161,9 @@ namespace VaporXR
         /// <param name="interactor">The Interactor to check.</param>
         /// <param name="interactable">The Interactable to check.</param>
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
-        /// <seealso cref="Interaction.IInteractor.InteractionLayers"/>
+        /// <seealso cref="Interactor.InteractionLayers"/>
         /// <seealso cref="Interactable.InteractionLayers"/>
-        protected static bool HasInteractionLayerOverlap(Interaction.IInteractor interactor, Interactable interactable)
+        protected static bool HasInteractionLayerOverlap(Interactor interactor, Interactable interactable)
         {
             return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }

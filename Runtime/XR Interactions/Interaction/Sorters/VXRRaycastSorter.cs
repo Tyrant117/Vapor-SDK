@@ -63,7 +63,7 @@ namespace VaporXR
         #endregion
 
         #region - Interaction -
-        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interactor interactor, IXRTargetFilter filter = null)
         {
             EvaluateContacts();
 
@@ -73,7 +73,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interactor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)

@@ -1,7 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using VaporXR.Interaction;
 using VaporXR.Interaction;
 using VaporXR.Utilities;
 
@@ -15,7 +12,7 @@ namespace VaporXR
         private bool _contactsSortedThisFrame;
 
         #region - Interaction -
-        public override Interactable ProcessSorter(Interaction.IInteractor interactor, IXRTargetFilter filter = null)
+        public override Interactable ProcessSorter(Interactor interactor, IXRTargetFilter filter = null)
         {
             // Determine the Interactables that this Interactor could possibly interact with this frame
             GetValidTargets(interactor, _frameValidTargets, filter);
@@ -23,7 +20,7 @@ namespace VaporXR
             return CurrentNearestValidTarget;
         }
 
-        public override void GetValidTargets(Interaction.IInteractor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
+        public override void GetValidTargets(Interactor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
             if (!isActiveAndEnabled)
