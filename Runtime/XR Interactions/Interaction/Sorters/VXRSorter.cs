@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
-using VaporXR.Interaction;
 using VaporXR.Interaction;
 using VaporXR.Utilities;
 
@@ -13,7 +11,10 @@ namespace VaporXR
     {
         #region Inspectors              
         [FoldoutGroup("Components"), SerializeField]
-        protected Transform _attachPoint;        
+        protected Transform _attachPoint;
+
+        [FoldoutGroup("Properties"), SerializeField]
+        private bool _isActive = true;
         #endregion
 
         #region Properties
@@ -34,6 +35,24 @@ namespace VaporXR
         public List<Interactable> PossibleTargets { get; } = new();
 
         public Transform AttachPoint { get => _attachPoint; set => _attachPoint = value; }
+        
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    if (value)
+                    {
+                        _contactMonitor.ResolveUnassociatedColliders();
+                    }
+
+                    ResetCollidersAndValidTargets();
+                }
+                _isActive = value;
+            }
+        }
         #endregion
 
         #region Fields
@@ -78,7 +97,7 @@ namespace VaporXR
             _contactMonitor.contactAdded += OnContactAdded;
             _contactMonitor.contactRemoved += OnContactRemoved;
 
-            //_contactMonitor.ResolveUnassociatedColliders();
+            _contactMonitor.ResolveUnassociatedColliders();
             ResetCollidersAndValidTargets();
         }
 
@@ -108,6 +127,8 @@ namespace VaporXR
         #region - Interaction -
         public void ProcessContacts(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
+            if (!IsActive) { return; }
+
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
                 if (_frameContactsEvaulated)

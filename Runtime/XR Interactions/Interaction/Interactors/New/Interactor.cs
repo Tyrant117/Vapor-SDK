@@ -476,6 +476,26 @@ namespace VaporXR.Interaction
             // Unlink this Interactor from the Target Filter
             TargetFilter?.Unlink(this);
         }
+
+        /// <summary>
+        /// Enables or disables the sorters attached to this interactor.
+        /// This will start/stop interaction, but will not unregister the interactor and it will still receive processing events.
+        /// </summary>
+        /// <param name="active">Whether the sorters are active</param>
+        public void SetInteractorActive(bool active)
+        {
+            if (_overrideSorter)
+            {
+                _overrideSorter.IsActive = active;
+            }
+            else
+            {
+                foreach (var sorter in _sorters)
+                {
+                    sorter.IsActive = active;
+                }
+            }
+        }
         #endregion
 
         #region - Processing -

@@ -11,6 +11,7 @@ namespace VaporXR
         Transform transform { get; }
 #pragma warning restore IDE1006 // Naming Styles
 
+        //TODO: Remove this and only use GetAttachTransform.
         Transform AttachPoint { get; }
 
         /// <summary>
