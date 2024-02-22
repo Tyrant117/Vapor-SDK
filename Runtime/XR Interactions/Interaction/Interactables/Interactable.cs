@@ -33,10 +33,10 @@ namespace VaporXR.Interaction
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("Specifies how this Interactable calculates its distance to a location, either using its Transform position, Collider position or Collider volume.")]
         private DistanceCalculationModeType _distanceCalculationMode = DistanceCalculationModeType.InteractionPointPosition;
-        [FoldoutGroup("Interaction"), SerializeField]
+        [FoldoutGroup("Interaction"), SerializeField, ShowIf("%_allowSelect")]
         [RichTextTooltip("")]
         private InteractableSelectMode _selectMode = InteractableSelectMode.Single;
-        [FoldoutGroup("Interaction"), SerializeField]
+        [FoldoutGroup("Interaction"), SerializeField, ShowIf("%_allowSelect")]
         [RichTextTooltip("")]
         private InteractableFocusMode _focusMode = InteractableFocusMode.Single;
 
@@ -53,15 +53,15 @@ namespace VaporXR.Interaction
         [FoldoutGroup("Posing"), SerializeField, ShowIf("%_overrideSelectPose")]
         private float _selectPoseDuration;
 
-        [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRHoverFilter))]
+        [FoldoutGroup("Filters", order: 90), SerializeField, RequireInterface(typeof(IXRHoverFilter)), ShowIf("%_allowHover")]
         [RichTextTooltip("The hover filters that this object uses to automatically populate the <mth>HoverFilters</mth> List at startup (optional, may be empty)." +
             "\nAll objects in this list should implement the <itf>IXRHoverFilter</itf> interface.")]
         private List<Object> _startingHoverFilters = new();
-        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRSelectFilter))]
+        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRSelectFilter)), ShowIf("%_allowSelect")]
         [RichTextTooltip("The select filters that this object uses to automatically populate the <mth>SelectFilters</mth> List at startup (optional, may be empty)." +
             "\nAll objects in this list should implement the <itf>IXRSelectFilter</itf> interface.")]
         private List<Object> _startingSelectFilters = new();
-        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRInteractionStrengthFilter))]
+        [FoldoutGroup("Filters"), SerializeField, RequireInterface(typeof(IXRInteractionStrengthFilter)), ShowIf("%_allowSelect")]
         [RichTextTooltip("The select filters that this object uses to automatically populate the <mth>InteractionStrengthFilters</mth> List at startup (optional, may be empty)." +
             "\nAll objects in this list should implement the <itf>IXRInteractionStrengthFilter</itf> interface.")]
         private List<Object> _startingInteractionStrengthFilters = new();
@@ -739,6 +739,11 @@ namespace VaporXR.Interaction
                     Debug.Assert(false, $"Unhandled {nameof(DistanceCalculationModeType)}={_distanceCalculationMode}.", this);
                     goto case DistanceCalculationModeType.TransformPosition;
             }
+        }
+
+        public bool HasModule<T>() where T : InteractableModule
+        {
+            return _modulesMap.ContainsKey(typeof(T));
         }
 
         public T GetModule<T>() where T : InteractableModule
