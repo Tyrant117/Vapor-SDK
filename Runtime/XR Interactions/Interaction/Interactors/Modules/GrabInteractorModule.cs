@@ -16,7 +16,7 @@ namespace VaporXR.Interaction
         private bool _distantGrabActive = true;
 
         [VerticalGroup("Input"), SerializeField]
-        private ButtonInputProvider _grabInput;
+        private XRInputButton _grabInput;
 
         public bool DistantGrabActive => _distantGrabActive;
 
@@ -24,19 +24,21 @@ namespace VaporXR.Interaction
         #region - Initialization -
         protected void OnEnable()
         {
-            _grabInput.BindToUpdateEvent(_updateProvider);
+            _grabInput.BindInput().Enable();
+            //_grabInput.BindToUpdateEvent(_updateProvider);
             Interactor.SelectActive = OnSelectActiveCheck;
         }
 
         protected void OnDisable()
         {
-            _grabInput.UnbindUpdateEvent();
+            _grabInput.Disable();
+            //_grabInput.UnbindUpdateEvent();
             Interactor.SelectActive = null;
         }
 
         private XRIneractionActiveState OnSelectActiveCheck()
         {
-            return new XRIneractionActiveState(_grabInput.IsHeld, _grabInput.CurrentState.ActivatedThisFrame, _grabInput.CurrentValue);
+            return new XRIneractionActiveState(_grabInput.IsHeld, _grabInput.State.ActivatedThisFrame, _grabInput.CurrentValue);
         }
         #endregion
 

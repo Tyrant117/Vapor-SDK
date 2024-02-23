@@ -3,31 +3,58 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VaporEvents;
 
 namespace VaporXR
 {
-    public class InputActionManager : MonoBehaviour
+    [DefaultExecutionOrder(XRInteractionUpdateOrder.k_XRInputDeviceButtonReader)]
+    public class InputActionManager : ProvidedMonoBehaviour, IInputDeviceUpdateProvider
     {
         [SerializeField]
         [Tooltip("Input action assets to affect when inputs are enabled or disabled.")]
-        List<InputActionAsset> m_ActionAssets;
-        /// <summary>
-        /// Input action assets to affect when inputs are enabled or disabled.
-        /// </summary>
-        public List<InputActionAsset> ActionAssets
-        {
-            get => m_ActionAssets;
-            set => m_ActionAssets = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        private InputActionAsset _actionAsset;
 
-        protected void OnEnable()
+        private readonly Dictionary<Guid, InputAction> _actionOverrideMap = new();
+
+        public event Action InputUpdated;
+        public event Action PostInputUpdated;
+
+        protected override void OnEnable()
         {
+            base.OnEnable();
             EnableInput();
         }
 
-        protected void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
             DisableInput();
+        }        
+
+        private void Update()
+        {
+            InputUpdated?.Invoke();
+            PostInputUpdated?.Invoke();
+        }
+
+        public void RegisterForInputUpdate(Action callback)
+        {
+            InputUpdated += callback;
+        }
+
+        public void UnRegisterForInputUpdate(Action callback)
+        {
+            InputUpdated -= callback;
+        }
+
+        public void RegisterForPostInputUpdate(Action callback)
+        {
+            PostInputUpdated += callback;
+        }
+
+        public void UnRegisterForPostInputUpdate(Action callback)
+        {
+            PostInputUpdated -= callback;
         }
 
         /// <summary>
@@ -43,18 +70,19 @@ namespace VaporXR
         /// <seealso cref="DisableInput"/>
         public void EnableInput()
         {
-            if (m_ActionAssets == null)
+            if (_actionAsset == null)
             {
                 return;
             }
 
-            foreach (var actionAsset in m_ActionAssets)
-            {
-                if (actionAsset != null)
-                {
-                    actionAsset.Enable();
-                }
-            }
+            //foreach (var actionAsset in m_ActionAssets)
+            //{
+            //    if (actionAsset != null)
+            //    {
+            //        actionAsset.Enable();
+            //    }
+            //}
+            _actionAsset.Enable();
         }
 
         /// <summary>
@@ -70,18 +98,54 @@ namespace VaporXR
         /// <seealso cref="EnableInput"/>
         public void DisableInput()
         {
-            if (m_ActionAssets == null)
+            if (_actionAsset == null)
             {
                 return;
             }
 
-            foreach (var actionAsset in m_ActionAssets)
+            //foreach (var actionAsset in m_ActionAssets)
+            //{
+            //    if (actionAsset != null)
+            //    {
+            //        actionAsset.Disable();
+            //    }
+            //}
+            _actionAsset.Disable();
+        }
+
+        
+
+        public InputAction CreateActionClone(Guid actionGuid)
+        {
+            var actionToClone = _actionAsset.FindAction(actionGuid);
+            var clone = actionToClone.Clone();
+            return clone;
+        }
+
+        public void EnableActionOverride(Guid guid, InputAction overrideAction)
+        {
+            var actionToOverride = _actionAsset.FindAction(guid);
+            if(_actionOverrideMap.TryGetValue(guid, out var currentOverride))
             {
-                if (actionAsset != null)
-                {
-                    actionAsset.Disable();
-                }
+                // If its already overriden by another action.
+                // Disable that action
+                currentOverride.Disable();
             }
+            actionToOverride.Disable();
+            _actionOverrideMap[guid] = overrideAction;
+            overrideAction.Enable();
+        }
+
+        public void DisableActionOverride(Guid guid)
+        {
+            var actionToOverride = _actionAsset.FindAction(guid);
+            if (_actionOverrideMap.TryGetValue(guid, out var currentOverride))
+            {
+                // If its already overriden by another action.
+                // Disable that action
+                currentOverride.Disable();
+            }
+            actionToOverride.Enable();
         }
     }
 }

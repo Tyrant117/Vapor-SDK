@@ -16,7 +16,7 @@ namespace VaporXR.Interaction
         /// (Read Only) Colliders to use for interaction with this Interactable (if empty, will use any child Colliders).
         /// </summary>
         List<Collider> Colliders { get; }
-        InteractionLayerMask InteractionLayers { get; set; }
+        int[] InteractionLayers { get; set; }
 
         List<InteractableModule> Modules { get; }
         #endregion

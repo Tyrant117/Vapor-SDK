@@ -243,6 +243,14 @@ namespace VaporXREditor
 
                 // Axis 2D
                 _AddAxis2D(map, "Joystick", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 1", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 2", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 3", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 4", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 5", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 6", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 7", InputUsages.Format(handName, InputUsages.Primary2DAxis));
+                _AddAxis2D(map, "Joystick Action 8", InputUsages.Format(handName, InputUsages.Primary2DAxis));
             }
 
             static void _CreateHeadMap(InputActionAsset actionAsset)
@@ -365,7 +373,7 @@ namespace VaporXREditor
             try
             {
                 FolderUtility.CreateFolderFromPath($"Assets/{FolderSetupUtility.FolderRelativePath}/Keys");
-                var keyValuePairs = new List<KeyGenerator.KeyValuePair> { KeyGenerator.StringToKeyValuePair("Default") };
+                var keyValuePairs = new List<KeyGenerator.KeyValuePair> { KeyGenerator.StringToKeyValuePair("Default"), KeyGenerator.StringToKeyValuePair("Teleport") };
                 KeyGenerator.FormatKeyFiles($"{FolderSetupUtility.FolderRelativePath}/Keys", "VaporKeyDefinitions", "InteractionLayerKeys", keyValuePairs);
 
                 FolderUtility.CreateFolderFromPath($"Assets/{FolderSetupUtility.FolderRelativePath}/Resources");
@@ -388,10 +396,15 @@ namespace VaporXREditor
             try
             {
                 FolderUtility.CreateFolderFromPath($"Assets/{FolderSetupUtility.ProviderKeysRelativePath}");
+                _CreateProviderKey("Input Manager");
                 _CreateProviderKey("Right Hand");
                 _CreateProviderKey("Left Hand");
 
                 KeySo.GenerateKeysOfType<ProviderKeySo>();
+
+                _CreateLayerKey("Default");
+                _CreateLayerKey("Teleport");
+                KeySo.GenerateKeysOfType<InteractionLayerKeySo>();
             }
             finally
             {
@@ -402,7 +415,22 @@ namespace VaporXREditor
             {
                 var key = ScriptableObject.CreateInstance<ProviderKeySo>();
                 key.name = name;
-                AssetDatabase.CreateAsset(key, $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}/{key.name}.asset");
+                var assets = AssetDatabase.FindAssets(name, new[] { $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}" });
+                if (assets == null || assets.Length == 0)
+                {
+                    AssetDatabase.CreateAsset(key, $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}/{key.name}.asset");
+                }
+            }
+
+            void _CreateLayerKey(string layer)
+            {
+                var key = ScriptableObject.CreateInstance<InteractionLayerKeySo>();
+                key.name = layer;
+                var assets = AssetDatabase.FindAssets(layer, new[] { $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}" });
+                if (assets == null || assets.Length == 0)
+                {
+                    AssetDatabase.CreateAsset(key, $"Assets/{FolderSetupUtility.ProviderKeysRelativePath}/{key.name}.asset");
+                }
             }
         }
     }

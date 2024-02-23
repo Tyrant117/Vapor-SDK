@@ -165,7 +165,16 @@ namespace VaporXR
         /// <seealso cref="Interactable.InteractionLayers"/>
         protected static bool HasInteractionLayerOverlap(Interactor interactor, Interactable interactable)
         {
-            return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
+            foreach (var layer in interactable.InteractionLayers)
+            {
+                if (interactor.InteractionLayers.Contains(layer))
+                {
+                    return true;
+                }
+            }
+            return false;
+
+            //return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
         #endregion
 

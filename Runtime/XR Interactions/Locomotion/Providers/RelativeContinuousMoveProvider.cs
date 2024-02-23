@@ -157,8 +157,8 @@ namespace VaporXR.Locomotion
             }
 
             // Combine the two poses into the forward source based on the magnitude of input
-            var leftHandValue = LeftHandMoveInput.CurrentValue;
-            var rightHandValue = RightHandMoveInput.CurrentValue;
+            var leftHandValue = LeftHandMoveInput.ReadValue();
+            var rightHandValue = RightHandMoveInput.ReadValue();
 
             var totalSqrMagnitude = leftHandValue.sqrMagnitude + rightHandValue.sqrMagnitude;
             var leftHandBlend = 0.5f;

@@ -107,6 +107,11 @@ namespace VaporXR
             LerpJointsOpenToClosed(0.1f + Mathf.Sin(Time.time / 2) * 0.05f);
         }
 
+        public bool ShouldBreathe(float bend)
+        {
+            return _isBreathing || Mathf.Approximately(_bend, bend);
+        }
+
         public bool SmoothBend(float bend)
         {
             _isBreathing = false;

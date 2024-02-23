@@ -125,19 +125,19 @@ namespace VaporXR
 
         [SerializeField] private ButtonReadType _buttonType;
         
-        [SerializeField, ShowIf("$IsDirectButton")]
+        [SerializeField, ShowIf("$IsBoolListener")]
         private XRInputBoolReader _buttonDirectReader;
         
-        [SerializeField, ShowIf("$IsAxisButton")]
+        [SerializeField, ShowIf("$IsFloatListener")]
         private XRInputFloatReader _buttonAxis1DReader;
         
-        [SerializeField, ShowIf("$IsSectorButton")] 
+        [SerializeField, ShowIf("$IsVector2Listener")] 
         private XRInputVector2Reader _buttonAxis2DReader;
-        [SerializeField, ShowIf("$IsSectorButton")]
+        [SerializeField, ShowIf("$IsVector2Listener")]
         private XRInputBoolReader _buttonAxis2DButton;
-        [SerializeField, ShowIf("$IsSectorButton")]
+        [SerializeField, ShowIf("$IsVector2Listener")]
         private Directions _directionalButton;
-        [SerializeField, ShowIf("$IsSectorButton")] 
+        [SerializeField, ShowIf("$IsVector2Listener")] 
         private bool _includeCompositeDirections;
         
         
@@ -146,11 +146,11 @@ namespace VaporXR
         [SerializeField, Range(0.1f, 1f)]
         private float _threshold = 0.1f;
         
-        [SerializeField, Range(0.1f, 1f), ShowIf("$IsAxisButton")]
+        [SerializeField, Range(0.1f, 1f), ShowIf("$IsFloatListener")]
         private float _releaseThreshold = 0.1f;
-        [SerializeField, HideIf("$IsDirectButton")]
+        [SerializeField, HideIf("$IsBoolListener")]
         private ThresholdBehavior _thresholdBehavior = ThresholdBehavior.AllowReentry;
-        [SerializeField, ShowIf("$IsAxisButton")]
+        [SerializeField, ShowIf("$IsFloatListener")]
         private bool _monitorAxisValues;
 
         public InputInteractionState CurrentState { get; private set; } = new();

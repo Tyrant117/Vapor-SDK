@@ -46,10 +46,10 @@ namespace VaporXR
         private HandPoseDatumProperty _closedPoseDatum;
 
         [FoldoutGroup("Input"), SerializeField, AutoReference] private VXRInputDeviceUpdateProvider _updateProvider;
-        [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbTouchInput;
-        [FoldoutGroup("Input"), SerializeField] private ButtonInputProvider _thumbDownInput;
-        [FoldoutGroup("Input"), SerializeField] private Axis1DInputProvider _indexInput;
-        [FoldoutGroup("Input"), SerializeField] private Axis1DInputProvider _gripInput;
+        [FoldoutGroup("Input"), SerializeField] private XRInputListenerFloat _thumbTouchInput;
+        [FoldoutGroup("Input"), SerializeField] private XRInputListenerFloat _thumbDownInput;
+        [FoldoutGroup("Input"), SerializeField] private XRInputListenerFloat _indexInput;
+        [FoldoutGroup("Input"), SerializeField] private XRInputListenerFloat _gripInput;
 
         [FoldoutGroup("Debug"), SerializeField]
         private bool _attachStateDebugger;
@@ -154,19 +154,19 @@ namespace VaporXR
         protected override void OnEnable()
         {
             base.OnEnable();
-            _thumbTouchInput.BindToUpdateEvent(_updateProvider);
-            _thumbDownInput.BindToUpdateEvent(_updateProvider);
-            _indexInput.BindToUpdateEvent(_updateProvider);
-            _gripInput.BindToUpdateEvent(_updateProvider);
+            _thumbTouchInput.Enable();
+            _thumbDownInput.Enable();
+            _indexInput.Enable();
+            _gripInput.Enable();
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            _thumbTouchInput.UnbindUpdateEvent();
-            _thumbDownInput.UnbindUpdateEvent();
-            _indexInput.UnbindUpdateEvent();
-            _gripInput.UnbindUpdateEvent();
+            _thumbTouchInput.Disable();
+            _thumbDownInput.Disable();
+            _indexInput.Disable();
+            _gripInput.Disable();
         }
 
         private void SetupStateMachine()
@@ -444,22 +444,29 @@ namespace VaporXR
                 switch (finger.Finger)
                 {
                     case HandFinger.Thumb:
-                        if (_thumbDownInput.IsHeld)
+                        if (_thumbDownInput.ReadValue() > 0.5f)
                         {
                             finger.SmoothBend(1);
                         }
-                        else if (_thumbTouchInput.IsHeld)
+                        else if (_thumbTouchInput.ReadValue() > 0.5f)
                         {
                             finger.SmoothBend(0.5f);
                         }
                         else
                         {
-                            finger.Breathe();
+                            if (finger.ShouldBreathe(0.1f))
+                            {
+                                finger.Breathe();
+                            }
+                            else
+                            {
+                                finger.SmoothBend(0.1f);
+                            }
                         }
 
                         break;
                     case HandFinger.Index:
-                        var indexBend = _indexInput.CurrentValue;
+                        var indexBend = _indexInput.ReadValue();
                         var indexBreathe = indexBend <= 0.1f;
                         if (indexBreathe)
                         {
@@ -474,7 +481,7 @@ namespace VaporXR
                     case HandFinger.Middle:
                     case HandFinger.Ring:
                     case HandFinger.Pinky:
-                        var gripBend = _gripInput.CurrentValue;
+                        var gripBend = _gripInput.ReadValue();
                         var gripBreathe = gripBend <= 0.1f;
                         if (gripBreathe)
                         {

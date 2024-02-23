@@ -14,6 +14,7 @@ namespace VaporEvents
     {
         private static Type _eventKeyType;
         private static Type _providerKeyType;
+        private static Dictionary<string, Type> _cachedKeyTypes = new();
         
         /// <summary>
         /// Gets a list of all <see cref="EventKeySo"/> in the project. Will return null if not in the UNITY_EDITOR
@@ -75,6 +76,23 @@ namespace VaporEvents
             }
 
             return (List<(string, KeyDropdownValue)>)_providerKeyType.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+        }
+
+        public static List<(string, KeyDropdownValue)> GetAllKeysOfNamedType(string nameOfType)
+        {
+            if (_cachedKeyTypes.TryGetValue(nameOfType, out var type))
+            {
+                return (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            }
+
+            var assembly = Assembly.Load("VaporKeyDefinitions");
+            type = assembly.GetType($"VaporKeyDefinitions.{nameOfType}");
+            if (type == null)
+            {
+                return new List<(string, KeyDropdownValue)>() { ("None", new KeyDropdownValue()) };
+            }
+            _cachedKeyTypes.Add(nameOfType, type);
+            return (List<(string, KeyDropdownValue)>)type.GetField("DropdownValues", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
         }
     }
 }

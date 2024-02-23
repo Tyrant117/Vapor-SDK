@@ -27,9 +27,12 @@ namespace VaporXR.Interaction
         private bool _allowHover = true;
         [FoldoutGroup("Interaction"), SerializeField]
         private bool _allowSelect = true;
+        //[FoldoutGroup("Interaction"), SerializeField]
+        //[RichTextTooltip("Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.")]
+        //private InteractionLayerMask _interactionLayers = 1;
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.")]
-        private InteractionLayerMask _interactionLayers = 1;
+        private List<InteractionLayerKey> _interactionLayers = new();
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("Specifies how this Interactable calculates its distance to a location, either using its Transform position, Collider position or Collider volume.")]
         private DistanceCalculationModeType _distanceCalculationMode = DistanceCalculationModeType.InteractionPointPosition;
@@ -96,7 +99,15 @@ namespace VaporXR.Interaction
         /// <seealso cref="IsHoverableBy(Interactor)"/>
         /// <seealso cref="IsSelectableBy(Interactor)"/>
         /// <inheritdoc />
-        public InteractionLayerMask InteractionLayers { get => _interactionLayers; set => _interactionLayers = value; }
+        //public InteractionLayerMask InteractionLayers { get => _interactionLayers; set => _interactionLayers = value; }
+
+        /// <summary>
+        /// Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
+        /// </summary>
+        /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
+        /// <seealso cref="IsHoverableBy(Interactor)"/>
+        /// <seealso cref="IsSelectableBy(Interactor)"/>
+        public int[] InteractionLayers { get; set; }
 
         // ***** Hovering *****
         public bool CanBeHovered => _allowHover && HoverableActive.Invoke();
@@ -220,6 +231,12 @@ namespace VaporXR.Interaction
                 // Skip any that are trigger colliders since these are usually associated with snap volumes.
                 // If a user wants to use a trigger collider, they must serialize the reference manually.
                 _colliders.RemoveAll(col => col.isTrigger);
+            }
+
+            InteractionLayers = new int[_interactionLayers.Count];
+            for (int i = 0; i < _interactionLayers.Count; i++)
+            {
+                InteractionLayers[i] = _interactionLayers[i].Layer;
             }
 
             Modules.AddRange(GetComponents<InteractableModule>());

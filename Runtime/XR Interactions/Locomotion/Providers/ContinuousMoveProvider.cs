@@ -33,10 +33,10 @@ namespace VaporXR.Locomotion
         private VXRInputDeviceUpdateProvider _inputDeviceUpdateProvider;
         [SerializeField, FoldoutGroup("Input")]
         [RichTextTooltip("Reads input data from the left hand controller. Input Action must be a Value action type (Vector 2).")]
-        private Axis2DInputProvider _leftHandMoveInput;
+        private XRInputListenerVector2 _leftHandMoveInput;
         [SerializeField, FoldoutGroup("Input")]
         [RichTextTooltip("Reads input data from the right hand controller. Input Action must be a Value action type (Vector 2).")]
-        private Axis2DInputProvider _rightHandMoveInput;
+        private XRInputListenerVector2 _rightHandMoveInput;
         #endregion
 
         #region Properties
@@ -74,12 +74,12 @@ namespace VaporXR.Locomotion
         /// <summary>
         /// Reads input data from the left hand controller. Input Action must be a Value action type (Vector 2).
         /// </summary>
-        public Axis2DInputProvider LeftHandMoveInput { get => _leftHandMoveInput; set => _leftHandMoveInput = value; }
+        public XRInputListenerVector2 LeftHandMoveInput { get => _leftHandMoveInput; set => _leftHandMoveInput = value; }
 
         /// <summary>
         /// Reads input data from the right hand controller. Input Action must be a Value action type (Vector 2).
         /// </summary>
-        public Axis2DInputProvider RightHandMoveInput { get => _rightHandMoveInput; set => _rightHandMoveInput = value; }
+        public XRInputListenerVector2 RightHandMoveInput { get => _rightHandMoveInput; set => _rightHandMoveInput = value; }
         #endregion
 
         #region Fields
@@ -94,14 +94,14 @@ namespace VaporXR.Locomotion
 
         protected void OnEnable()
         {
-            _leftHandMoveInput.BindToUpdateEvent(_inputDeviceUpdateProvider);
-            _rightHandMoveInput.BindToUpdateEvent(_inputDeviceUpdateProvider);
+            _leftHandMoveInput.Enable();
+            _rightHandMoveInput.Enable();
         }
 
         protected void OnDisable()
         {
-            _leftHandMoveInput.UnbindUpdateEvent();
-            _rightHandMoveInput.UnbindUpdateEvent();
+            _leftHandMoveInput.Disable();
+            _rightHandMoveInput.Disable();
         }
 
         protected void Update()
@@ -125,8 +125,8 @@ namespace VaporXR.Locomotion
 
         private Vector2 ReadInput()
         {
-            var leftHandValue = _leftHandMoveInput.CurrentValue;
-            var rightHandValue = _rightHandMoveInput.CurrentValue;
+            var leftHandValue = _leftHandMoveInput.ReadValue();
+            var rightHandValue = _rightHandMoveInput.ReadValue();
 
             return leftHandValue + rightHandValue;
         }

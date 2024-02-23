@@ -585,7 +585,7 @@ namespace VaporXR
         /// <seealso cref="CanHover"/>
         public bool IsHoverPossible(Interactor interactor, Interactable interactable)
         {
-            return HasInteractionLayerOverlap(interactor, interactable) && ProcessHoverFilters(interactor, interactable) &&
+            return /*HasInteractionLayerOverlap(interactor, interactable) && */ProcessHoverFilters(interactor, interactable) &&
                 interactor.CanHover(interactable) && interactable.IsHoverableBy(interactor);
         }
 
@@ -615,7 +615,7 @@ namespace VaporXR
         /// <seealso cref="CanSelect"/>
         public bool IsSelectPossible(Interactor interactor, Interactable interactable)
         {
-            return HasInteractionLayerOverlap(interactor, interactable) && ProcessSelectFilters(interactor, interactable) &&
+            return /*HasInteractionLayerOverlap(interactor, interactable) && */ProcessSelectFilters(interactor, interactable) &&
                 interactor.CanSelect(interactable) && interactable.IsSelectableBy(interactor);
         }
 
@@ -641,7 +641,7 @@ namespace VaporXR
         /// <seealso cref="CanSelect"/>
         public bool IsFocusPossible(Interactor interactor, Interactable interactable)
         {
-            return interactable.CanBeFocused && HasInteractionLayerOverlap(interactor, interactable);
+            return interactable.CanBeFocused /*&& HasInteractionLayerOverlap(interactor, interactable)*/;
         }
 
         /// <summary>
@@ -1989,10 +1989,19 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="Interactor.InteractionLayers"/>
         /// <seealso cref="Interactable.InteractionLayers"/>
-        protected static bool HasInteractionLayerOverlap(Interactor interactor, Interactable interactable)
-        {
-            return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
-        }
+        //protected static bool HasInteractionLayerOverlap(Interactor interactor, Interactable interactable)
+        //{
+        //    foreach (var layer in interactable.NewInteractionLayers)
+        //    {
+        //        if (interactor.NewInteractionLayers.Contains(layer))
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+
+        //    return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
+        //}
 
         /// <summary>
         /// Returns the processing value of the filters in <see cref="hoverFilters"/> for the given Interactor and

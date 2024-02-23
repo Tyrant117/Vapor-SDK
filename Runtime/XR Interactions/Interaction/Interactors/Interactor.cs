@@ -26,8 +26,10 @@ namespace VaporXR.Interaction
         private bool _allowHover;
         [FoldoutGroup("Interaction"), SerializeField]
         private bool _allowSelect;
+        //[FoldoutGroup("Interaction"), SerializeField]
+        //private InteractionLayerMask _interactionLayers = -1;
         [FoldoutGroup("Interaction"), SerializeField]
-        private InteractionLayerMask _interactionLayers = -1;
+        private List<InteractionLayerKey> _interactionLayers = new(); 
         [FoldoutGroup("Interaction"), SerializeField]
         private InteractorHandedness _handedness;
         [FoldoutGroup("Interaction"), SerializeField]
@@ -88,11 +90,17 @@ namespace VaporXR.Interaction
 
         public VXRSorter OverrideSorter => _overrideSorter;
 
+        ///// <summary>
+        ///// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
+        ///// </summary>
+        ///// <seealso cref="Interactable.InteractionLayers"/>
+        //public InteractionLayerMask InteractionLayers => _interactionLayers;
+
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
         /// <seealso cref="Interactable.InteractionLayers"/>
-        public InteractionLayerMask InteractionLayers => _interactionLayers;
+        public HashSet<int> InteractionLayers { get; } = new();
 
         /// <summary>
         /// (Read Only) Represents which hand or controller the interactor is associated with.
@@ -314,6 +322,11 @@ namespace VaporXR.Interaction
 
             // Setup Interaction Manager
             FindCreateInteractionManager();
+
+            foreach (var layer in _interactionLayers)
+            {
+                InteractionLayers.Add(layer.Layer);
+            }
 
             Modules.AddRange(GetComponents<InteractorModule>());
             foreach (var module in Modules)

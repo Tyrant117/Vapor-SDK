@@ -12,9 +12,9 @@ namespace VaporXR.Interaction
         private VXRInputDeviceUpdateProvider _updateProvider;
 
         [VerticalGroup("Input"), SerializeField]
-        private ButtonInputProvider _teleportDrawInput;
+        private XRInputButton _teleportDrawInput;
         [VerticalGroup("Input"), SerializeField]
-        private ButtonInputProvider _teleportActivateInput;
+        private XRInputButton _teleportActivateInput;
 
         public override bool ShouldDrawLine
         {
@@ -33,23 +33,27 @@ namespace VaporXR.Interaction
 
         protected void OnEnable()
         {
-            _teleportDrawInput.BindToUpdateEvent(_updateProvider);
-            _teleportActivateInput.BindToUpdateEvent(_updateProvider);
+            _teleportDrawInput.BindInput().Enable();
+            _teleportActivateInput.BindInput().Enable();
+            //_teleportDrawInput.BindToUpdateEvent(_updateProvider);
+            //_teleportActivateInput.BindToUpdateEvent(_updateProvider);
 
             Interactor.SelectActive = OnSelectActiveCheck;
         }
 
         protected void OnDisable()
         {
-            _teleportDrawInput.UnbindUpdateEvent();
-            _teleportActivateInput.UnbindUpdateEvent();
+            _teleportDrawInput.Disable();
+            _teleportActivateInput.Disable();
+            //_teleportDrawInput.UnbindUpdateEvent();
+            //_teleportActivateInput.UnbindUpdateEvent();
 
             Interactor.SelectActive = null;
         }
 
         private XRIneractionActiveState OnSelectActiveCheck()
         {
-            return new XRIneractionActiveState(_teleportActivateInput.IsHeld, _teleportActivateInput.CurrentState.ActivatedThisFrame, _teleportActivateInput.CurrentValue);
+            return new XRIneractionActiveState(_teleportActivateInput.IsHeld, _teleportActivateInput.State.ActivatedThisFrame, _teleportActivateInput.CurrentValue);
         }
     }
 }
