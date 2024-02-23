@@ -24,7 +24,7 @@ namespace VaporXR.Interaction
         #region - Initialization -
         protected void OnEnable()
         {
-            _grabInput.BindInput().Enable();
+            _grabInput.Enable();
             //_grabInput.BindToUpdateEvent(_updateProvider);
             Interactor.SelectActive = OnSelectActiveCheck;
         }

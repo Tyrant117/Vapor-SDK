@@ -32,7 +32,7 @@ namespace VaporXR
 
         public bool ReadValue()
         {
-            return _enabled ? _boolListener.ReadValue() : false;
+            return _enabled && _boolListener.ReadValue();
         }
     }
 

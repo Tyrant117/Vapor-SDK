@@ -33,8 +33,8 @@ namespace VaporXR.Interaction
 
         protected void OnEnable()
         {
-            _teleportDrawInput.BindInput().Enable();
-            _teleportActivateInput.BindInput().Enable();
+            _teleportDrawInput.Enable();
+            _teleportActivateInput.Enable();
             //_teleportDrawInput.BindToUpdateEvent(_updateProvider);
             //_teleportActivateInput.BindToUpdateEvent(_updateProvider);
 

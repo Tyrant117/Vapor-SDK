@@ -23,13 +23,13 @@ namespace VaporXR
         [SerializeField] 
         private ButtonReadType _buttonType;
 
-        [SerializeField, ShowIf("$IsBoolListener")]
+        [SerializeField, ShowIf("$IsDirectButton")]
         private XRInputActionButtonSo _button;
 
-        [SerializeField, ShowIf("$IsFloatListener")]
+        [SerializeField, ShowIf("$IsAxisButton")]
         private XRInputActionAxisButtonSo _axisButton;
 
-        [SerializeField, ShowIf("$IsVector2Listener")]
+        [SerializeField, ShowIf("$IsSectorButton")]
         private XRInputActionSectorButtonSo _sectorButton;
 
 
@@ -42,7 +42,7 @@ namespace VaporXR
         public Action Pressed;
         public Action Released;
 
-        public XRInputActionSo BindInput()
+        protected void BindInput()
         {
             switch (_buttonType)
             {
@@ -61,17 +61,23 @@ namespace VaporXR
             }
             _activeButton.Pressed += OnPressed;
             _activeButton.Released += OnReleased;
-
-            return _activeButton;
         }
 
         public void Enable()
         {
+            if (!_activeButton)
+            {
+                BindInput();
+            }
             _activeButton.Enable();
         }
 
         public void Disable()
         {
+            if (!_activeButton)
+            {
+                BindInput();
+            }
             _activeButton.Disable();
         }
 

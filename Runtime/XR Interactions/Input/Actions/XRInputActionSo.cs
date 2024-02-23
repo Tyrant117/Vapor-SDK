@@ -11,32 +11,31 @@ namespace VaporXR
     public class XRInputActionSo : ScriptableObject
     {
         [TitleGroup("Reference"), SerializeField, OnValueChanged("ReferenceUpdated")]
-        private InputActionReference _actionReference;
+        private InputActionReference _actionReference = null;
         [TitleGroup("Reference"), SerializeField]
-        private string _actionReferenceId;
+        private string _actionReferenceName = "";
         [TitleGroup("Reference"), Button]
 #pragma warning disable IDE0051 // Remove unused private members
         private void Validate()
         {
             if (_actionReference)
             {
-                if (!_actionReferenceId.Equals(_actionReference.action.id))
+                if (_actionReferenceName != _actionReference.name)
                 {
-                    _actionReferenceId = _actionReference.action.id.ToString();
+                    _actionReferenceName = _actionReference.name;
                 }
             }
             else
             {
 #if UNITY_EDITOR
-                if (string.IsNullOrEmpty(_actionReferenceId))
+                if (string.IsNullOrEmpty(_actionReferenceName))
                 {
                     return;
                 }
                 var assets = UnityEditor.AssetDatabase.LoadAllAssetRepresentationsAtPath("Assets/Vapor/XR/Readers/VXR Default Input Actions.inputactions");
-                var guid = new Guid(_actionReferenceId);
                 foreach (var sub in assets)
                 {
-                    if (sub is InputActionReference iar && iar.action.id == guid)
+                    if (sub is InputActionReference iar && iar.name == _actionReferenceName)
                     {
                         _actionReference = iar;
                         break;
@@ -50,7 +49,7 @@ namespace VaporXR
         {
             if (_actionReference)
             {
-                _actionReferenceId = _actionReference.action.id.ToString();
+                _actionReferenceName = _actionReference.name;
             }
         }
 #pragma warning restore IDE0051 // Remove unused private members
@@ -84,8 +83,6 @@ namespace VaporXR
                 _manager = ProviderBus.GetComponent<InputActionManager>("Input Manager");
                 BoundAction = _manager.CreateActionClone(_actionReference.action.id);
                 CurrentState = new();
-                _manager.RegisterForInputUpdate(UpdateInput);
-                _manager.RegisterForPostInputUpdate(PostUpdateInput);
             }
         }        
 
@@ -94,6 +91,9 @@ namespace VaporXR
             if (!TryGetInputActionReference(out var reference)) { return; }
             BindAction();
 
+            _manager.RegisterForInputUpdate(UpdateInput);
+            _manager.RegisterForPostInputUpdate(PostUpdateInput);
+
             _manager.EnableActionOverride(reference.action.id, BoundAction);
         }
 
@@ -101,6 +101,9 @@ namespace VaporXR
         {
             if (!TryGetInputActionReference(out var reference)) { return; }
             BindAction();
+
+            _manager.UnRegisterForInputUpdate(UpdateInput);
+            _manager.UnRegisterForPostInputUpdate(PostUpdateInput);
 
             _manager.DisableActionOverride(reference.action.id);
             BoundAction.Disable();
