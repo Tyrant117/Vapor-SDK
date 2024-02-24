@@ -318,6 +318,8 @@ namespace VaporXR
         #region - Posing -
         public void RequestHandPose(HandPoseType poseType, IPoseSource source, HandPose pose, Transform relativeTo = null, float duration = 0)
         {
+            if (!enabled) { return; }
+
             _pendingSource = source;
             _pendingPose = pose;
             _pendingPoseTransform = relativeTo;
@@ -329,6 +331,8 @@ namespace VaporXR
 
         public void RequestReturnToIdle(IPoseSource source, float duration = 0)
         {
+            if (!enabled) { return; }
+
             _pendingSource = source;
             _pendingPose = null;
             _pendingPoseTransform = null;
@@ -347,27 +351,6 @@ namespace VaporXR
         {
             return _pendingSource == _currentSource;
         }
-
-        //public void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
-        //{
-        //    _idlePosing = false;
-        //    if (duration > 0)
-        //    {
-        //        if(_handPoseRoutine != null)
-        //        {
-        //            PosingComplete = null;
-        //            _returningToIdle = false;
-        //            StopCoroutine(_handPoseRoutine);
-        //        }
-
-        //        _handPoseRoutine = StartCoroutine(PoseHandOverTime(_currentPose, pose, relativeTo, duration));
-        //    }
-        //    else
-        //    {
-        //        this.SetPose(pose, relativeTo);
-        //        _currentPose = pose;
-        //    }
-        //}
 
         private IEnumerator PoseHandOverTime(HandPose from, HandPose to, Transform relativeTo, float duration)
         {
@@ -388,31 +371,6 @@ namespace VaporXR
             _isPosing = false;
             PosingComplete?.Invoke(this);
         }
-
-        //public void FallbackToIdle(float duration = 0)
-        //{
-        //    if (duration > 0)
-        //    {
-        //        if (!_returningToIdle)
-        //        {
-        //            _returningToIdle = true;
-        //            PosingComplete += OnIdlePosingComplete;
-        //            SetHandPose(_idlePoseDatum.Value, duration: duration);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        SetHandPose(_idlePoseDatum.Value);
-        //        _idlePosing = true;
-        //    }
-        //}
-
-        //private void OnIdlePosingComplete(VXRHand hand)
-        //{
-        //    PosingComplete -= OnIdlePosingComplete;
-        //    _idlePosing = true;
-        //    _returningToIdle = false;
-        //}
 
         private void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
         {
