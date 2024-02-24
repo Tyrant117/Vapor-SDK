@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
@@ -26,6 +27,8 @@ namespace VaporStateMachine
         public int ActiveStateID => ActiveState.ID;
         public string ActiveStateName => ActiveState.Name;
         public bool IsRoot => StateMachine == null;
+
+        public bool IsEnabled { get; protected set; }
 
         protected (int state, bool hasState) _startState = (EmptyState, false);
         protected (int state, bool isPending) _pendingState = (EmptyState, false);
@@ -96,9 +99,15 @@ namespace VaporStateMachine
 		/// </summary>
 		public override void Init()
         {
+            IsEnabled = true;
             if (!IsRoot) return;
 
             OnEnter();
+        }
+
+        public void Disable()
+        {
+            IsEnabled = false;
         }
         #endregion
 
@@ -280,6 +289,8 @@ namespace VaporStateMachine
 		/// therefore forcing an immediate state change</param>
 		public void RequestStateChange(Transition transition, bool force = false)
         {
+            if (!IsEnabled) { return; }
+
             if (force)
             {
                 ChangeState(transition.To, transition);
@@ -724,7 +735,7 @@ namespace VaporStateMachine
                     fsm.AttachSubLayerLogger(_layerLog);
                 }
             }
-        }
+        }        
         #endregion
     }
 }

@@ -14,14 +14,23 @@ namespace VaporXR.Interaction
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("If <lw>true</lw> this interactor can grab objects at a distance and pull them to it.")]
         private bool _distantGrabActive = true;
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("The minimum distance an interactable must be from this interactor to make it a distant grab")]
+        private float _minimumDistanceForDistantGrab = 0.1f;
 
         [VerticalGroup("Input"), SerializeField]
         private XRInputButton _grabInput;
 
-        public bool DistantGrabActive => _distantGrabActive;
+        private float _minDistanceSqr;
 
 
         #region - Initialization -
+        protected override void Awake()
+        {
+            base.Awake();
+            _minDistanceSqr = _minimumDistanceForDistantGrab * _minimumDistanceForDistantGrab;
+        }
+
         protected void OnEnable()
         {
             _grabInput.Enable();
@@ -53,6 +62,16 @@ namespace VaporXR.Interaction
         public override bool CanSelect(Interactable interactable)
         {
             return base.CanSelect(interactable) && (!Interactor.HasSelection || Interactor.IsSelecting(interactable));
+        }
+        #endregion
+
+        #region - Helpers -
+        public bool IsDistantGrab(Interactable interactable)
+        {
+            return _distantGrabActive && (VXRSorter.Type)interactable.LastSorterType == VXRSorter.Type.Raycast;
+            //var distance = interactable.GetDistanceSqrToInteractor(Interactor);
+
+            //return _distantGrabActive && distance >= _minDistanceSqr;
         }
         #endregion
     }

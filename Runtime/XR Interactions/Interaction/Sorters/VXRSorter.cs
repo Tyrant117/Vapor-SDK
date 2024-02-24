@@ -9,6 +9,15 @@ namespace VaporXR
 {
     public abstract class VXRSorter : MonoBehaviour, IAttachPoint
     {
+        public enum Type : int
+        {
+            Overlap = 0,
+            Raycast,
+            Curve,
+            Poke,
+            Manual
+        }
+
         #region Inspectors              
         [FoldoutGroup("Components"), SerializeField]
         protected Transform _attachPoint;
@@ -206,7 +215,9 @@ namespace VaporXR
         /// <summary>
         /// Clears current valid targets and stayed colliders.
         /// </summary>
-        protected abstract void ResetCollidersAndValidTargets();                
+        protected abstract void ResetCollidersAndValidTargets();
+
+        public abstract int GetSorterType();
         #endregion
     }
 }

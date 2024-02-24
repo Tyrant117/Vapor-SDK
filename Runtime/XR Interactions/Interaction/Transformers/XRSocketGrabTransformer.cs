@@ -215,7 +215,7 @@ namespace VaporXR
 
             var interactorAttachTransform = attachPoint.GetAttachTransform(interactable);
             var interactableTransform = grabInteractable.transform;
-            var interactableAttachTransform = grabInteractable.GetAttachTransform(attachPoint);
+            var interactableAttachTransform = interactable.GetAttachTransform(attachPoint);
 
             // Calculate offset of the grab interactable's position relative to its attach transform
             var attachOffset = interactableTransform.position - interactableAttachTransform.position;

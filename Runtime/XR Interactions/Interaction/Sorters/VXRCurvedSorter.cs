@@ -216,6 +216,7 @@ namespace VaporXR
             {
                 if (HasInteractionLayerOverlap(interactor, validCollisionTarget))
                 {
+                    validCollisionTarget.LastSorterType = GetSorterType();
                     targets.Add(validCollisionTarget);
                 }
             }
@@ -764,5 +765,10 @@ namespace VaporXR
             }
         }
         #endregion
+
+        public override int GetSorterType()
+        {
+            return (int)Type.Curve;
+        }
     }
 }

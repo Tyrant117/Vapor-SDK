@@ -53,6 +53,7 @@ namespace VaporXR
             {
                 if (HasInteractionLayerOverlap(interactor, validCollisionTarget))
                 {
+                    validCollisionTarget.LastSorterType = GetSorterType();
                     targets.Add(validCollisionTarget);
                 }
             }
@@ -87,7 +88,12 @@ namespace VaporXR
             _contactsSortedThisFrame = false;
             _stayedColliders.Clear();
             _contactMonitor.UpdateStayedColliders(_stayedColliders);
-        }                    
+        }
         #endregion
+
+        public override int GetSorterType()
+        {
+            return (int)Type.Manual;
+        }
     }
 }

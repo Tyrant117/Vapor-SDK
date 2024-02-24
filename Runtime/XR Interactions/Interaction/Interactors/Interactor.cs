@@ -19,7 +19,11 @@ namespace VaporXR.Interaction
         private static readonly ProfilerMarker s_ProcessInteractionStrengthMarker = new("VXR.ProcessInteractionStrength.Interactors");
         private const float InteractionStrengthSelect = 1f;
 
-        [FoldoutGroup("Components"), SerializeField]
+        [FoldoutGroup("Sorting"), SerializeField]
+        [RichTextTooltip("If <lw>true</lw>, valid targeting sorting will only include the first sorter in the list that returns a result." +
+            "\n\n Remarks\n This is useful for creating a priority for grab interactors that can interact with both overlapping interactables and raycasting interactables")]
+        private bool _usePrioritySorting = true;
+        [FoldoutGroup("Sorting"), SerializeField]
         private List<VXRSorter> _sorters;
 
         [FoldoutGroup("Interaction"), SerializeField]
@@ -595,6 +599,10 @@ namespace VaporXR.Interaction
                 foreach (var sorter in _sorters)
                 {
                     sorter.GetValidTargets(this, targets, TargetFilter);
+                    if (_usePrioritySorting && targets.Count > 0)
+                    {
+                        break;
+                    }
                 }
             }
         }

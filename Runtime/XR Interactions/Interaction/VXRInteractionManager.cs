@@ -373,32 +373,17 @@ namespace VaporXR
                 using (s_GetValidTargetsMarker.Auto())
                     GetValidTargets(interactor, m_ValidTargets);
 
-                var selectInteractor = interactor as Interactor;
-                var hoverInteractor = interactor as Interactor;
+                using (s_EvaluateInvalidSelectionsMarker.Auto())
+                    ClearInteractorSelection(interactor, m_ValidTargets);
 
-                if (selectInteractor != null)
-                {
-                    using (s_EvaluateInvalidSelectionsMarker.Auto())
-                        ClearInteractorSelection(selectInteractor, m_ValidTargets);
-                }
+                using (s_EvaluateInvalidHoversMarker.Auto())
+                    ClearInteractorHover(interactor, m_ValidTargets);
 
-                if (hoverInteractor != null)
-                {
-                    using (s_EvaluateInvalidHoversMarker.Auto())
-                        ClearInteractorHover(hoverInteractor, m_ValidTargets);
-                }
+                using (s_EvaluateValidSelectionsMarker.Auto())
+                    InteractorSelectValidTargets(interactor, m_ValidTargets);
 
-                if (selectInteractor != null)
-                {
-                    using (s_EvaluateValidSelectionsMarker.Auto())
-                        InteractorSelectValidTargets(selectInteractor, m_ValidTargets);
-                }
-
-                if (hoverInteractor != null)
-                {
-                    using (s_EvaluateValidHoversMarker.Auto())
-                        InteractorHoverValidTargets(hoverInteractor, m_ValidTargets);
-                }
+                using (s_EvaluateValidHoversMarker.Auto())
+                    InteractorHoverValidTargets(interactor, m_ValidTargets);
             }
 
             using (s_ProcessInteractionStrengthMarker.Auto())

@@ -36,92 +36,169 @@ namespace VaporXR.Interaction
         private static readonly LinkedPool<DropEventArgs> s_DropEventArgs = new(() => new DropEventArgs(), collectionCheck: false);
 
         #region Inspector
+        private bool IsSmoothPosition => _trackPosition && _smoothPosition;
+        private bool IsVelocityTrackingPosition => _trackPosition && m_MovementType == MovementType.VelocityTracking;
+        private bool IsSmoothRotation => _trackRotation && _smoothRotation;
+        private bool IsVelocityTrackingRotation => _trackRotation && m_MovementType == MovementType.VelocityTracking;
+        private bool IsSmoothScale => _trackScale && _smoothScale;
+
         [SerializeField, FoldoutGroup("Components")]
+        [RichTextTooltip("The attachment point Unity uses on this Interactable (will use this object's position if none set).")]
         private Transform m_AttachTransform;
         [SerializeField, FoldoutGroup("Components")]
+        [RichTextTooltip("The secondary attachment point to use on this Interactable for multi-hand interaction (will use the second interactor's attach transform if none set).\n" +
+            "Used for multi-grab interactions.")]
         private Transform m_SecondaryAttachTransform;
 
         [SerializeField, FoldoutGroup("Grabbing")]
-        private bool m_UseDynamicAttach;
-        [SerializeField, FoldoutGroup("Grabbing")]
+        [RichTextTooltip("The grab pose will be based on the pose of the Interactor when the selection is made.\n" +
+            "Unity will create a dynamic attachment point for each Interactor that selects this component.")]
+        private bool _useDynamicAttach;
+        [SerializeField, FoldoutGroup("Grabbing"), ShowIf("%_useDynamicAttach")]
+        [RichTextTooltip("Match the position of the Interactor's attachment point when initializing the grab.\n" +
+            "This will override the position of <mth>AttachTransform</mth>.")]
         private bool m_MatchAttachPosition = true;
-        [SerializeField, FoldoutGroup("Grabbing")]
+        [SerializeField, FoldoutGroup("Grabbing"), ShowIf("%_useDynamicAttach")]
+        [RichTextTooltip("Match the rotation of the Interactor's attachment point when initializing the grab.\n" +
+            "This will override the rotation of <mth>AttachTransform</mth>.")]
         private bool m_MatchAttachRotation = true;
-        [SerializeField, FoldoutGroup("Grabbing")]
+        [SerializeField, FoldoutGroup("Grabbing"), ShowIf("%_useDynamicAttach")]
+        [RichTextTooltip("Adjust the dynamic attachment point to keep it on or inside the Colliders that make up this object.")]
         private bool m_SnapToColliderVolume = true;
-        [SerializeField, FoldoutGroup("Grabbing")]
+        [SerializeField, FoldoutGroup("Grabbing"), ShowIf("%_useDynamicAttach")]
+        [RichTextTooltip("Re-initialize the dynamic attachment pose when changing from multiple grabs back to a single grab.\n" +
+            "Use this if you want to keep the current pose of the object after releasing a second hand rather than reverting back to the attach pose from the original grab.")]
         private bool m_ReinitializeDynamicAttachEverySingleGrab = true;
-        [SerializeField, FoldoutGroup("Grabbing")]
+        [SerializeField, FoldoutGroup("Grabbing"), Suffix("s")]
+        [RichTextTooltip("Time in seconds Unity eases in the attach when selected (a value of 0 indicates no easing).")]
         private float m_AttachEaseInTime = DefaultAttachEaseInTime;
-        [SerializeField, FoldoutGroup("Grabbing")]
-        private MovementType m_MovementType = MovementType.Instantaneous;
-        [SerializeField, Range(0f, 1f), FoldoutGroup("Grabbing")]
-        private float m_VelocityDamping = VelocityDamping;
-        [SerializeField, FoldoutGroup("Grabbing")]
-        private float m_VelocityScale = VelocityScale;
-        [SerializeField, Range(0f, 1f), FoldoutGroup("Grabbing")]
-        private float m_AngularVelocityDamping = AngularVelocityDamping;
-        [SerializeField, FoldoutGroup("Grabbing")]
-        private float m_AngularVelocityScale = AngularVelocityScale;
 
+
+        [SerializeField, FoldoutGroup("Tracking")]
+        [RichTextTooltip("Specifies how this object moves when selected, either through setting the velocity of the <cls>Rigidbody</cls>," +
+            "moving the kinematic <cls>Rigidbody</cls> during Fixed Update, or by directly updating the <cls>Transform</cls> each frame.")]
+        private MovementType m_MovementType = MovementType.Instantaneous;     
         [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Position", "Position")]
-        private bool m_TrackPosition = true;
-        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Position")]
-        private bool m_SmoothPosition;
-        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Position")]
+        [RichTextTooltip("Whether this object should follow the position of the Interactor when selected.")]
+        private bool _trackPosition = true;
+        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Position"), ShowIf("%_trackPosition")]
+        [RichTextTooltip("Whether Unity applies smoothing while following the position of the Interactor when selected.")]
+        private bool _smoothPosition;
+        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Position"), ShowIf("$IsSmoothPosition")]
+        [RichTextTooltip("Scale factor for how much smoothing is applied while following the position of the Interactor when selected.\n" +
+            "The larger the value, the closer this object will remain to the position of the Interactor.")]
         private float m_SmoothPositionAmount = DefaultSmoothingAmount;
-        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Position")]
+        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Position"), ShowIf("$IsSmoothPosition")]
+        [RichTextTooltip("Reduces the maximum follow position difference when using smoothing.")]
         private float m_TightenPosition = DefaultTighteningAmount;
+        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), ShowIf("$IsVelocityTrackingPosition")]
+        [RichTextTooltip("Scale factor of how much to dampen the existing velocity when tracking the position of the Interactor.\n" +
+            "The smaller the value, the longer it takes for the velocity to decay.")]
+        private float m_VelocityDamping = VelocityDamping;
+        [SerializeField, FoldoutGroup("Tracking"), ShowIf("$IsVelocityTrackingPosition")]
+        [RichTextTooltip("Scale factor Unity applies to the tracked velocity while updating the <cls>Rigidbody</cls> when tracking the position of the Interactor.")]
+        private float m_VelocityScale = VelocityScale;
 
         [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation", "Rotation")]
-        private bool m_TrackRotation = true;
-        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation")]
-        private bool m_SmoothRotation;
-        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation")]
+        [RichTextTooltip("Whether this object should follow the rotation of the Interactor when selected.")]
+        private bool _trackRotation = true;
+        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation"), ShowIf("%_trackRotation")]
+        [RichTextTooltip("Apply smoothing while following the rotation of the Interactor when selected.")]
+        private bool _smoothRotation;
+        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation"), ShowIf("$IsSmoothRotation")]
+        [RichTextTooltip("Scale factor for how much smoothing is applied while following the rotation of the Interactor when selected.\n" +
+            "The larger the value, the closer this object will remain to the rotation of the Interactor.")]
         private float m_SmoothRotationAmount = DefaultSmoothingAmount;
-        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation")]
+        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Rotation"), ShowIf("$IsSmoothRotation")]
+        [RichTextTooltip("Reduces the maximum follow rotation difference when using smoothing.")]
         private float m_TightenRotation = DefaultTighteningAmount;
+        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), ShowIf("$IsVelocityTrackingRotation")]
+        [RichTextTooltip("Scale factor of how much Unity dampens the existing angular velocity when tracking the rotation of the Interactor.\n" +
+            "The smaller the value, the longer it takes for the angular velocity to decay.")]
+        private float m_AngularVelocityDamping = AngularVelocityDamping;
+        [SerializeField, FoldoutGroup("Tracking"), ShowIf("$IsVelocityTrackingRotation")]
+        [RichTextTooltip("Scale factor Unity applies to the tracked angular velocity while updating the <cls>Rigidbody</cls> when tracking the rotation of the Interactor.")]
+        private float m_AngularVelocityScale = AngularVelocityScale;
 
         [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale", "Scale")]
-        private bool m_TrackScale = true;
-        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale")]
-        private bool m_SmoothScale;
-        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale")]
-        private float m_SmoothScaleAmount = DefaultSmoothingAmount;
-        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale")]
-        private float m_TightenScale = DefaultTighteningAmount;
+        [RichTextTooltip("Whether or not the interactor will affect the scale of the object when selected.")]
+        private bool _trackScale = true;
+        [SerializeField, FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale"), ShowIf("%_trackScale")]
+        [RichTextTooltip("Whether Unity applies smoothing while following the scale of the Interactor when selected.")]
+        private bool _smoothScale;
+        [SerializeField, Range(0f, 20f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale"), ShowIf("$IsSmoothScale")]
+        [RichTextTooltip("Scale factor for how much smoothing is applied while following the scale of the Interactor when selected.\n" +
+            "The larger the value, the closer this object will remain to the scale of the Interactor.")]
+        private float _smoothScaleAmount = DefaultSmoothingAmount;
+        [SerializeField, Range(0f, 1f), FoldoutGroup("Tracking"), BoxGroup("Tracking/Scale"), ShowIf("$IsSmoothScale")]
+        [RichTextTooltip("Reduces the maximum follow scale difference when using smoothing.")]
+        private float _tightenScale = DefaultTighteningAmount;
 
-        [SerializeField, FoldoutGroup("Throwing")]
-        private bool m_ThrowOnDetach = true;
-        [SerializeField, FoldoutGroup("Throwing")]
-        private float m_ThrowSmoothingDuration = DefaultThrowSmoothingDuration;
-        [SerializeField, FoldoutGroup("Throwing")]
-        private AnimationCurve m_ThrowSmoothingCurve = AnimationCurve.Linear(1f, 1f, 1f, 0f);
-        [SerializeField, FoldoutGroup("Throwing")]
-        private float m_ThrowVelocityScale = DefaultThrowVelocityScale;
-        [SerializeField, FoldoutGroup("Throwing")]
-        private float m_ThrowAngularVelocityScale = DefaultThrowAngularVelocityScale;
-        [SerializeField, FoldoutGroup("Throwing")]
+        [SerializeField, FoldoutGroup("Dropping")]
+        [RichTextTooltip("Whether to set the parent of this object back to its original parent this object was a child of after this object is dropped.")]
+        private bool _returnToOrginalTransformParent = true;
+        [SerializeField, FoldoutGroup("Dropping")]
+        [RichTextTooltip("Forces this object to have gravity when released (will still use pre-grab value if this is <lw>false</lw>).")]
         private bool m_ForceGravityOnDetach;
-        [SerializeField, FoldoutGroup("Throwing")]
-        private bool m_RetainTransformParent = true;
+        [SerializeField, FoldoutGroup("Dropping")]
+        [RichTextTooltip("Whether this object inherits the velocity of the Interactor when released.")]
+        private bool _throwOnDetach = true;
+        [SerializeField, FoldoutGroup("Dropping"), Suffix("s"), ShowIf("%_throwOnDetach")]
+        [RichTextTooltip("This value represents the time over which collected samples are used for velocity calculation " +
+            "(up to a max of 20 previous frames, which is dependent on both Smoothing Duration and framerate).")]
+        private float m_ThrowSmoothingDuration = DefaultThrowSmoothingDuration;
+        [SerializeField, FoldoutGroup("Dropping"), ShowIf("%_throwOnDetach")]
+        [RichTextTooltip("The curve used to weight velocity smoothing upon throwing (most recent frames to the right).")]
+        private AnimationCurve m_ThrowSmoothingCurve = AnimationCurve.Linear(1f, 1f, 1f, 0f);
+        [SerializeField, FoldoutGroup("Dropping"), ShowIf("%_throwOnDetach")]
+        [RichTextTooltip("Scale factor applied to this object's velocity inherited from the Interactor when released.")]
+        private float m_ThrowVelocityScale = DefaultThrowVelocityScale;
+        [SerializeField, FoldoutGroup("Dropping"), ShowIf("%_throwOnDetach")]
+        [RichTextTooltip("Scale factor applied to this object's angular velocity inherited from the Interactor when released.")]
+        private float m_ThrowAngularVelocityScale = DefaultThrowAngularVelocityScale;
+           
 
         [SerializeField, FoldoutGroup("Transformers")]
-        private List<XRBaseGrabTransformer> m_StartingSingleGrabTransformers = new List<XRBaseGrabTransformer>();
+        [RichTextTooltip("These are used when there is a single interactor selecting this object.")]
+        private List<XRBaseGrabTransformer> m_StartingSingleGrabTransformers = new();
         [SerializeField, FoldoutGroup("Transformers")]
-        private List<XRBaseGrabTransformer> m_StartingMultipleGrabTransformers = new List<XRBaseGrabTransformer>();
+        [RichTextTooltip("These are used when there are multiple interactors selecting this object.")]
+        private List<XRBaseGrabTransformer> m_StartingMultipleGrabTransformers = new();
         [SerializeField, FoldoutGroup("Transformers")]
+        [RichTextTooltip("Whether to add the default set of grab transformers if either the Single or Multiple Grab Transformers lists are empty.")]
         private bool m_AddDefaultGrabTransformers = true;
         #endregion
 
         #region Properties
-        public bool TrackRotation => m_TrackRotation;
+        /// <summary>
+        /// Whether this object should follow the position of the Interactor when selected.
+        /// </summary>
+        public bool TrackPosition => _trackRotation;
 
-        public bool TrackPosition => m_TrackRotation;
+        /// <summary>
+        /// Whether this object should follow the rotation of the Interactor when selected.
+        /// </summary>
+        public bool TrackRotation => _trackRotation;
 
-        public bool TrackScale => m_TrackScale;
+        /// <summary>
+        /// Whether or not the interactor will affect the scale of the object when selected.
+        /// </summary>
+        public bool TrackScale => _trackScale;
 
-        public bool UseDynamicAttach { get => m_UseDynamicAttach; set => m_UseDynamicAttach = value; }
+        /// <summary>
+        /// The grab pose will be based on the pose of the Interactor when the selection is made.
+        /// Unity will create a dynamic attachment point for each Interactor that selects this component.
+        /// </summary>
+        /// <remarks>
+        /// A child GameObject will be created for each Interactor that selects this component to serve as the attachment point.
+        /// These are cached and part of a shared pool used by all instances of <see cref="XRGrabInteractable"/>.
+        /// Therefore, while a reference can be obtained by calling <see cref="GetAttachTransform"/> while selected,
+        /// you should typically not add any components to that GameObject unless you remove them after being released
+        /// since it won't always be used by the same Interactable.
+        /// </remarks>
+        /// <seealso cref="attachTransform"/>
+        /// <seealso cref="InitializeDynamicAttachPose"/>
+        public bool UseDynamicAttach { get => _useDynamicAttach; set => _useDynamicAttach = value; }
 
         /// <summary>
         /// The grab transformers that this Interactable automatically links at startup (optional, may be empty).
@@ -243,13 +320,17 @@ namespace VaporXR.Interaction
 
             m_CurrentMovementType = m_MovementType;
             if (!TryGetComponent(out m_Rigidbody))
+            {
                 Debug.LogError("XR Grab Interactable does not have a required Rigidbody.", this);
+            }
 
             m_Rigidbody.GetComponentsInChildren(true, m_RigidbodyColliders);
             for (var i = m_RigidbodyColliders.Count - 1; i >= 0; i--)
             {
                 if (m_RigidbodyColliders[i].attachedRigidbody != m_Rigidbody)
+                {
                     m_RigidbodyColliders.RemoveAt(i);
+                }
             }
 
             InitializeTargetPoseAndScale(transform);
@@ -263,7 +344,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_StartingSingleGrabTransformers)
                 {
                     if (transformer != null)
+                    {
                         MoveSingleGrabTransformerTo(transformer, index++);
+                    }
                 }
             }
             else
@@ -271,7 +354,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_StartingSingleGrabTransformers)
                 {
                     if (transformer != null)
+                    {
                         AddSingleGrabTransformer(transformer);
+                    }
                 }
             }
 
@@ -281,7 +366,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_StartingMultipleGrabTransformers)
                 {
                     if (transformer != null)
+                    {
                         MoveMultipleGrabTransformerTo(transformer, index++);
+                    }
                 }
             }
             else
@@ -289,7 +376,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_StartingMultipleGrabTransformers)
                 {
                     if (transformer != null)
+                    {
                         AddMultipleGrabTransformer(transformer);
+                    }
                 }
             }
 
@@ -301,6 +390,8 @@ namespace VaporXR.Interaction
             Interactable.SelectEntering += OnSelectEntering;
             Interactable.SelectExiting += OnSelectExiting;
             Interactable.SelectExited += OnSelectExited;
+
+            Interactable.OverrideAttachTransform += GetAttachTransform;
         }
 
         protected virtual void OnDisable()
@@ -308,6 +399,8 @@ namespace VaporXR.Interaction
             Interactable.SelectEntering -= OnSelectEntering;
             Interactable.SelectExiting -= OnSelectExiting;
             Interactable.SelectExited -= OnSelectExited;
+
+            Interactable.OverrideAttachTransform -= GetAttachTransform;
         }
 
         protected void OnDestroy()
@@ -342,11 +435,17 @@ namespace VaporXR.Interaction
                         {
                             // If we only updated the target scale externally, just update that.
                             if (m_IsTargetLocalScaleDirty && !m_IsTargetPoseDirty && !Interactable.IsSelected)
+                            {
                                 ApplyTargetScale();
+                            }
                             else if (m_CurrentMovementType == MovementType.Kinematic)
+                            {
                                 PerformKinematicUpdate(updatePhase);
+                            }
                             else if (m_CurrentMovementType == MovementType.VelocityTracking)
+                            {
                                 PerformVelocityTrackingUpdate(updatePhase, Time.deltaTime);
+                            }
                         }
                     }
 
@@ -367,9 +466,13 @@ namespace VaporXR.Interaction
                     {
                         // If we only updated the target scale externally, just update that.
                         if (m_IsTargetLocalScaleDirty && !m_IsTargetPoseDirty)
+                        {
                             ApplyTargetScale();
+                        }
                         else
+                        {
                             PerformInstantaneousUpdate(updatePhase);
+                        }
                     }
 
                     if (Interactable.IsSelected || (m_GrabCountChanged && m_DropTransformersCount > 0))
@@ -377,7 +480,9 @@ namespace VaporXR.Interaction
                         UpdateTarget(updatePhase, Time.deltaTime);
 
                         if (m_CurrentMovementType == MovementType.Instantaneous)
+                        {
                             PerformInstantaneousUpdate(updatePhase);
+                        }
                     }
 
                     break;
@@ -387,7 +492,10 @@ namespace VaporXR.Interaction
                     if (m_DetachInLateUpdate)
                     {
                         if (!Interactable.IsSelected)
+                        {
                             Detach();
+                        }
+
                         m_DetachInLateUpdate = false;
                     }
 
@@ -408,15 +516,20 @@ namespace VaporXR.Interaction
 
         private void PerformInstantaneousUpdate(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
-            if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic ||
-                updatePhase == XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender)
+            if (updatePhase is XRInteractionUpdateOrder.UpdatePhase.Dynamic or XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender)
             {
-                if (m_TrackPosition && m_TrackRotation)
+                if (_trackPosition && _trackRotation)
+                {
                     transform.SetPositionAndRotation(m_TargetPose.position, m_TargetPose.rotation);
-                else if (m_TrackPosition)
+                }
+                else if (_trackPosition)
+                {
                     transform.position = m_TargetPose.position;
-                else if (m_TrackRotation)
+                }
+                else if (_trackRotation)
+                {
                     transform.rotation = m_TargetPose.rotation;
+                }
 
                 ApplyTargetScale();
 
@@ -428,11 +541,15 @@ namespace VaporXR.Interaction
         {
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Fixed)
             {
-                if (m_TrackPosition)
+                if (_trackPosition)
+                {
                     m_Rigidbody.MovePosition(m_TargetPose.position);
+                }
 
-                if (m_TrackRotation)
+                if (_trackRotation)
+                {
                     m_Rigidbody.MoveRotation(m_TargetPose.rotation);
+                }
 
                 ApplyTargetScale();
 
@@ -444,12 +561,14 @@ namespace VaporXR.Interaction
         {
             // Skip velocity calculations if Time.deltaTime is too low due to a frame-timing issue on Quest
             if (deltaTime < DeltaTimeThreshold)
+            {
                 return;
+            }
 
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Fixed)
             {
                 // Do velocity tracking
-                if (m_TrackPosition)
+                if (_trackPosition)
                 {
                     // Scale initialized velocity by prediction factor
                     m_Rigidbody.velocity *= (1f - m_VelocityDamping);
@@ -459,14 +578,16 @@ namespace VaporXR.Interaction
                 }
 
                 // Do angular velocity tracking
-                if (m_TrackRotation)
+                if (_trackRotation)
                 {
                     // Scale initialized velocity by prediction factor
                     m_Rigidbody.angularVelocity *= (1f - m_AngularVelocityDamping);
                     var rotationDelta = m_TargetPose.rotation * Quaternion.Inverse(transform.rotation);
                     rotationDelta.ToAngleAxis(out var angleInDegrees, out var rotationAxis);
                     if (angleInDegrees > 180f)
+                    {
                         angleInDegrees -= 360f;
+                    }
 
                     if (Mathf.Abs(angleInDegrees) > Mathf.Epsilon)
                     {
@@ -529,9 +650,9 @@ namespace VaporXR.Interaction
             else
             {
                 StepSmoothingBurst(ref m_TargetPose, ref m_TargetLocalScale, rawTargetPose, rawTargetLocalScale, deltaTime,
-                    m_SmoothPosition, m_SmoothPositionAmount, m_TightenPosition,
-                    m_SmoothRotation, m_SmoothRotationAmount, m_TightenRotation,
-                    m_SmoothScale, m_SmoothScaleAmount, m_TightenScale);
+                    _smoothPosition, m_SmoothPositionAmount, m_TightenPosition,
+                    _smoothRotation, m_SmoothRotationAmount, m_TightenRotation,
+                    _smoothScale, _smoothScaleAmount, _tightenScale);
             }
         }
         #endregion
@@ -590,8 +711,10 @@ namespace VaporXR.Interaction
 
             if (Interactable.InteractorsSelecting.Count == 0)
             {
-                if (m_ThrowOnDetach)
+                if (_throwOnDetach)
+                {
                     m_ThrowAssist = args.InteractorObject.transform.GetComponentInParent<IXRAimAssist>();
+                }
 
                 Drop();
 
@@ -640,10 +763,14 @@ namespace VaporXR.Interaction
             foreach (var rigidbodyCollider in m_CollidersThatAllowedCharacterCollision)
             {
                 if (rigidbodyCollider == null)
+                {
                     continue;
+                }
 
                 if (rigidbodyCollider.bounds.Intersects(characterBounds))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -655,7 +782,9 @@ namespace VaporXR.Interaction
             foreach (var rigidbodyCollider in m_CollidersThatAllowedCharacterCollision)
             {
                 if (rigidbodyCollider != null)
+                {
                     Physics.IgnoreCollision(rigidbodyCollider, characterCollider, false);
+                }
             }
         }
         #endregion
@@ -691,7 +820,7 @@ namespace VaporXR.Interaction
         /// <seealso cref="Grab"/>
         protected virtual void Drop()
         {
-            if (m_RetainTransformParent && m_OriginalSceneParent != null && !m_OriginalSceneParent.gameObject.activeInHierarchy)
+            if (_returnToOrginalTransformParent && m_OriginalSceneParent != null && !m_OriginalSceneParent.gameObject.activeInHierarchy)
             {
 #if UNITY_EDITOR
                 // Suppress the warning when exiting Play mode to avoid confusing the user
@@ -700,11 +829,15 @@ namespace VaporXR.Interaction
                 var exitingPlayMode = false;
 #endif
                 if (!exitingPlayMode)
+                {
                     Debug.LogWarning("Retain Transform Parent is set to true, and has a non-null Original Scene Parent. " +
                                      "However, the old parent is deactivated so we are choosing not to re-parent upon dropping.", this);
+                }
             }
-            else if (m_RetainTransformParent && gameObject.activeInHierarchy)
+            else if (_returnToOrginalTransformParent && gameObject.activeInHierarchy)
+            {
                 transform.SetParent(m_OriginalSceneParent);
+            }
 
             SetupRigidbodyDrop(m_Rigidbody);
 
@@ -723,7 +856,7 @@ namespace VaporXR.Interaction
         /// <seealso cref="Drop"/>
         protected virtual void Detach()
         {
-            if (m_ThrowOnDetach)
+            if (_throwOnDetach)
             {
                 if (m_Rigidbody.isKinematic)
                 {
@@ -780,7 +913,9 @@ namespace VaporXR.Interaction
             rigidbody.angularDrag = m_OldAngularDrag;
 
             if (!Interactable.IsSelected)
+            {
                 m_Rigidbody.useGravity |= m_ForceGravityOnDetach;
+            }
         }
 
         /// <summary>
@@ -893,19 +1028,25 @@ namespace VaporXR.Interaction
         /// <seealso cref="MoveSingleGrabTransformerTo"/>
         public void MoveMultipleGrabTransformerTo(IXRGrabTransformer transformer, int newIndex) => MoveGrabTransformerTo(transformer, newIndex, m_MultipleGrabTransformers);
 
-        void AddGrabTransformer(IXRGrabTransformer transformer, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
+        private void AddGrabTransformer(IXRGrabTransformer transformer, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
         {
             if (transformer == null)
+            {
                 throw new ArgumentNullException(nameof(transformer));
+            }
 
             if (m_IsProcessingGrabTransformers)
+            {
                 Debug.LogWarning($"{transformer} added while {name} is processing grab transformers. It won't be processed until the next process.", this);
+            }
 
             if (grabTransformers.Register(transformer))
+            {
                 OnAddedGrabTransformer(transformer);
+            }
         }
 
-        bool RemoveGrabTransformer(IXRGrabTransformer transformer, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
+        private bool RemoveGrabTransformer(IXRGrabTransformer transformer, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
         {
             if (grabTransformers.Unregister(transformer))
             {
@@ -916,7 +1057,7 @@ namespace VaporXR.Interaction
             return false;
         }
 
-        void ClearGrabTransformers(BaseRegistrationList<IXRGrabTransformer> grabTransformers)
+        private void ClearGrabTransformers(BaseRegistrationList<IXRGrabTransformer> grabTransformers)
         {
             for (var index = grabTransformers.FlushedCount - 1; index >= 0; --index)
             {
@@ -925,10 +1066,12 @@ namespace VaporXR.Interaction
             }
         }
 
-        void MoveGrabTransformerTo(IXRGrabTransformer transformer, int newIndex, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
+        private void MoveGrabTransformerTo(IXRGrabTransformer transformer, int newIndex, BaseRegistrationList<IXRGrabTransformer> grabTransformers)
         {
             if (transformer == null)
+            {
                 throw new ArgumentNullException(nameof(transformer));
+            }
 
             // BaseRegistrationList<T> does not yet support reordering with pending registration changes.
             if (m_IsProcessingGrabTransformers)
@@ -939,13 +1082,17 @@ namespace VaporXR.Interaction
 
             grabTransformers.Flush();
             if (grabTransformers.MoveItemImmediately(transformer, newIndex))
+            {
                 OnAddedGrabTransformer(transformer);
+            }
         }
 
-        static void GetGrabTransformers(BaseRegistrationList<IXRGrabTransformer> grabTransformers, List<IXRGrabTransformer> results)
+        private static void GetGrabTransformers(BaseRegistrationList<IXRGrabTransformer> grabTransformers, List<IXRGrabTransformer> results)
         {
             if (results == null)
+            {
                 throw new ArgumentNullException(nameof(results));
+            }
 
             grabTransformers.GetRegisteredItems(results);
         }
@@ -956,7 +1103,7 @@ namespace VaporXR.Interaction
             m_MultipleGrabTransformers.Flush();
         }
 
-        void InvokeGrabTransformersOnGrab()
+        private void InvokeGrabTransformersOnGrab()
         {
             m_IsProcessingGrabTransformers = true;
 
@@ -965,7 +1112,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_SingleGrabTransformers.RegisteredSnapshot)
                 {
                     if (m_SingleGrabTransformers.IsStillRegistered(transformer))
+                    {
                         transformer.OnGrab(this);
+                    }
                 }
             }
 
@@ -974,14 +1123,16 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_MultipleGrabTransformers.RegisteredSnapshot)
                 {
                     if (m_MultipleGrabTransformers.IsStillRegistered(transformer))
+                    {
                         transformer.OnGrab(this);
+                    }
                 }
             }
 
             m_IsProcessingGrabTransformers = false;
         }
 
-        void InvokeGrabTransformersOnDrop(DropEventArgs args)
+        private void InvokeGrabTransformersOnDrop(DropEventArgs args)
         {
             m_IsProcessingGrabTransformers = true;
 
@@ -990,7 +1141,9 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_SingleGrabTransformers.RegisteredSnapshot)
                 {
                     if (transformer is IXRDropTransformer dropTransformer && m_SingleGrabTransformers.IsStillRegistered(transformer))
+                    {
                         dropTransformer.OnDrop(this, args);
+                    }
                 }
             }
 
@@ -999,14 +1152,16 @@ namespace VaporXR.Interaction
                 foreach (var transformer in m_MultipleGrabTransformers.RegisteredSnapshot)
                 {
                     if (transformer is IXRDropTransformer dropTransformer && m_MultipleGrabTransformers.IsStillRegistered(transformer))
+                    {
                         dropTransformer.OnDrop(this, args);
+                    }
                 }
             }
 
             m_IsProcessingGrabTransformers = false;
         }
 
-        void InvokeGrabTransformersProcess(XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
+        private void InvokeGrabTransformersProcess(XRInteractionUpdateOrder.UpdatePhase updatePhase, ref Pose targetPose, ref Vector3 localScale)
         {
             m_IsProcessingGrabTransformers = true;
 
@@ -1029,7 +1184,9 @@ namespace VaporXR.Interaction
                             foreach (var transformer in m_SingleGrabTransformers.RegisteredSnapshot)
                             {
                                 if (m_SingleGrabTransformers.IsStillRegistered(transformer))
+                                {
                                     transformer.OnGrabCountChanged(this, targetPose, localScale);
+                                }
                             }
                         }
 
@@ -1038,7 +1195,9 @@ namespace VaporXR.Interaction
                             foreach (var transformer in m_MultipleGrabTransformers.RegisteredSnapshot)
                             {
                                 if (m_MultipleGrabTransformers.IsStillRegistered(transformer))
+                                {
                                     transformer.OnGrabCountChanged(this, targetPose, localScale);
+                                }
                             }
                         }
                     }
@@ -1073,7 +1232,9 @@ namespace VaporXR.Interaction
                         foreach (var transformer in m_MultipleGrabTransformers.RegisteredSnapshot)
                         {
                             if (!m_MultipleGrabTransformers.IsStillRegistered(transformer))
+                            {
                                 continue;
+                            }
 
                             if (transformer.CanProcess)
                             {
@@ -1088,10 +1249,14 @@ namespace VaporXR.Interaction
                         foreach (var transformer in m_SingleGrabTransformers.RegisteredSnapshot)
                         {
                             if (!m_SingleGrabTransformers.IsStillRegistered(transformer))
+                            {
                                 continue;
+                            }
 
                             if (transformer.CanProcess)
+                            {
                                 transformer.Process(this, updatePhase, ref targetPose, ref localScale);
+                            }
                         }
                     }
                 }
@@ -1140,32 +1305,40 @@ namespace VaporXR.Interaction
         /// </summary>
         /// <returns>Returns <see langword="true"/> if the source list is not empty and at least
         /// one element passes the test; otherwise, <see langword="false"/>.</returns>
-        bool CanProcessAnySingleGrabTransformer()
+        private bool CanProcessAnySingleGrabTransformer()
         {
             if (m_SingleGrabTransformers.RegisteredSnapshot.Count > 0)
             {
                 foreach (var transformer in m_SingleGrabTransformers.RegisteredSnapshot)
                 {
                     if (!m_SingleGrabTransformers.IsStillRegistered(transformer))
+                    {
                         continue;
+                    }
 
                     if (transformer.CanProcess)
+                    {
                         return true;
+                    }
                 }
             }
 
             return false;
         }
 
-        void OnAddedGrabTransformer(IXRGrabTransformer transformer)
+        private void OnAddedGrabTransformer(IXRGrabTransformer transformer)
         {
             if (transformer is IXRDropTransformer)
+            {
                 ++m_DropTransformersCount;
+            }
 
             transformer.OnLink(this);
 
             if (Interactable.InteractorsSelecting.Count == 0)
+            {
                 return;
+            }
 
             // OnGrab is invoked immediately, but OnGrabCountChanged is only invoked right before Process so
             // it must be added to a list to maintain those that still need to have it invoked. It functions
@@ -1174,7 +1347,9 @@ namespace VaporXR.Interaction
             transformer.OnGrab(this);
 
             if (m_GrabTransformersAddedWhenGrabbed == null)
+            {
                 m_GrabTransformersAddedWhenGrabbed = new List<IXRGrabTransformer>();
+            }
 
             m_GrabTransformersAddedWhenGrabbed.Add(transformer);
         }
@@ -1182,7 +1357,9 @@ namespace VaporXR.Interaction
         void OnRemovedGrabTransformer(IXRGrabTransformer transformer)
         {
             if (transformer is IXRDropTransformer)
+            {
                 --m_DropTransformersCount;
+            }
 
             transformer.OnUnlink(this);
             m_GrabTransformersAddedWhenGrabbed?.Remove(transformer);
@@ -1191,14 +1368,20 @@ namespace VaporXR.Interaction
         void AddDefaultGrabTransformers()
         {
             if (!m_AddDefaultGrabTransformers)
+            {
                 return;
+            }
 
             if (m_SingleGrabTransformers.FlushedCount == 0)
+            {
                 AddDefaultSingleGrabTransformer();
+            }
 
             // Avoid adding the multiple grab transformer component unnecessarily since it may never be needed.
             if (m_MultipleGrabTransformers.FlushedCount == 0 && Interactable.SelectMode == InteractableSelectMode.Multiple && Interactable.InteractorsSelecting.Count > 1)
+            {
                 AddDefaultMultipleGrabTransformer();
+            }
         }
 
         /// <summary>
@@ -1236,7 +1419,7 @@ namespace VaporXR.Interaction
         #endregion
 
         #region - Throwing -
-        void ResetThrowSmoothing()
+        private void ResetThrowSmoothing()
         {
             Array.Clear(m_ThrowSmoothingFrameTimes, 0, m_ThrowSmoothingFrameTimes.Length);
             Array.Clear(m_ThrowSmoothingVelocityFrames, 0, m_ThrowSmoothingVelocityFrames.Length);
@@ -1245,9 +1428,9 @@ namespace VaporXR.Interaction
             m_ThrowSmoothingFirstUpdate = true;
         }
 
-        void EndThrowSmoothing()
+        private void EndThrowSmoothing()
         {
-            if (m_ThrowOnDetach)
+            if (_throwOnDetach)
             {
                 // This can be potentially improved for multi-hand throws by ignoring the frames
                 // after the first interactor releases if the second interactor also releases within
@@ -1260,11 +1443,13 @@ namespace VaporXR.Interaction
             }
         }
 
-        void StepThrowSmoothing(Pose targetPose, float deltaTime)
+        private void StepThrowSmoothing(Pose targetPose, float deltaTime)
         {
             // Skip velocity calculations if Time.deltaTime is too low due to a frame-timing issue on Quest
             if (deltaTime < DeltaTimeThreshold)
+            {
                 return;
+            }
 
             if (m_ThrowSmoothingFirstUpdate)
             {
@@ -1288,7 +1473,7 @@ namespace VaporXR.Interaction
             m_LastThrowReferencePose = targetPose;
         }
 
-        Vector3 GetSmoothedVelocityValue(Vector3[] velocityFrames)
+        private Vector3 GetSmoothedVelocityValue(Vector3[] velocityFrames)
         {
             var calcVelocity = Vector3.zero;
             var totalWeights = 0f;
@@ -1296,40 +1481,42 @@ namespace VaporXR.Interaction
             {
                 var frameIdx = (((m_ThrowSmoothingCurrentFrame - frameCounter - 1) % ThrowSmoothingFrameCount) + ThrowSmoothingFrameCount) % ThrowSmoothingFrameCount;
                 if (m_ThrowSmoothingFrameTimes[frameIdx] == 0f)
+                {
                     break;
+                }
 
                 var timeAlpha = (Time.time - m_ThrowSmoothingFrameTimes[frameIdx]) / m_ThrowSmoothingDuration;
                 var velocityWeight = m_ThrowSmoothingCurve.Evaluate(Mathf.Clamp(1f - timeAlpha, 0f, 1f));
                 calcVelocity += velocityFrames[frameIdx] * velocityWeight;
                 totalWeights += velocityWeight;
                 if (Time.time - m_ThrowSmoothingFrameTimes[frameIdx] > m_ThrowSmoothingDuration)
+                {
                     break;
+                }
             }
 
-            if (totalWeights > 0f)
-                return calcVelocity / totalWeights;
-
-            return Vector3.zero;
+            return totalWeights > 0f ? calcVelocity / totalWeights : Vector3.zero;
         }
         #endregion
 
         #region - Posing -
-        /// <inheritdoc />
-        public Transform GetAttachTransform(IAttachPoint attachPoint)
+        protected virtual Transform GetAttachTransform(IAttachPoint attachPoint)
         {
             bool isFirst = Interactable.InteractorsSelecting.Count <= 1 || ReferenceEquals(attachPoint, Interactable.InteractorsSelecting[0]);
 
             // If first selector, do normal behavior.
             // If second, we ignore dynamic attach setting if there is no secondary attach transform.
-            var shouldUseDynamicAttach = m_UseDynamicAttach || (!isFirst && m_SecondaryAttachTransform == null);
+            var shouldUseDynamicAttach = _useDynamicAttach || (!isFirst && m_SecondaryAttachTransform == null);
 
-            if (shouldUseDynamicAttach && attachPoint is Interactor selectInteractor &&
-                m_DynamicAttachTransforms.TryGetValue(selectInteractor, out var dynamicAttachTransform))
+            if (shouldUseDynamicAttach && attachPoint is Interactor interactor &&
+                m_DynamicAttachTransforms.TryGetValue(interactor, out var dynamicAttachTransform))
             {
                 if (dynamicAttachTransform != null)
+                {
                     return dynamicAttachTransform;
+                }
 
-                m_DynamicAttachTransforms.Remove(selectInteractor);
+                m_DynamicAttachTransforms.Remove(interactor);
                 Debug.LogWarning($"Dynamic Attach Transform created by {this} for {attachPoint} was destroyed after being created." +
                                  " Continuing as if Use Dynamic Attach was disabled for this pair.", this);
             }
@@ -1340,7 +1527,7 @@ namespace VaporXR.Interaction
                 return m_SecondaryAttachTransform;
             }
 
-            return m_AttachTransform != null ? m_AttachTransform : Interactable.GetAttachTransform(attachPoint);
+            return m_AttachTransform != null ? m_AttachTransform : Interactable.transform;
         }
 
         /// <summary>
@@ -1401,7 +1588,10 @@ namespace VaporXR.Interaction
             var matchPosition = ShouldMatchAttachPosition(interactor);
             var matchRotation = ShouldMatchAttachRotation(interactor);
             if (!matchPosition && !matchRotation)
+            {
+                // Do not match position or rotation
                 return;
+            }
 
             // Copy the pose of the interactor's attach transform
             var interactorAttachTransform = interactor.GetAttachTransform(Interactable);
@@ -1416,14 +1606,20 @@ namespace VaporXR.Interaction
             }
 
             if (matchPosition && matchRotation)
+            {
                 dynamicAttachTransform.SetPositionAndRotation(position, rotation);
+            }
             else if (matchPosition)
+            {
                 dynamicAttachTransform.position = position;
+            }
             else
+            {
                 dynamicAttachTransform.rotation = rotation;
+            }
         }
 
-        Transform CreateDynamicAttachTransform(Interaction.IInteractor interactor)
+        private Transform CreateDynamicAttachTransform(Interactor interactor)
         {
             Transform dynamicAttachTransform;
 
@@ -1440,17 +1636,17 @@ namespace VaporXR.Interaction
             return dynamicAttachTransform;
         }
 
-        void InitializeDynamicAttachPoseInternal(Interactor interactor, Transform dynamicAttachTransform)
+        private void InitializeDynamicAttachPoseInternal(Interactor interactor, Transform dynamicAttachTransform)
         {
             // InitializeDynamicAttachPose expects it to be initialized with the static pose first
             InitializeDynamicAttachPoseWithStatic(interactor, dynamicAttachTransform);
             InitializeDynamicAttachPose(interactor, dynamicAttachTransform);
         }
 
-        void InitializeDynamicAttachPoseWithStatic(Interactor interactor, Transform dynamicAttachTransform)
+        private void InitializeDynamicAttachPoseWithStatic(Interactor interactor, Transform dynamicAttachTransform)
         {
             m_DynamicAttachTransforms.Remove(interactor);
-            var staticAttachTransform = GetAttachTransform(interactor);
+            var staticAttachTransform = Interactable.GetAttachTransform(interactor);
             m_DynamicAttachTransforms[interactor] = dynamicAttachTransform;
 
             // Base the initial pose on the Attach Transform.
@@ -1459,13 +1655,11 @@ namespace VaporXR.Interaction
             // floating point offsets.
             if (staticAttachTransform == transform)
             {
-                dynamicAttachTransform.localPosition = Vector3.zero;
-                dynamicAttachTransform.localRotation = Quaternion.identity;
+                dynamicAttachTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
             else if (staticAttachTransform.parent == transform)
             {
-                dynamicAttachTransform.localPosition = staticAttachTransform.localPosition;
-                dynamicAttachTransform.localRotation = staticAttachTransform.localRotation;
+                dynamicAttachTransform.SetLocalPositionAndRotation(staticAttachTransform.localPosition, staticAttachTransform.localRotation);
             }
             else
             {
@@ -1473,7 +1667,7 @@ namespace VaporXR.Interaction
             }
         }
 
-        void ReleaseDynamicAttachTransform(Interactor interactor)
+        private void ReleaseDynamicAttachTransform(Interactor interactor)
         {
             // Skip checking m_UseDynamicAttach since it may have changed after being grabbed,
             // and we should ensure it is released. We instead check Count first as a faster way to avoid hashing
@@ -1481,7 +1675,9 @@ namespace VaporXR.Interaction
             if (m_DynamicAttachTransforms.Count > 0 && m_DynamicAttachTransforms.TryGetValue(interactor, out var dynamicAttachTransform))
             {
                 if (dynamicAttachTransform != null)
+                {
                     s_DynamicAttachTransformPool.Release(dynamicAttachTransform);
+                }
 
                 m_DynamicAttachTransforms.Remove(interactor);
             }
@@ -1498,14 +1694,16 @@ namespace VaporXR.Interaction
         protected virtual bool ShouldMatchAttachPosition(Interactor interactor)
         {
             if (!m_MatchAttachPosition)
+            {
                 return false;
+            }
 
             // We assume the static pose should always be used for sockets.
             // For Ray Interactors that bring the object to hand (Force Grab enabled), we assume that property
             // takes precedence since otherwise this interactable wouldn't move if we copied the interactor's attach position,
             // which would violate the interactor's expected behavior.
             if (interactor.HasModule<SocketInteractorModule>() ||
-                interactor.TryGetModule<GrabInteractorModule>(out var grabInteractor) && grabInteractor.DistantGrabActive)
+                interactor.TryGetModule<GrabInteractorModule>(out var grabInteractor) && grabInteractor.IsDistantGrab(Interactable))
                 return false;
 
             return true;
@@ -1524,22 +1722,22 @@ namespace VaporXR.Interaction
             // We assume the static pose should always be used for sockets.
             // Unlike for position, we allow a Ray Interactor with Force Grab enabled to match the rotation
             // based on the property in this behavior.
-            return m_MatchAttachRotation && !(interactor.HasModule<SocketInteractorModule>());
+            return m_MatchAttachRotation && !interactor.HasModule<SocketInteractorModule>();
         }
         #endregion
 
         #region - Teleporting -
-        void SubscribeTeleportationProvider(Interactor interactor)
+        private void SubscribeTeleportationProvider(Interactor interactor)
         {
             m_TeleportationMonitor.AddInteractor(interactor);
         }
 
-        void UnsubscribeTeleportationProvider(Interactor interactor)
+        private void UnsubscribeTeleportationProvider(Interactor interactor)
         {
             m_TeleportationMonitor.RemoveInteractor(interactor);
         }
 
-        void OnTeleported(Pose offset)
+        private void OnTeleported(Pose offset)
         {
             var translated = offset.position;
             var rotated = offset.rotation;
@@ -1547,7 +1745,9 @@ namespace VaporXR.Interaction
             for (var frameIdx = 0; frameIdx < ThrowSmoothingFrameCount; ++frameIdx)
             {
                 if (m_ThrowSmoothingFrameTimes[frameIdx] == 0f)
+                {
                     break;
+                }
 
                 m_ThrowSmoothingVelocityFrames[frameIdx] = rotated * m_ThrowSmoothingVelocityFrames[frameIdx];
             }
@@ -1587,20 +1787,20 @@ namespace VaporXR.Interaction
             m_IsTargetLocalScaleDirty = Interactable.InteractorsSelecting.Count == 0;
         }
 
-        void InitializeTargetPoseAndScale(Transform thisTransform)
+        private void InitializeTargetPoseAndScale(Transform thisTransform)
         {
             m_TargetPose.position = thisTransform.position;
             m_TargetPose.rotation = thisTransform.rotation;
             m_TargetLocalScale = thisTransform.localScale;
         }
 
-        T GetOrAddComponent<T>() where T : Component
+        private T GetOrAddComponent<T>() where T : Component
         {
             return TryGetComponent<T>(out var component) ? component : gameObject.AddComponent<T>();
         }
 
         [BurstCompile]
-        static void EaseAttachBurst(ref Pose targetPose, ref Vector3 targetLocalScale, in Pose rawTargetPose, in Vector3 rawTargetLocalScale, float deltaTime,
+        private static void EaseAttachBurst(ref Pose targetPose, ref Vector3 targetLocalScale, in Pose rawTargetPose, in Vector3 rawTargetLocalScale, float deltaTime,
             float attachEaseInTime, ref float currentAttachEaseTime)
         {
             var easePercent = currentAttachEaseTime / attachEaseInTime;
@@ -1611,7 +1811,7 @@ namespace VaporXR.Interaction
         }
 
         [BurstCompile]
-        static void StepSmoothingBurst(ref Pose targetPose, ref Vector3 targetLocalScale, in Pose rawTargetPose, in Vector3 rawTargetLocalScale, float deltaTime,
+        private static void StepSmoothingBurst(ref Pose targetPose, ref Vector3 targetLocalScale, in Pose rawTargetPose, in Vector3 rawTargetLocalScale, float deltaTime,
             bool smoothPos, float smoothPosAmount, float tightenPos,
             bool smoothRot, float smoothRotAmount, float tightenRot,
             bool smoothScale, float smoothScaleAmount, float tightenScale)
@@ -1649,8 +1849,10 @@ namespace VaporXR.Interaction
 
         private void ApplyTargetScale()
         {
-            if (m_TrackScale)
+            if (_trackScale)
+            {
                 transform.localScale = m_TargetLocalScale;
+            }
 
             m_IsTargetLocalScaleDirty = false;
         }
@@ -1681,28 +1883,31 @@ namespace VaporXR.Interaction
             m_CurrentMovementType = movementTypeOverride ?? m_MovementType;
         }
 
-        static Transform OnCreatePooledItem()
+        private static Transform OnCreatePooledItem()
         {
             var item = new GameObject().transform;
-            item.localPosition = Vector3.zero;
-            item.localRotation = Quaternion.identity;
+            item.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             item.localScale = Vector3.one;
 
             return item;
         }
 
-        static void OnGetPooledItem(Transform item)
+        private static void OnGetPooledItem(Transform item)
         {
             if (item == null)
+            {
                 return;
+            }
 
             item.hideFlags &= ~HideFlags.HideInHierarchy;
         }
 
-        static void OnReleasePooledItem(Transform item)
+        private static void OnReleasePooledItem(Transform item)
         {
             if (item == null)
+            {
                 return;
+            }
 
             // Don't clear the parent of the GameObject on release since there could be issues
             // with changing it while a parent GameObject is deactivating, which logs an error.
@@ -1716,10 +1921,12 @@ namespace VaporXR.Interaction
             item.hideFlags |= HideFlags.HideInHierarchy;
         }
 
-        static void OnDestroyPooledItem(Transform item)
+        private static void OnDestroyPooledItem(Transform item)
         {
             if (item == null)
+            {
                 return;
+            }
 
             Destroy(item.gameObject);
         }

@@ -166,13 +166,15 @@ namespace VaporXR.Interaction
 
         private readonly BindableVariable<float> _mLargestInteractionStrength = new();
         public IReadOnlyBindableVariable<float> LargestInteractionStrength => _mLargestInteractionStrength;
+
+        public int LastSorterType { get; set; }
         #endregion
 
         #region Fields        
         private VXRInteractionManager _registeredInteractionManager;
 
-        private readonly Dictionary<Interaction.IInteractor, Pose> _attachPoseOnSelect = new();
-        private readonly Dictionary<Interaction.IInteractor, Pose> _localAttachPoseOnSelect = new();
+        private readonly Dictionary<Interactor, Pose> _attachPoseOnSelect = new();
+        private readonly Dictionary<Interactor, Pose> _localAttachPoseOnSelect = new();
 
         /// <summary>
         /// The set of hovered and/or selected interactors that supports returning a variable select input value,
@@ -416,12 +418,12 @@ namespace VaporXR.Interaction
             return XRFilterUtility.Process(_interactionStrengthFilters, interactor, this, interactionStrength);
         }
 
-        public Pose GetAttachPoseOnSelect(Interaction.IInteractor interactor)
+        public Pose GetAttachPoseOnSelect(Interactor interactor)
         {
             return _attachPoseOnSelect.TryGetValue(interactor, out var pose) ? pose : Pose.identity;
         }
 
-        public Pose GetLocalAttachPoseOnSelect(Interaction.IInteractor interactor)
+        public Pose GetLocalAttachPoseOnSelect(Interactor interactor)
         {
             return _localAttachPoseOnSelect.TryGetValue(interactor, out var pose) ? pose : Pose.identity;
         }
@@ -438,7 +440,7 @@ namespace VaporXR.Interaction
         /// <seealso cref="GetAttachPoseOnSelect"/>
         /// <seealso cref="GetLocalAttachPoseOnSelect"/>
         /// <seealso cref="VXRBaseInteractor.CaptureAttachPose"/>
-        protected void CaptureAttachPose(Interaction.IInteractor interactor)
+        protected void CaptureAttachPose(Interactor interactor)
         {
             var thisAttachTransform = GetAttachTransform(interactor);
             if (thisAttachTransform != null)

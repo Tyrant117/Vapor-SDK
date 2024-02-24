@@ -26,14 +26,14 @@ namespace VaporXR.Interaction
 
         #region Inspector
         [SerializeField]
-        private VXRPokeSorter _pokeSorter;
+        //private VXRPokeSorter _pokeSorter;
         #endregion
 
         #region Properties
         /// <summary>
         /// Distance along the poke interactable interaction axis that allows for a poke to be triggered sooner/with less precision.
         /// </summary>
-        public float PokeInteractionOffset => _pokeSorter.PokeInteractionOffset;
+        public float PokeInteractionOffset => 0f;// _pokeSorter.PokeInteractionOffset;
 
         private BindableVariable<PokeStateData> _pokeStateData = new();
         /// <inheritdoc />

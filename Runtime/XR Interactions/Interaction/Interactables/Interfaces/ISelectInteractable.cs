@@ -64,9 +64,9 @@ namespace VaporXR.Interaction
         /// <seealso cref="InteractorsSelecting"/>
         bool IsSelectedBy(Interactor interactor);
 
-        Pose GetAttachPoseOnSelect(Interaction.IInteractor interactor);
+        Pose GetAttachPoseOnSelect(Interactor interactor);
         float GetInteractionStrength(Interactor interactor);
-        Pose GetLocalAttachPoseOnSelect(Interaction.IInteractor interactor);
+        Pose GetLocalAttachPoseOnSelect(Interactor interactor);
 
         /// <summary>
         /// The <see cref="VXRInteractionManager"/> calls this method to signal to update the interaction strength.

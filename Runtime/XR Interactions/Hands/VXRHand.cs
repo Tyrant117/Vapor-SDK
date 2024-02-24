@@ -129,6 +129,8 @@ namespace VaporXR
             }
             Assert.IsTrue(!_usePhysicsHand || _hasRigidbody, $"Attempting to use a physics hand without a rigidbody. A rigibody must be added to {name}.");
 
+            SetupStateMachine();
+
             _PopulateFingers();
             _interpolatedPose = _flexedPoseDatum.Value.Copy();
             _dynamicPose = _flexedPoseDatum.Value.Copy();
@@ -158,6 +160,8 @@ namespace VaporXR
             _thumbDownInput.Enable();
             _indexInput.Enable();
             _gripInput.Enable();
+
+            _fsm.Init();
         }
 
         protected override void OnDisable()
@@ -167,6 +171,8 @@ namespace VaporXR
             _thumbDownInput.Disable();
             _indexInput.Disable();
             _gripInput.Disable();
+
+            _fsm.Disable();
         }
 
         private void SetupStateMachine()
@@ -194,8 +200,6 @@ namespace VaporXR
 
             _fsm.AddTriggerTransition((int)HandPoseType.Grab, new Transition(_grabState, _grabState, 2, CanTransition));
             _fsm.AddTriggerTransition((int)HandPoseType.Idle, new Transition(_grabState, _idleState, 1, CanReturnToIdle));
-
-            _fsm.Init();
 
             if (_attachStateDebugger)
             {
@@ -228,11 +232,6 @@ namespace VaporXR
             if (Pinky) { result.Add(Pinky); }
             result.AddRange(OptionalFingers);
             return result;
-        }
-
-        private void Start()
-        {            
-            SetupStateMachine();
         }
 
         private void Update()
@@ -318,8 +317,6 @@ namespace VaporXR
         #region - Posing -
         public void RequestHandPose(HandPoseType poseType, IPoseSource source, HandPose pose, Transform relativeTo = null, float duration = 0)
         {
-            if (!enabled) { return; }
-
             _pendingSource = source;
             _pendingPose = pose;
             _pendingPoseTransform = relativeTo;
@@ -331,8 +328,6 @@ namespace VaporXR
 
         public void RequestReturnToIdle(IPoseSource source, float duration = 0)
         {
-            if (!enabled) { return; }
-
             _pendingSource = source;
             _pendingPose = null;
             _pendingPoseTransform = null;
