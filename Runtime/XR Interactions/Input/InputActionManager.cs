@@ -157,7 +157,6 @@ namespace VaporXR
             }            
 
             _actionOverrideMap[guid] = overrideAction;
-            overrideAction.Enable();
         }
 
         public void ReturnToDefaultAction(Guid guid)

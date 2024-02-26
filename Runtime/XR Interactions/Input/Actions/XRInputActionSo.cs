@@ -85,7 +85,7 @@ namespace VaporXR
                 BoundAction = _manager.CreateActionClone(_actionReference.action.id);
                 CurrentState = new();
             }
-        }        
+        }
 
         public void Enable()
         {
@@ -99,10 +99,8 @@ namespace VaporXR
             {
                 _manager.EnableActionOverride(reference.action.id, this);
             }
-            else
-            {
-                BoundAction.Enable();
-            }
+
+            BoundAction.Enable();
         }
 
         public void Disable(bool returnToDefault)
