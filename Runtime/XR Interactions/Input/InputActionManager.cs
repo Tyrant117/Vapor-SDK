@@ -139,7 +139,7 @@ namespace VaporXR
 
         public void EnableActionOverride(Guid guid, XRInputActionSo overrideAction)
         {
-            if (_actionOverrideMap.TryGetValue(guid, out var currentOverride))
+            if (_actionOverrideMap.TryGetValue(guid, out var currentOverride) && !ReferenceEquals(currentOverride, overrideAction))
             {
                 // If its already overriden by another action.
                 // Disable that action
