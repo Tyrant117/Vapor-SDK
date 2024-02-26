@@ -14,10 +14,28 @@ namespace VaporXR
         [Tooltip("Input action assets to affect when inputs are enabled or disabled.")]
         private InputActionAsset _actionAsset;
 
-        private readonly Dictionary<Guid, InputAction> _actionOverrideMap = new();
+        [SerializeField]
+        [Tooltip("A list of the default button actions that will be the fallback actions if the button is not being overriden.\n" +
+            "These should be your main control layout actions like move, jump, grab, etc. If a mapped button action does not have a default it will use the action in the ActionAsset")]
+        private List<XRInputActionSo> _defaultButtonActions;
+
+        private readonly Dictionary<Guid, XRInputActionSo> _actionOverrideMap = new();
+        private readonly Dictionary<Guid, XRInputActionSo> _defaultActionMap = new();
 
         public event Action InputUpdated;
         public event Action PostInputUpdated;
+
+        private void Awake()
+        {
+            foreach (var action in _defaultButtonActions)
+            {
+                if (action.TryGetInputActionReference(out var reference))
+                {
+                    action.IsDefaultAction = true;
+                    _defaultActionMap.TryAdd(reference.action.id, action);
+                }
+            }
+        }
 
         protected override void OnEnable()
         {
@@ -75,14 +93,15 @@ namespace VaporXR
                 return;
             }
 
-            //foreach (var actionAsset in m_ActionAssets)
-            //{
-            //    if (actionAsset != null)
-            //    {
-            //        actionAsset.Enable();
-            //    }
-            //}
             _actionAsset.Enable();
+
+            foreach (var kvp in _defaultActionMap)
+            {
+                var actionToOverride = _actionAsset.FindAction(kvp.Key);
+                actionToOverride.Disable();
+
+                kvp.Value.Enable();
+            }
         }
 
         /// <summary>
@@ -103,17 +122,13 @@ namespace VaporXR
                 return;
             }
 
-            //foreach (var actionAsset in m_ActionAssets)
-            //{
-            //    if (actionAsset != null)
-            //    {
-            //        actionAsset.Disable();
-            //    }
-            //}
             _actionAsset.Disable();
-        }
 
-        
+            foreach (var kvp in _defaultActionMap)
+            {
+                kvp.Value.Disable(false);
+            }
+        }        
 
         public InputAction CreateActionClone(Guid actionGuid)
         {
@@ -122,30 +137,40 @@ namespace VaporXR
             return clone;
         }
 
-        public void EnableActionOverride(Guid guid, InputAction overrideAction)
+        public void EnableActionOverride(Guid guid, XRInputActionSo overrideAction)
         {
-            var actionToOverride = _actionAsset.FindAction(guid);
-            if(_actionOverrideMap.TryGetValue(guid, out var currentOverride))
-            {
-                // If its already overriden by another action.
-                // Disable that action
-                currentOverride.Disable();
-            }
-            actionToOverride.Disable();
-            _actionOverrideMap[guid] = overrideAction;
-            overrideAction.Enable();
-        }
-
-        public void DisableActionOverride(Guid guid)
-        {
-            var actionToOverride = _actionAsset.FindAction(guid);
             if (_actionOverrideMap.TryGetValue(guid, out var currentOverride))
             {
                 // If its already overriden by another action.
                 // Disable that action
-                currentOverride.Disable();
+                currentOverride.Disable(false);
             }
-            actionToOverride.Enable();
+
+            if (_defaultActionMap.TryGetValue(guid, out var defaultAction))
+            {
+                defaultAction.Disable(false);
+            }
+            else
+            {
+                var actionToOverride = _actionAsset.FindAction(guid);
+                actionToOverride.Disable();
+            }            
+
+            _actionOverrideMap[guid] = overrideAction;
+            overrideAction.Enable();
+        }
+
+        public void ReturnToDefaultAction(Guid guid)
+        {
+            if (_defaultActionMap.TryGetValue(guid, out var defaultAction))
+            {
+                defaultAction.Enable();
+            }
+            else
+            {
+                var actionToOverride = _actionAsset.FindAction(guid);
+                actionToOverride.Enable();
+            }
         }
     }
 }

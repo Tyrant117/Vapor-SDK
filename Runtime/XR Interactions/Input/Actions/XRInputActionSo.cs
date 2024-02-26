@@ -59,10 +59,11 @@ namespace VaporXR
         public bool IsActive => BoundAction.enabled;
         public bool IsHeld => CurrentState.Active;
         public float CurrentValue => CurrentState.Value;
+        public bool IsDefaultAction { get; set; }
 
 
         private readonly UnityObjectReferenceCache<InputActionReference> m_InputActionReferenceCache = new();
-        protected bool TryGetInputActionReference(out InputActionReference reference) => m_InputActionReferenceCache.TryGet(_actionReference, out reference);
+        public bool TryGetInputActionReference(out InputActionReference reference) => m_InputActionReferenceCache.TryGet(_actionReference, out reference);
 
         private InputActionManager _manager;
         protected float _lastValue;
@@ -94,10 +95,17 @@ namespace VaporXR
             _manager.RegisterForInputUpdate(UpdateInput);
             _manager.RegisterForPostInputUpdate(PostUpdateInput);
 
-            _manager.EnableActionOverride(reference.action.id, BoundAction);
+            if (!IsDefaultAction)
+            {
+                _manager.EnableActionOverride(reference.action.id, this);
+            }
+            else
+            {
+                BoundAction.Enable();
+            }
         }
 
-        public void Disable()
+        public void Disable(bool returnToDefault)
         {
             if (!TryGetInputActionReference(out var reference)) { return; }
             BindAction();
@@ -105,8 +113,12 @@ namespace VaporXR
             _manager.UnRegisterForInputUpdate(UpdateInput);
             _manager.UnRegisterForPostInputUpdate(PostUpdateInput);
 
-            _manager.DisableActionOverride(reference.action.id);
             BoundAction.Disable();
+
+            if (!IsDefaultAction && returnToDefault)
+            {
+                _manager.ReturnToDefaultAction(reference.action.id);
+            }
         }
 
         protected virtual void UpdateInput() { }

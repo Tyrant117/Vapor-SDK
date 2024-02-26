@@ -339,6 +339,8 @@ namespace VaporXR
 
         private bool CanTransition(Transition t)
         {
+            //TODO: Make it either check if the source is different or the PoseId is different from the same source.
+            //TODO: Need to give poses a PoseId.
             return _pendingSource != null && _pendingSource != _currentSource;
         }
 
@@ -369,6 +371,8 @@ namespace VaporXR
 
         private void SetHandPose(HandPose pose, Transform relativeTo = null, float duration = 0)
         {
+            if (!isActiveAndEnabled) { return; }
+
             if (duration > 0)
             {
                 _handPoseRoutine = StartCoroutine(PoseHandOverTime(_currentPose, pose, relativeTo, duration));

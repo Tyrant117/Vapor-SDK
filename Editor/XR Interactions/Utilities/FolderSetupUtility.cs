@@ -14,37 +14,37 @@ namespace VaporXREditor
         public const string ReadersRelativePath = "Vapor/XR/Readers";
         public const string ProviderKeysRelativePath = "Vapor/Keys/XR";
         
-        private const string VaporXRReadersCreated = "_vaporXRReadersCreated";
-        private const string VaporXRInteractionLayersCreated = "_vaporXRInteractionLayersCreated";
+        //private const string VaporXRReadersCreated = "_vaporXRReadersCreated";
+        //private const string VaporXRInteractionLayersCreated = "_vaporXRInteractionLayersCreated";
 
-        public static bool AreVaporXRReadersCreated
-        {
-            get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRReadersCreated, false);
-            set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRReadersCreated, value);
-        }
+        //public static bool AreVaporXRReadersCreated
+        //{
+        //    get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRReadersCreated, false);
+        //    set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRReadersCreated, value);
+        //}
 
-        public static bool AreInteractionLayersCreated
-        {
-            get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, false);
-            set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, value);
-        }
+        //public static bool AreInteractionLayersCreated
+        //{
+        //    get => EditorPrefs.GetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, false);
+        //    set => EditorPrefs.SetBool(PlayerSettings.productName + VaporXRInteractionLayersCreated, value);
+        //}
         
         [InitializeOnLoadMethod]
         private static void SetupFolders()
         {
             FolderUtility.CreateFolderFromPath($"Assets/{FolderRelativePath}");
             FolderUtility.CreateFolderFromPath($"Assets/{ReadersRelativePath}");
-            CreateReaders();
-            CreateInteractionLayers();
+            //CreateReaders();
+            //CreateInteractionLayers();
         }
 
         private static void CreateReaders()
         {
-            if(AreVaporXRReadersCreated)
-            {
-                Debug.Log("<b>[VaporXR]</b> Readers Already Created");
-                return;
-            }
+            //if(AreVaporXRReadersCreated)
+            //{
+            //    Debug.Log("<b>[VaporXR]</b> Readers Already Created");
+            //    return;
+            //}
 
             Debug.Log("<b>[VaporXR]</b> Creating Readers");
             try
@@ -57,7 +57,7 @@ namespace VaporXREditor
             }
             finally
             {
-                AreVaporXRReadersCreated = true;
+                //AreVaporXRReadersCreated = true;
                 AssetDatabase.StopAssetEditing();
             }
 
@@ -131,11 +131,11 @@ namespace VaporXREditor
 
         private static void CreateInteractionLayers()
         {
-            if(AreInteractionLayersCreated)
-            {
-                Debug.Log("<b>[VaporXR]</b> Interaction Layers Already Created");
-                return;
-            }
+            //if(AreInteractionLayersCreated)
+            //{
+            //    Debug.Log("<b>[VaporXR]</b> Interaction Layers Already Created");
+            //    return;
+            //}
 
             Debug.Log("<b>[VaporXR]</b> Creating Interaction Layers");
 
@@ -155,7 +155,7 @@ namespace VaporXREditor
             }
             finally
             {
-                AreInteractionLayersCreated = true;
+                //AreInteractionLayersCreated = true;
             }
         }
     }

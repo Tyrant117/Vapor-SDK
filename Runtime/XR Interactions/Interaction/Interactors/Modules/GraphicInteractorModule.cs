@@ -19,6 +19,10 @@ namespace VaporXR.Interaction
         [RichTextTooltip("Physics layer mask used for limiting ui interaction.")]
         private LayerMask _uiLayerMask = 1 << 5;
 
+        [FoldoutGroup("Interaction"), SerializeField]
+        [RichTextTooltip("(Optional) Allow for either and input or a poke to be used for UI select")]
+        private XRInputButton _leftPressInput;
+
         [FoldoutGroup("Debug", order: 1000), SerializeField]
         [RichTextTooltip("Denotes whether or not debug visuals are enabled for this poke interactor.")]
         private bool _debugVisualizationsEnabled;
@@ -74,7 +78,12 @@ namespace VaporXR.Interaction
             PokeStateData newPokeStateData = default;
             if (IsInteractingWithUI)
             {
+                _leftPressInput.Enable();
                 TrackedDeviceGraphicRaycaster.TryGetPokeStateDataForInteractor(this, out newPokeStateData);
+            }
+            else
+            {
+                _leftPressInput.Disable();
             }
         }
 
@@ -100,6 +109,12 @@ namespace VaporXR.Interaction
                 return;
             }
 
+            bool fromInputSelected = false;
+            if (_leftPressInput.IsActive)
+            {
+                fromInputSelected = _leftPressInput.IsHeld;
+            }
+
             var pokeInteractionTransform = GetAttachTransform(null);
             var position = pokeInteractionTransform.position;
             var orientation = pokeInteractionTransform.rotation;
@@ -110,7 +125,7 @@ namespace VaporXR.Interaction
             model.position = position;
             model.orientation = orientation;
             model.positionGetter = _positionGetter;
-            model.select = TrackedDeviceGraphicRaycaster.HasPokeSelect(this);
+            model.select = TrackedDeviceGraphicRaycaster.HasPokeSelect(this) || fromInputSelected;
             model.raycastLayerMask = _uiLayerMask;
             model.pokeDepth = _pokeDepth;
             model.interactionType = UIInteractionType.Poke;

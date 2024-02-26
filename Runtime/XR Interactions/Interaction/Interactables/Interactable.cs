@@ -98,24 +98,17 @@ namespace VaporXR.Interaction
         /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
         /// <seealso cref="IsHoverableBy(Interactor)"/>
         /// <seealso cref="IsSelectableBy(Interactor)"/>
-        /// <inheritdoc />
-        //public InteractionLayerMask InteractionLayers { get => _interactionLayers; set => _interactionLayers = value; }
-
-        /// <summary>
-        /// Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
-        /// </summary>
-        /// <seealso cref="VXRBaseInteractor.InteractionLayers"/>
-        /// <seealso cref="IsHoverableBy(Interactor)"/>
-        /// <seealso cref="IsSelectableBy(Interactor)"/>
         public int[] InteractionLayers { get; set; }
 
         // ***** Hovering *****
+        public bool AllowHover { get => _allowHover; set => _allowHover = value; }
         public bool CanBeHovered => _allowHover && HoverableActive.Invoke();
         public bool IsHovered => _interactorsHovering.Count > 0;
         private readonly HashSetList<Interactor> _interactorsHovering = new();
         public List<Interactor> InteractorsHovering => (List<Interactor>)_interactorsHovering.AsList();
 
         // ***** Selecting *****
+        public bool AllowSelect { get => _allowSelect; set => _allowSelect = value; }
         public bool CanBeSelected => _allowSelect && SelectableActive.Invoke();
         public InteractableSelectMode SelectMode { get => _selectMode; set => _selectMode = value; }
         public bool IsSelected => _interactorsSelecting.Count > 0;
@@ -262,8 +255,8 @@ namespace VaporXR.Interaction
             // Setup Interaction Manager
             FindCreateInteractionManager();
 
-            HoverableActive = AllowHover;
-            SelectableActive = AllowSelect;
+            HoverableActive = DefaultHoverActive;
+            SelectableActive = DefaultSelectActive;
 
             // Setup the starting filters
             _hoverFilters.RegisterReferences(_startingHoverFilters, this);           
@@ -459,7 +452,7 @@ namespace VaporXR.Interaction
         #endregion
 
         #region - Hover -
-        protected virtual bool AllowHover()
+        protected virtual bool DefaultHoverActive()
         {
             return true;
         }
@@ -499,7 +492,7 @@ namespace VaporXR.Interaction
         #endregion
 
         #region - Select -
-        protected virtual bool AllowSelect()
+        protected virtual bool DefaultSelectActive()
         {
             return true;
         }

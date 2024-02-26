@@ -19,7 +19,7 @@ namespace VaporXR
         public const string TriggerButton = "<XRController>{{{0}}}/{{TriggerButton}}";
         public const string GripButton = "<XRController>{{{0}}}/{{GripButton}}";
 
-        public const string MenuButton = "<XRController>{{{0}}}/{{Menu}}";
+        public const string MenuButton = "<XRController>{{{0}}}/{{MenuButton}}";
         public const string SystemButton = "<XRController>{{{0}}}/{{SystemButton}}";
 
         public const string Primary2DAxisClick = "<XRController>{{{0}}}/{{Primary2DAxisClick}}";

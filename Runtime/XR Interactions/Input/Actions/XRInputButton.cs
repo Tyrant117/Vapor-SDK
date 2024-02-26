@@ -11,7 +11,8 @@ namespace VaporXR
         {
             DirectButton,
             AxisButton,
-            SectorButton
+            SectorButton,
+            None
         }
 
 #pragma warning disable IDE0051 // Remove unused private members
@@ -35,9 +36,11 @@ namespace VaporXR
 
         private XRInputActionSo _activeButton;
         public InputInteractionState State => _activeButton.CurrentState;
-        public bool IsActive => _activeButton.IsActive;
+        public bool IsActive => _setup && _activeButton.IsActive;
         public bool IsHeld => State.Active;
         public float CurrentValue => State.Value;
+
+        private bool _setup;
 
         public Action Pressed;
         public Action Released;
@@ -58,9 +61,13 @@ namespace VaporXR
                     _sectorButton.BindAction();
                     _activeButton = _sectorButton;
                     break;
+                case ButtonReadType.None:
+                    _setup = false;
+                    return;
             }
             _activeButton.Pressed += OnPressed;
             _activeButton.Released += OnReleased;
+            _setup = true;
         }
 
         public void Enable()
@@ -69,7 +76,10 @@ namespace VaporXR
             {
                 BindInput();
             }
-            _activeButton.Enable();
+            if (_setup)
+            {
+                _activeButton.Enable();
+            }
         }
 
         public void Disable()
@@ -78,7 +88,10 @@ namespace VaporXR
             {
                 BindInput();
             }
-            _activeButton.Disable();
+            if (_setup)
+            {
+                _activeButton.Disable(true);
+            }
         }
 
         private void OnPressed()

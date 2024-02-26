@@ -228,18 +228,20 @@ namespace VaporXREditor
                 _AddButton(map, "Secondary Button", InputUsages.Format(handName, InputUsages.SecondaryButton));
                 _AddButton(map, "Secondary Touch", InputUsages.Format(handName, InputUsages.SecondaryTouch));
 
-                _AddButton(map, "Trigger Button", InputUsages.Format(handName, InputUsages.TriggerButton));
-                _AddButton(map, "Grip Button", InputUsages.Format(handName, InputUsages.GripButton));
+                //_AddButton(map, "Trigger Button", InputUsages.Format(handName, InputUsages.TriggerButton));
+                //_AddButton(map, "Grip Button", InputUsages.Format(handName, InputUsages.GripButton));
 
                 _AddButton(map, "Menu Button", InputUsages.Format(handName, InputUsages.MenuButton));
-                _AddButton(map, "System Button", InputUsages.Format(handName, InputUsages.SystemButton));
+                //_AddButton(map, "System Button", InputUsages.Format(handName, InputUsages.SystemButton));
 
-                _AddButton(map, "Primary 2D Axis Button", InputUsages.Format(handName, InputUsages.Primary2DAxisClick));
-                _AddButton(map, "Primary 2D Axis Touch", InputUsages.Format(handName, InputUsages.Primary2DAxisTouch));
+                _AddButton(map, "Joystick Button", InputUsages.Format(handName, InputUsages.Primary2DAxisClick));
+                _AddButton(map, "Joystick Touch", InputUsages.Format(handName, InputUsages.Primary2DAxisTouch));
 
                 // Axis 1D
-                _AddAxis1D(map, "Trigger Axis", InputUsages.Format(handName, InputUsages.TriggerAxis));
-                _AddAxis1D(map, "Grip Axis", InputUsages.Format(handName, InputUsages.GripAxis));
+                _AddAxis1D(map, "Trigger", InputUsages.Format(handName, InputUsages.TriggerAxis));
+                _AddAxis1D(map, "Trigger Action", InputUsages.Format(handName, InputUsages.TriggerAxis));
+                _AddAxis1D(map, "Grip", InputUsages.Format(handName, InputUsages.GripAxis));
+                _AddAxis1D(map, "Grip Action", InputUsages.Format(handName, InputUsages.GripAxis));
 
                 // Axis 2D
                 _AddAxis2D(map, "Joystick", InputUsages.Format(handName, InputUsages.Primary2DAxis));
