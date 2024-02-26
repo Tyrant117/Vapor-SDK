@@ -6,6 +6,7 @@ using Unity.XR.CoreUtils.Collections;
 using UnityEngine;
 using Vapor.Utilities;
 using VaporInspector;
+using VaporKeys;
 using VaporXR.Utilities;
 using Object = UnityEngine.Object;
 
@@ -99,6 +100,18 @@ namespace VaporXR.Interaction
         /// <seealso cref="IsHoverableBy(Interactor)"/>
         /// <seealso cref="IsSelectableBy(Interactor)"/>
         public int[] InteractionLayers { get; set; }
+
+        public void SetDefaultInteractionLayers(params KeyDropdownValue[] layers)
+        {
+            _interactionLayers.Clear();
+            foreach (var layer in layers)
+            {
+                _interactionLayers.Add(new InteractionLayerKey()
+                {
+                    Layer = layer
+                });
+            }
+        }
 
         // ***** Hovering *****
         public bool AllowHover { get => _allowHover; set => _allowHover = value; }
