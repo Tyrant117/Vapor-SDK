@@ -24,10 +24,15 @@ namespace VaporXR.Interaction
 
         public GraphicInteractorModule Graphic => _graphicInteractor;
 
+        private Coroutine _waitingToPose;
+        private readonly WaitForSeconds _wfs = new(0.3f);
+        private int _uiCount;
+
         private void OnEnable()
         {
             _graphicInteractor.UiHoverEntered += OnUIHoverPoseEntered;
             _graphicInteractor.UiHoverExited += OnUIHoverPoseExited;
+            _uiCount = 0;
         }
 
         private void OnDisable()
@@ -41,7 +46,11 @@ namespace VaporXR.Interaction
         {
             if (_uiHoverPoseEnabled)
             {
-                _hand.RequestHandPose(HandPoseType.Hover, Interactor, _uiHoverPose.Value, duration: _uiHoverPoseDuration);
+                _uiCount++;
+                if (_uiCount == 1 && _waitingToPose != null)
+                {
+                    _waitingToPose = StartCoroutine(PoseAfterDelay());
+                }
             }
         }
 
@@ -49,8 +58,24 @@ namespace VaporXR.Interaction
         {
             if (_uiHoverPoseEnabled)
             {
-                _hand.RequestReturnToIdle(Interactor, _uiHoverPoseDuration);
+                _uiCount--;
+                if (_uiCount == 0)
+                {
+                    if (_waitingToPose != null)
+                    {
+                        StopCoroutine(_waitingToPose);
+                        _waitingToPose = null;
+                    }
+                    _hand.RequestReturnToIdle(Interactor, _uiHoverPoseDuration);
+                }
             }
+        }
+
+        private IEnumerator PoseAfterDelay()
+        {
+            yield return _wfs;
+            _hand.RequestHandPose(HandPoseType.Hover, Interactor, _uiHoverPose.Value, duration: _uiHoverPoseDuration);
+            _waitingToPose = null;
         }
         #endregion
     }
