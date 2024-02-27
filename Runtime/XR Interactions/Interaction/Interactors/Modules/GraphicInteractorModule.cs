@@ -23,6 +23,15 @@ namespace VaporXR.Interaction
         [RichTextTooltip("(Optional) Allow for either and input or a poke to be used for UI select")]
         private XRInputButton _leftPressInput;
 
+        [FoldoutGroup("Posing"), SerializeField]
+        private bool _hoverPoseEnabled;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_hoverPoseEnabled")]
+        private VXRHand _hand;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_hoverPoseEnabled")]
+        private HandPoseDatum _hoverPose;
+        [FoldoutGroup("Posing"), SerializeField, ShowIf("%_hoverPoseEnabled")]
+        private float _hoverPoseDuration;
+
         [FoldoutGroup("Debug", order: 1000), SerializeField]
         [RichTextTooltip("Denotes whether or not debug visuals are enabled for this poke interactor.")]
         private bool _debugVisualizationsEnabled;
@@ -37,6 +46,9 @@ namespace VaporXR.Interaction
 
         private GameObject _hoverDebugSphere;
         private MeshRenderer _hoverDebugRenderer;
+
+        private float _hoverTimer;
+        private bool _hasPosed;
         #endregion
 
         #region Events
@@ -80,10 +92,16 @@ namespace VaporXR.Interaction
             {
                 _leftPressInput.Enable();
                 TrackedDeviceGraphicRaycaster.TryGetPokeStateDataForInteractor(this, out newPokeStateData);
+                _hoverTimer += Time.deltaTime;
+                if (_hoverTimer > 0.1f)
+                {
+                    OnStartPose();
+                }
             }
             else
             {
-                _leftPressInput.Disable();
+                _leftPressInput.Disable();                
+                OnEndPose();
             }
         }
 
@@ -166,7 +184,28 @@ namespace VaporXR.Interaction
         {
             UiHoverExited?.Invoke(args);
         }
-        #endregion        
+        #endregion
+
+        #region - Posing -
+        private void OnStartPose()
+        {
+            if (_hoverPoseEnabled && !_hasPosed)
+            {
+                _hand.RequestHandPose(HandPoseType.Hover, Interactor, _hoverPose.Value, duration: _hoverPoseDuration);
+                _hasPosed = true;
+            }
+        }
+
+        private void OnEndPose()
+        {
+            if (_hoverPoseEnabled && _hasPosed)
+            {
+                _hand.RequestReturnToIdle(Interactor, _hoverPoseDuration);
+                _hasPosed = false;
+                _hoverTimer = 0;
+            }
+        }
+        #endregion
 
         #region - Debug -
         private void SetDebugObjectVisibility(bool isVisible)

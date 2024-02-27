@@ -93,6 +93,8 @@ namespace VaporXR.Interaction
 
         public List<Collider> Colliders => _colliders;
 
+        public DistanceCalculationModeType DistanceCalculationMode { get => _distanceCalculationMode; set => _distanceCalculationMode = value; }
+
         /// <summary>
         /// Allows interaction with Interactors whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
         /// </summary>
@@ -226,7 +228,7 @@ namespace VaporXR.Interaction
         public event Action<FocusExitEventArgs> FocusExited;
         public event Action<FocusExitEventArgs> LastFocusExited;
 
-        public Func<bool> SelectableActive { get; set; }       
+        public Func<bool> SelectableActive { get; set; }        
         #endregion
 
         #region - Initialization -
