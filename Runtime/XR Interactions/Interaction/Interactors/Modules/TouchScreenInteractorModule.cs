@@ -24,9 +24,9 @@ namespace VaporXR.Interaction
 
         public GraphicInteractorModule Graphic => _graphicInteractor;
 
-        private Coroutine _waitingToPose;
-        private readonly WaitForSeconds _wfs = new(0.3f);
         private int _uiCount;
+        private float _pendingTimer;
+        private bool _hasPosed;
 
         private void OnEnable()
         {
@@ -41,15 +41,26 @@ namespace VaporXR.Interaction
             _graphicInteractor.UiHoverExited -= OnUIHoverPoseExited;
         }
 
+        public override void PostProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+        {
+            if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic) { return; }
+
+            if (_uiCount > 0 && !_hasPosed && Time.time > _pendingTimer)
+            {
+                _hand.RequestHandPose(HandPoseType.Hover, Interactor, _uiHoverPose.Value, duration: _uiHoverPoseDuration);
+                _hasPosed = true;
+            }
+        }
+
         #region - Posing -
         protected virtual void OnUIHoverPoseEntered(UIHoverEventArgs args)
         {
             if (_uiHoverPoseEnabled)
             {
                 _uiCount++;
-                if (_uiCount == 1 && _waitingToPose != null)
+                if (_uiCount == 0)
                 {
-                    _waitingToPose = StartCoroutine(PoseAfterDelay());
+                    _pendingTimer = Time.time + 0.3f;
                 }
             }
         }
@@ -59,23 +70,11 @@ namespace VaporXR.Interaction
             if (_uiHoverPoseEnabled)
             {
                 _uiCount--;
-                if (_uiCount == 0)
+                if(_uiCount == 0)
                 {
-                    if (_waitingToPose != null)
-                    {
-                        StopCoroutine(_waitingToPose);
-                        _waitingToPose = null;
-                    }
-                    _hand.RequestReturnToIdle(Interactor, _uiHoverPoseDuration);
+                    _hasPosed = false;
                 }
             }
-        }
-
-        private IEnumerator PoseAfterDelay()
-        {
-            yield return _wfs;
-            _hand.RequestHandPose(HandPoseType.Hover, Interactor, _uiHoverPose.Value, duration: _uiHoverPoseDuration);
-            _waitingToPose = null;
         }
         #endregion
     }
