@@ -49,6 +49,7 @@ namespace VaporXR.Interaction
 
         private float _hoverTimer;
         private bool _hasPosed;
+        private bool _wasInteractingWithUI;
         #endregion
 
         #region Events
@@ -90,7 +91,11 @@ namespace VaporXR.Interaction
             PokeStateData newPokeStateData = default;
             if (IsInteractingWithUI)
             {
-                _leftPressInput.Enable();
+                if (!_wasInteractingWithUI)
+                {
+                    _leftPressInput.Enable();
+                    _wasInteractingWithUI = true;
+                }
                 TrackedDeviceGraphicRaycaster.TryGetPokeStateDataForInteractor(this, out newPokeStateData);
                 _hoverTimer += Time.deltaTime;
                 if (_hoverTimer > 0.1f)
@@ -100,7 +105,11 @@ namespace VaporXR.Interaction
             }
             else
             {
-                _leftPressInput.Disable();                
+                if (_wasInteractingWithUI)
+                {
+                    _leftPressInput.Disable();
+                    _wasInteractingWithUI = false;
+                }
                 OnEndPose();
             }
         }

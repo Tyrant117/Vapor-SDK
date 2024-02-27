@@ -1,6 +1,6 @@
 {
   "name": "com.carbonfibergames.vaporsdk",
-  "version": "0.3.18",
+  "version": "0.3.19",
   "displayName": "Vapor SDK",
   "description": "A collection of tools for developing applications in Unity.",
   "unity": "2022.3",
