@@ -33,7 +33,9 @@ namespace VaporXR.Interaction
         //[FoldoutGroup("Interaction"), SerializeField]
         //private InteractionLayerMask _interactionLayers = -1;
         [FoldoutGroup("Interaction"), SerializeField]
-        private List<InteractionLayerKey> _interactionLayers = new(); 
+        private bool _overrideSorterInteractionLayer;
+        [FoldoutGroup("Interaction"), SerializeField, ShowIf("%_overrideSorterInteractionLayer")]
+        private List<InteractionLayerKey> _interactionLayers = new();
         [FoldoutGroup("Interaction"), SerializeField]
         private InteractorHandedness _handedness;
         [FoldoutGroup("Interaction"), SerializeField]
@@ -99,6 +101,8 @@ namespace VaporXR.Interaction
         ///// </summary>
         ///// <seealso cref="Interactable.InteractionLayers"/>
         //public InteractionLayerMask InteractionLayers => _interactionLayers;
+
+        public bool OverrideSorterInteractionLayer { get => _overrideSorterInteractionLayer; set => _overrideSorterInteractionLayer = value; }
 
         /// <summary>
         /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.

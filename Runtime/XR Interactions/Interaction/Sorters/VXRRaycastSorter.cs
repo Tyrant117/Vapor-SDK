@@ -76,7 +76,7 @@ namespace VaporXR
         public override void GetValidTargets(Interactor interactor, List<Interactable> targets, IXRTargetFilter filter = null)
         {
             _frameValidTargets.Clear();
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !IsActive)
             {
                 return;
             }
@@ -90,12 +90,26 @@ namespace VaporXR
                 _frameValidTargets.AddRange(PossibleTargets);
             }
 
-            foreach (var validCollisionTarget in _frameValidTargets)
+            if (interactor.OverrideSorterInteractionLayer)
             {
-                if (HasInteractionLayerOverlap(interactor, validCollisionTarget))
+                foreach (var validCollisionTarget in _frameValidTargets)
                 {
-                    validCollisionTarget.LastSorterType = GetSorterType();
-                    targets.Add(validCollisionTarget);
+                    if (HasInteractionLayerOverlap(interactor, validCollisionTarget))
+                    {
+                        validCollisionTarget.LastSorterType = GetSorterType();
+                        targets.Add(validCollisionTarget);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var validCollisionTarget in _frameValidTargets)
+                {
+                    if (HasInteractionLayerOverlap(validCollisionTarget))
+                    {
+                        validCollisionTarget.LastSorterType = GetSorterType();
+                        targets.Add(validCollisionTarget);
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ namespace VaporXR.Interaction
     {
         VXRInteractionManager InteractionManager { get; set; }
         List<InteractorModule> Modules { get; }
-        HashSet<int> InteractionLayers { get; }
+        //HashSet<int> InteractionLayers { get; }
         InteractorHandedness Handedness { get; }
 
         void PreprocessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase);

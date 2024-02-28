@@ -24,6 +24,9 @@ namespace VaporXR
 
         [FoldoutGroup("Properties"), SerializeField]
         private bool _isActive = true;
+
+        [FoldoutGroup("Properties"), SerializeField]
+        private List<InteractionLayerKey> _interactionLayers = new();
         #endregion
 
         #region Properties
@@ -62,6 +65,12 @@ namespace VaporXR
                 _isActive = value;
             }
         }
+
+        /// <summary>
+        /// (Read Only) Allows interaction with Interactables whose Interaction Layer Mask overlaps with any Layer in this Interaction Layer Mask.
+        /// </summary>
+        /// <seealso cref="Interactable.InteractionLayers"/>
+        public HashSet<int> InteractionLayers { get; } = new();
         #endregion
 
         #region Fields
@@ -89,6 +98,11 @@ namespace VaporXR
                 _attachPoint = transform;
             }
             _FindCreateInteractionManager();
+
+            foreach (var layer in _interactionLayers)
+            {
+                InteractionLayers.Add(layer.Layer);
+            }
 
             _contactMonitor.interactionManager = _interactionManager;
 
@@ -136,7 +150,7 @@ namespace VaporXR
         #region - Interaction -
         public void ProcessContacts(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
-            if (!IsActive) { return; }
+            if (!isActiveAndEnabled || !IsActive) { return; }
 
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
@@ -172,6 +186,18 @@ namespace VaporXR
         /// <returns>Returns <see langword="true"/> if the Interactor and Interactable share at least one interaction layer. Otherwise, returns <see langword="false"/>.</returns>
         /// <seealso cref="Interactor.InteractionLayers"/>
         /// <seealso cref="Interactable.InteractionLayers"/>
+        protected bool HasInteractionLayerOverlap(Interactable interactable)
+        {
+            foreach (var layer in interactable.InteractionLayers)
+            {
+                if (InteractionLayers.Contains(layer))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         protected static bool HasInteractionLayerOverlap(Interactor interactor, Interactable interactable)
         {
             foreach (var layer in interactable.InteractionLayers)
@@ -182,8 +208,6 @@ namespace VaporXR
                 }
             }
             return false;
-
-            //return (interactor.InteractionLayers & interactable.InteractionLayers) != 0;
         }
         #endregion
 
