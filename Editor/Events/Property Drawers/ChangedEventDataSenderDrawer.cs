@@ -16,7 +16,7 @@ namespace VaporEventsEditor
             List<string> keys = new();
             List<KeyDropdownValue> values = new();
             var key = property.FindPropertyRelative("_key");
-            _ConvertToTupleList(keys, values, KeyUtility.GetAllEventKeyValues());
+            _ConvertToTupleList(keys, values, EventKeyUtility.GetAllEventKeyValues());
 
             var indexOfCurrent = values.IndexOf((KeyDropdownValue)key.boxedValue);
             var currentNameValue = indexOfCurrent >= 0 ? keys[indexOfCurrent] : "None";

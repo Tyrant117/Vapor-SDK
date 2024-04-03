@@ -22,7 +22,7 @@ namespace VaporKeys
         public const string RelativeConfigPath = "Vapor/Keys/Config";
         public const string AbsoluteKeyPath = "Assets/Vapor/Keys/Keys";
         public const string RelativeKeyPath = "Vapor/Keys/Keys";
-        public const string NamespaceName = "VaporKeyDefinitions";
+        public const string NamespaceName = "VaporKeyDefinitions";              
 
         #region - Keys -
         /// <summary>
@@ -92,11 +92,13 @@ namespace VaporKeys
                 formattedKeys.Add(new KeyValuePair("None", 0, string.Empty));
             }
 
+            var sb = new StringBuilder();
             foreach (var item in GetAllAssetsFromGUIDs<Object>(guids))
             {
-                if (item == null) { continue; }
-                if (item is not IKey key) { continue; }
-                if (key.IsDeprecated) { continue; }
+                if (item == null) { sb.AppendLine("Item Was Null"); continue; }
+                if (item is not IKey key) { sb.AppendLine($"Item Was Not IKey: ({item.GetType()}) at {AssetDatabase.GetAssetPath(item)}"); continue; }
+                if (key.IsDeprecated) { sb.AppendLine($"Key Was Deprecated: ({key.DisplayName}) at {AssetDatabase.GetAssetPath(item)}"); continue; }
+                if (!key.ValidKey()) { sb.AppendLine($"Key Was Invalid: ({key.DisplayName}) at {AssetDatabase.GetAssetPath(item)}"); continue; }
 
                 key.ForceRefreshKey();
                 if (takenKeys.Contains(key.Key))
@@ -112,6 +114,7 @@ namespace VaporKeys
                 }
             }
 
+            Debug.Log(sb.ToString());
             FormatKeyFiles(RelativeKeyPath, NamespaceName, scriptName, formattedKeys);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -134,7 +137,7 @@ namespace VaporKeys
             {
                 var refVal = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guid));
                 if (refVal == null) { continue; }
-                if (refVal is IKey { IsDeprecated: true }) { continue; }
+                if (refVal is IKey refKey && (refKey.IsDeprecated || !refKey.ValidKey())) { continue; }
 
                 var key = refVal.name.GetKeyHashCode();
                 if (!takenKeys.Add(key))
@@ -182,6 +185,7 @@ namespace VaporKeys
             {
                 if (item == null) { continue; }
                 if (item.IsDeprecated) { continue; }
+                if (!item.ValidKey()) { continue; }
 
                 item.ForceRefreshKey();
                 if (takenKeys.Contains(item.Key))

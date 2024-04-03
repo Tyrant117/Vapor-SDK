@@ -2,7 +2,8 @@
     "name": "CarbonFiberGames.Vapor.StateMachine",
     "rootNamespace": "VaporStateMachine",
     "references": [
-        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f"
+        "GUID:d6d830e1153bd2b4b82c08f33d25dd1f",
+        "GUID:df8bcd1fa39fc664ca6f07898130f14f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,0 +1,21 @@
+{
+    "name": "CarbonFiberGames.Vapor.StateMachineEditor",
+    "rootNamespace": "VaporStateMachineEditor",
+    "references": [
+        "GUID:4c2ca28637f0dad41bd891ddd218651a",
+        "GUID:d2a41dbe356235645a4f8b658e23dbb5",
+        "GUID:54c3e519141ab4946a023decebe6bbc4",
+        "GUID:df8bcd1fa39fc664ca6f07898130f14f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

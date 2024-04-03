@@ -98,7 +98,7 @@ namespace VaporKeys
 
         public bool Equals(KeyDropdownValue other)
         {
-            return Guid.Equals(other.Guid) && Key.Equals(other.Key);
+            return Guid == other.Guid && Key == other.Key;
         }
 
         public override int GetHashCode()

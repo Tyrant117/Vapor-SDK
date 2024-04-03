@@ -80,26 +80,26 @@ namespace VaporEvents
         }
         
         /// <summary>
-        /// Directly attempts to get the component associated with a <see cref="ProviderData{TResult}"/>
+        /// Directly attempts to get the component associated with a <see cref="CachedProviderData{TResult}"/>
         /// </summary>
         /// <param name="providerId">The id of the provider</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>The component of type T or null</returns>
-        public static T GetComponent<T>(int providerId) where T : Component => Get<ProviderData<Component>>(providerId).Request<T>();
+        public static T GetComponent<T>(int providerId) where T : Component => Get<CachedProviderData<Component>>(providerId).Request<T>();
         /// <summary>
-        /// Directly attempts to get the component associated with a <see cref="ProviderData{TResult}"/>
+        /// Directly attempts to get the component associated with a <see cref="CachedProviderData{TResult}"/>
         /// </summary>
         /// <param name="providerName">The name of the provider</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>The component of type T or null</returns>
-        public static T GetComponent<T>(string providerName) where T : Component => Get<ProviderData<Component>>(providerName).Request<T>();
+        public static T GetComponent<T>(string providerName) where T : Component => Get<CachedProviderData<Component>>(providerName).Request<T>();
         /// <summary>
-        /// Directly attempts to get the component associated with a <see cref="ProviderData{TResult}"/>
+        /// Directly attempts to get the component associated with a <see cref="CachedProviderData{TResult}"/>
         /// </summary>
         /// <param name="providerKey">The key of the provider</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>The component of type T or null</returns>
-        public static T GetComponent<T>(ProviderKeySo providerKey) where T : Component => Get<ProviderData<Component>>(providerKey).Request<T>();
+        public static T GetComponent<T>(ProviderKeySo providerKey) where T : Component => Get<CachedProviderData<Component>>(providerKey).Request<T>();
 
         /// <summary>
         /// Retrieves the component of type T from a provider once its value is not null.
@@ -108,7 +108,7 @@ namespace VaporEvents
         /// <param name="callback">The callback to fire once the result is not null</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>An enumerator that should be used in a <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"/></returns>
-        public static IEnumerator GetComponentRoutine<T>(int providerId, Action<T> callback) where T : Component => Get<ProviderData<Component>>(providerId).RequestRoutine(callback);
+        public static IEnumerator GetComponentRoutine<T>(int providerId, Action<T> callback) where T : Component => Get<CachedProviderData<Component>>(providerId).RequestRoutine(callback);
         /// <summary>
         /// Retrieves the component of type T from a provider once its value is not null.
         /// </summary>
@@ -116,7 +116,7 @@ namespace VaporEvents
         /// <param name="callback">The callback to fire once the result is not null</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>An enumerator that should be used in a <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"/></returns>
-        public static IEnumerator GetComponentRoutine<T>(string providerName, Action<T> callback) where T : Component => Get<ProviderData<Component>>(providerName).RequestRoutine(callback);
+        public static IEnumerator GetComponentRoutine<T>(string providerName, Action<T> callback) where T : Component => Get<CachedProviderData<Component>>(providerName).RequestRoutine(callback);
         /// <summary>
         /// Retrieves the component of type T from a provider once its value is not null.
         /// </summary>
@@ -124,6 +124,6 @@ namespace VaporEvents
         /// <param name="callback">The callback to fire once the result is not null</param>
         /// <typeparam name="T">The type to return. Must inherit from <see cref="Component"/></typeparam>
         /// <returns>An enumerator that should be used in a <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"/></returns>
-        public static IEnumerator GetComponentRoutine<T>(ProviderKeySo providerKey, Action<T> callback) where T : Component => Get<ProviderData<Component>>(providerKey).RequestRoutine(callback);
+        public static IEnumerator GetComponentRoutine<T>(ProviderKeySo providerKey, Action<T> callback) where T : Component => Get<CachedProviderData<Component>>(providerKey).RequestRoutine(callback);
     }
 }

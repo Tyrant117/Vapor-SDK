@@ -17,7 +17,7 @@ namespace VaporEventsEditor
             List<KeyDropdownValue> values = new();
             var key = property.FindPropertyRelative("_key");
 
-            _ConvertToTupleList(keys, values, KeyUtility.GetAllProviderKeyValues());
+            _ConvertToTupleList(keys, values, EventKeyUtility.GetAllProviderKeyValues());
 
             var indexOfCurrent = values.IndexOf((KeyDropdownValue)key.boxedValue);
             var currentNameValue = indexOfCurrent >= 0 ? keys[indexOfCurrent] : "None";
@@ -67,32 +67,32 @@ namespace VaporEventsEditor
         }
     }
 
-    [CustomPropertyDrawer(typeof(RequestsProviderData<>))]
-    public class RequestsProviderDataDrawerOne : BaseRequestsProviderDataDrawer
+    [CustomPropertyDrawer(typeof(RequestsCachedProviderData<>))]
+    public class RequestsCachedProviderDataDrawerOne : BaseRequestsProviderDataDrawer
     {
         
     }
     
-    [CustomPropertyDrawer(typeof(RequestsProviderData<,>))]
-    public class RequestsProviderDataDrawerTwo : BaseRequestsProviderDataDrawer
+    [CustomPropertyDrawer(typeof(RequestsCachedProviderData<,>))]
+    public class RequestsCachedProviderDataDrawerTwo : BaseRequestsProviderDataDrawer
     {
         
     }
     
-    [CustomPropertyDrawer(typeof(RequestsProviderData<,,>))]
-    public class RequestsProviderDataDrawerThree : BaseRequestsProviderDataDrawer
+    [CustomPropertyDrawer(typeof(RequestsCachedProviderData<,,>))]
+    public class RequestsCachedProviderDataDrawerThree : BaseRequestsProviderDataDrawer
     {
         
     }
     
-    [CustomPropertyDrawer(typeof(RequestsProviderData<,,,>))]
-    public class RequestsProviderDataDrawerFour : BaseRequestsProviderDataDrawer
+    [CustomPropertyDrawer(typeof(RequestsCachedProviderData<,,,>))]
+    public class RequestsCachedProviderDataDrawerFour : BaseRequestsProviderDataDrawer
     {
         
     }
     
-    [CustomPropertyDrawer(typeof(RequestsProviderData<,,,,>))]
-    public class RequestsProviderDataDrawerFive : BaseRequestsProviderDataDrawer
+    [CustomPropertyDrawer(typeof(RequestsCachedProviderData<,,,,>))]
+    public class RequestsCachedProviderDataDrawerFive : BaseRequestsProviderDataDrawer
     {
         
     }

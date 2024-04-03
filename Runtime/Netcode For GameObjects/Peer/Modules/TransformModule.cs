@@ -20,7 +20,7 @@ namespace VaporNetcodeForGo
 
         protected override void OnLocalClientInitialize()
         {
-            StartCoroutine(ProviderBus.Get<ProviderData<Transform>>(_localKey).RequestRoutine<Transform>(_OnCacheTransform));
+            StartCoroutine(ProviderBus.Get<CachedProviderData<Transform>>(_localKey).RequestRoutine<Transform>(_OnCacheTransform));
 
             void _OnCacheTransform(Transform t)
             {
@@ -75,7 +75,7 @@ namespace VaporNetcodeForGo
 
         public static List<(string, KeyDropdownValue)> GetAllProviderKeyValues()
         {
-            return KeyUtility.GetAllProviderKeyValues();
+            return EventKeyUtility.GetAllProviderKeyValues();
         }
     }
 }

@@ -12,8 +12,10 @@ namespace VaporInspectorEditor
         {
             var inspector = new VisualElement();
             inspector.Add(DrawScript());
+            InsertBeforeGraph(inspector);
             var graph = new VaporInspectorNode(serializedObject, serializedObject.targetObject);
             graph.Draw(inspector);
+            InsertAfterGraph(inspector);
             return inspector;
         }
 
@@ -24,6 +26,16 @@ namespace VaporInspectorEditor
             script.style.display = hide ? DisplayStyle.None : DisplayStyle.Flex;
             script.SetEnabled(false);
             return script;
+        }
+
+        protected virtual void InsertBeforeGraph(VisualElement inspector)
+        {
+
+        }
+
+        protected virtual void InsertAfterGraph(VisualElement inspector)
+        {
+
         }
     }
 }

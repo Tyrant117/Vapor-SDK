@@ -40,12 +40,21 @@ namespace VaporInspectorEditor
             {
                 return DrawNodeVaporValueDropdown(node, dropdownAtr);
             }
-            
+
+            if (node.HasAttribute<SerializeReference>())
+            {
+                return _DrawIMGUIContainerField();
+            }
+
             if (node.Property.isArray && node.Property.propertyType != SerializedPropertyType.String && !node.HasAttribute<DrawWithUnityAttribute>())
             {
                 return DrawNodeVaporList(node);
             }
 
+            if (node.TryGetAttribute<DrawWithUnityAttribute>(out var drawWithUnity) && drawWithUnity.UseIMGUIContainer)
+            {
+                return _DrawIMGUIContainerField();
+            }
             return _DrawVaporField();
 
             VisualElement _DrawVaporField()
@@ -101,6 +110,15 @@ namespace VaporInspectorEditor
 
                 field.RegisterCallback<GeometryChangedEvent>(OnNodePropertyBuilt);
                 return field;
+            }
+
+            VisualElement _DrawIMGUIContainerField()
+            {
+                var imgui = new IMGUIContainer(() =>
+                {
+                    EditorGUILayout.PropertyField(node.Property, true);
+                });
+                return imgui;
             }
         }
 

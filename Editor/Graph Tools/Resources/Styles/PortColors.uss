@@ -1,0 +1,16 @@
+.typeDynamicValuePort {
+    --port-color: #4CF63C;
+}
+.typeEffectOn {
+    --port-color: #DBC71E;
+}
+.typeBoolean {
+    --port-color: #0E48DB;
+}
+
+.optionalPort > #connector {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}

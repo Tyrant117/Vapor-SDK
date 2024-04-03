@@ -11,6 +11,11 @@ namespace VaporInspector
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
     public class DrawWithUnityAttribute : Attribute
     {
+        public bool UseIMGUIContainer { get; }
 
+        public DrawWithUnityAttribute(bool useIMGUIContainer = false)
+        {
+            UseIMGUIContainer = useIMGUIContainer;
+        }
     }
 }

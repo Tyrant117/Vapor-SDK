@@ -14,7 +14,7 @@ namespace VaporXR
 
         public static List<(string, KeyDropdownValue)> GetAllProviderKeyValues()
         {
-            return KeyUtility.GetAllKeysOfNamedType("InteractionLayerKeyKeys");
+            return KeyUtility.GetAllKeysOfNamedType("InteractionLayerKeys");
         }
     }
 }

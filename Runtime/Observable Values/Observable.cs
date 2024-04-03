@@ -222,7 +222,7 @@ namespace VaporObservables
         #endregion
 
         #region - Events -
-        public Observable WithChanged(Action<Observable<T>, T> callback)
+        public Observable<T> WithChanged(Action<Observable<T>, T> callback)
         {
             if (callback != null)
             {

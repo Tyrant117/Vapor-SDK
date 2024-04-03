@@ -19,17 +19,28 @@ namespace VaporKeys
         public void ForceRefreshKey() { _key = name.GetKeyHashCode(); }
         public abstract string DisplayName { get; }
         public bool IsDeprecated => _deprecated;
+        public virtual bool ValidKey() { return true; }
 
 
         [FoldoutGroup("Key"), Button, RichTextTooltip("Forces Generation of the keys for this Type")]
         public void GenerateKeys()
         {
-            var scriptName = GetType().Name;
+            var type = GetKeyScriptType();
+            var scriptName = type.Name;
             scriptName = scriptName.Replace("Scriptable", "");
             scriptName = scriptName.Replace("SO", "");
             scriptName = scriptName.Replace("So", "");
-            KeyGenerator.GenerateKeys(GetType(), $"{scriptName}Keys", true);
+            scriptName = scriptName.Replace("Key", "");
+            KeyGenerator.GenerateKeys(type, $"{scriptName}Keys", true);
+            GenerateAdditionalKeys();
         }
+
+        public virtual Type GetKeyScriptType()
+        {
+            return GetType();
+        }
+
+        public virtual void GenerateAdditionalKeys() { }
 
         public static void GenerateKeysOfType<T>() where T : KeySo
         {
@@ -37,6 +48,7 @@ namespace VaporKeys
             scriptName = scriptName.Replace("Scriptable", "");
             scriptName = scriptName.Replace("SO", "");
             scriptName = scriptName.Replace("So", "");
+            scriptName = scriptName.Replace("Key", "");
             KeyGenerator.GenerateKeys(typeof(T), $"{scriptName}Keys", true);
         }
     }

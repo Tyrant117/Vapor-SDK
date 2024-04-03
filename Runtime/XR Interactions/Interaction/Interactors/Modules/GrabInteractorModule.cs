@@ -6,11 +6,8 @@ using VaporInspector;
 namespace VaporXR.Interaction
 {
     [DisallowMultipleComponent]
-    public class GrabInteractorModule : InteractorModule
+    public class GrabInteractorModule : InputSelectInteractorModule
     {
-        [FoldoutGroup("Components"), SerializeField, AutoReference(searchParents: true)]
-        private VXRInputDeviceUpdateProvider _updateProvider;
-
         [FoldoutGroup("Interaction"), SerializeField]
         [RichTextTooltip("If <lw>true</lw> this interactor can grab objects at a distance and pull them to it.")]
         private bool _distantGrabActive = true;
@@ -18,36 +15,14 @@ namespace VaporXR.Interaction
         [RichTextTooltip("The minimum distance an interactable must be from this interactor to make it a distant grab")]
         private float _minimumDistanceForDistantGrab = 0.1f;
 
-        [VerticalGroup("Input"), SerializeField]
-        private XRInputButton _grabInput;
-
-        private float _minDistanceSqr;
+        //private float _minDistanceSqr;
 
 
         #region - Initialization -
         protected override void Awake()
         {
             base.Awake();
-            _minDistanceSqr = _minimumDistanceForDistantGrab * _minimumDistanceForDistantGrab;
-        }
-
-        protected void OnEnable()
-        {
-            _grabInput.Enable();
-            //_grabInput.BindToUpdateEvent(_updateProvider);
-            Interactor.SelectActive = OnSelectActiveCheck;
-        }
-
-        protected void OnDisable()
-        {
-            _grabInput.Disable();
-            //_grabInput.UnbindUpdateEvent();
-            Interactor.SelectActive = null;
-        }
-
-        private XRIneractionActiveState OnSelectActiveCheck()
-        {
-            return new XRIneractionActiveState(_grabInput.IsHeld, _grabInput.State.ActivatedThisFrame, _grabInput.CurrentValue);
+            //_minDistanceSqr = _minimumDistanceForDistantGrab * _minimumDistanceForDistantGrab;
         }
         #endregion
 

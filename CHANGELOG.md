@@ -1,3 +1,6 @@
+# v0.3.21
+* Separated Vapor Effects into the Vapor RPG repository.
+
 # v0.3.0
 * Major revision to interactors and interactables.
 * Interactors and Interactables are now one components monobehaviours

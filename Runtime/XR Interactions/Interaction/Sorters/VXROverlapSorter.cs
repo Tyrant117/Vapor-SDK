@@ -14,9 +14,9 @@ namespace VaporXR
         #region Inspector
 #pragma warning disable IDE0051 // Remove unused private members
         private bool IsOverlapModeSphere => _overlapMode == OverlapDetectionModeType.Sphere;
-        private bool IsOverlapModeBox => _overlapMode == OverlapDetectionModeType.Box;
+        private bool IsOverlapModeBox => _overlapMode == OverlapDetectionModeType.Box;        
 #pragma warning restore IDE0051 // Remove unused private members
-       
+
         [FoldoutGroup("Overlap"), SerializeField]
         private OverlapDetectionModeType _overlapMode;
         [FoldoutGroup("Overlap"), SerializeField, ShowIf("$IsOverlapModeSphere")]
@@ -29,6 +29,11 @@ namespace VaporXR
         [FoldoutGroup("Overlap"), SerializeField]
         [RichTextTooltip("The type of interaction with trigger colliders when overlapping.")]
         private QueryTriggerInteraction _overlapTriggerInteraction = QueryTriggerInteraction.Ignore;
+        #endregion
+
+        #region Properties
+        public float OverlapSphereRadius { get => _overlapSphereRadius; set => _overlapSphereRadius = value; }
+        public Vector3 OverlapBoxSize { get => _overlapBoxSize; set => _overlapBoxSize = value; }
         #endregion
 
         #region Fields

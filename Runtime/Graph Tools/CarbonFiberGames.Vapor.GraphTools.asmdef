@@ -1,0 +1,16 @@
+{
+    "name": "CarbonFiberGames.Vapor.GraphTools",
+    "rootNamespace": "VaporGraphTools",
+    "references": [
+        "GUID:6f1965c989c67cc40a02406c75e35d2d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

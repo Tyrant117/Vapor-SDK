@@ -20,14 +20,14 @@ namespace VaporEvents
         {
             if (_key.IsNone) return;
             
-            ProviderBus.Get<ProviderData<Component>>(_key).Subscribe(OnComponentRequested);
+            ProviderBus.Get<CachedProviderData<Component>>(_key).Subscribe(OnComponentRequested);
         }
 
         private void OnDisable()
         {
             if (_key.IsNone) return;
             
-            ProviderBus.Get<ProviderData<Component>>(_key).Unsubscribe(OnComponentRequested);
+            ProviderBus.Get<CachedProviderData<Component>>(_key).Unsubscribe(OnComponentRequested);
         }
 
         private Component OnComponentRequested()
@@ -37,7 +37,7 @@ namespace VaporEvents
 
         public static List<(string, KeyDropdownValue)> GetAllProviderKeyValues()
         {
-            return KeyUtility.GetAllProviderKeyValues();
+            return EventKeyUtility.GetAllProviderKeyValues();
         }
     }
 }

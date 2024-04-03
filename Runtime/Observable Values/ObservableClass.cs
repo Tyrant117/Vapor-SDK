@@ -87,15 +87,20 @@ namespace VaporObservables
         /// </summary>
         protected abstract void SetupFields();
 
-        public void AddField<T>(string fieldName, bool saveValue, T value, Action<Observable<T>, T> callback = null) where T : struct
+        public Observable<T> AddField<T>(string fieldName, bool saveValue, T value, Action<Observable<T>, T> callback = null) where T : struct
         {
-            if (Fields.TryAdd(fieldName, new Observable<T>(fieldName, saveValue, value).WithChanged(callback).WithDirtied(MarkDirty)))
+            if (!Fields.ContainsKey(fieldName))
             {
+                var field = new Observable<T>(fieldName, saveValue, value).WithChanged(callback);
+                field.WithDirtied(MarkDirty);
+                Fields.Add(fieldName, field);
                 MarkDirty(Fields[fieldName]);
+                return field;
             }
             else
             {
                 Debug.LogError($"Field [{fieldName}] already added to class {Name}");
+                return (Observable<T>)Fields[fieldName];
             }
         }
 
